@@ -1,0 +1,75 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ "main", "group*" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 步骤1：检出代码
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 步骤2：通过SSH执行部署操作
+      - name: Execute Deployment Scripts
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            set -e  # 任何命令失败立即终止脚本
+            
+            # 初始化变量
+            BRANCH="${{ github.ref_name }}"
+            REPO_DIR="/www/cicd_wuyu/wuyuProject/WuYuEducation"
+            cd "$REPO_DIR"
+
+            # ========== 代码同步阶段 ==========
+            echo "🔄 Syncing $BRANCH branch..."
+            git checkout -f $BRANCH
+            git pull origin $BRANCH
+
+            # ========== 端口计算阶段 ==========
+            if [ "$BRANCH" = "main" ]; then
+              GROUP_NUMBER=0
+            else
+              GROUP_NUMBER=$(echo "$BRANCH" | sed 's/group//')
+            fi
+            SERVER_PORT=$((9080 + GROUP_NUMBER))
+            FRONTEND_PORT=$((9180 + GROUP_NUMBER))
+            SERVER_IMAGE="wuyu-server-$BRANCH"
+            FRONTEND_IMAGE="wuyu-front-$BRANCH"
+
+            # ========== 后端处理阶段 ==========
+            echo "🏗️ Building Backend..."
+            cd wuyu-server
+            docker build -t $SERVER_IMAGE . || { echo "❌ Backend build failed"; exit 1; }
+
+            echo "🚀 Deploying Backend..."
+            docker stop $SERVER_IMAGE >/dev/null 2>&1 || true
+            docker rm $SERVER_IMAGE >/dev/null 2>&1 || true
+            docker run -d \
+              --name $SERVER_IMAGE \
+              -p $SERVER_PORT:8080 \
+              $SERVER_IMAGE || { echo "❌ Backend deployment failed"; exit 1; }
+
+            # ========== 前端处理阶段 ========== 
+            echo "🏗️ Building Frontend..."
+            cd ../wuyu-front
+            docker build -t $FRONTEND_IMAGE . || { echo "❌ Frontend build failed"; exit 1; }
+
+            echo "🚀 Deploying Frontend..."
+            docker stop $FRONTEND_IMAGE >/dev/null 2>&1 || true
+            docker rm $FRONTEND_IMAGE >/dev/null 2>&1 || true
+            docker run -d \
+              --name $FRONTEND_IMAGE \
+              -p $FRONTEND_PORT:80 \
+              $FRONTEND_IMAGE || { echo "❌ Frontend deployment failed"; exit 1; }
+
+            # ========== 完成阶段 ==========
+            echo "✅ Deployment completed for $BRANCH"
+            echo "Backend: $SERVER_IMAGE @ port $SERVER_PORT"
+            echo "Frontend: $FRONTEND_IMAGE @ port $FRONTEND_PORT"
