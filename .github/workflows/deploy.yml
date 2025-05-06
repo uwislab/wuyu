@@ -16,15 +16,9 @@ jobs:
       - name: Execute Deployment Scripts
         uses: appleboy/ssh-action@v1
         with:
-          host: us.uwis.cn
-          username: cicd
-          key: -----BEGIN OPENSSH PRIVATE KEY-----
-b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
-QyNTUxOQAAACBDn5YKU4XDJ4oLNBgxzRgtrizHBRYPXc+huykEXG2VKAAAAJi1lMkEtZTJ
-BAAAAAtzc2gtZWQyNTUxOQAAACBDn5YKU4XDJ4oLNBgxzRgtrizHBRYPXc+huykEXG2VKA
-AAAEDbT/LKSiisCJOGqA1vIlLagNL41M4Eu+HycgsmLKf05UOflgpThcMnigs0GDHNGC2u
-LMcFFg9dz6G7KQRcbZUoAAAADmdpdGh1Yi1hY3Rpb25zAQIDBAUGBw==
------END OPENSSH PRIVATE KEY-----
+          host: 
+          username: 
+          key: 
           script: |
             set -e  # 任何命令失败立即终止脚本
             
