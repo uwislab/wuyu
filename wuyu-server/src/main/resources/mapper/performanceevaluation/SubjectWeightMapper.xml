@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.performanceevaluation.mapper.SubjectWeightMapper">
+
+    <resultMap id="SubjectWeightBean" type="com.fiveup.core.performanceevaluation.bean.SubjectWeight">
+        <id column="id" jdbcType="NUMERIC" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="parent_id" jdbcType="INTEGER" property="parentId"/>
+        <result column="weight" jdbcType="DECIMAL" property="weight"/>
+        <result column="content" jdbcType="VARCHAR" property="content"/>
+        <result column="tid" jdbcType="INTEGER" property="tid"/>
+    </resultMap>
+
+    <!-- 声明数据库字段 -->
+    <sql id="SubjectWeight_field">
+        id,name,parent_id,weight,content,tid
+    </sql>
+
+    <!-- 实体类属性 -->
+    <sql id="SubjectWeight_insert">
+        #{id},#{name},#{parent_id},#{weight},#{content},#{tid}
+    </sql>
+
+    <!-- 更新时条件-->
+    <sql id="SubjectWeight_update">
+        <if test="name != null">
+            name = #{name},
+        </if>
+        <if test="parentId != null">
+            parent_id = #{parent_id},
+        </if>
+        <if test="weight != null">
+            weight = #{weight},
+        </if>
+        <if test="content != null">
+            content = #{content},
+        </if>
+        <if test="tid != null">
+            tid = #{tid},
+        </if>
+    </sql>
+
+    <select id="selectAll" resultMap="SubjectWeightBean">
+        select <include refid="SubjectWeight_field"></include>
+        from subject_weight
+    </select>
+
+    <insert id="insert" parameterType="com.fiveup.core.performanceevaluation.bean.SubjectWeight" useGeneratedKeys="true" keyProperty="id">
+        insert into subject_weight(
+        <include refid="SubjectWeight_field"/>
+        ) values(
+        <include refid="SubjectWeight_insert"/>
+        )
+    </insert>
+
+    <delete id="deleteById" parameterType="java.lang.Integer">
+        delete from subject_weight where id = #{id}
+    </delete>
+
+    <update id="update" parameterType="com.fiveup.core.performanceevaluation.bean.SubjectWeight">
+        UPDATE subject_weight
+        <set>
+            <include refid="SubjectWeight_update"></include>
+        </set>
+        where id = #{id}
+    </update>
+
+    <select id="selectInTid" parameterType="list" resultMap="SubjectWeightBean">
+        select <include refid="SubjectWeight_field"></include>
+        from subject_weight
+        where tid in <foreach collection="tidS" item="tid" open="(" separator="," close=")">#{tid}</foreach>
+    </select>
+
+    <select id="selectByTid" parameterType="integer" resultMap="SubjectWeightBean">
+        select <include refid="SubjectWeight_field"></include>
+        from subject_weight
+        where tid = #{tid}
+    </select>
+
+    <select id="selectOne" parameterType="integer" resultMap="SubjectWeightBean">
+        select <include refid="SubjectWeight_field"></include>
+        from subject_weight
+        where id = #{id}
+    </select>
+</mapper>

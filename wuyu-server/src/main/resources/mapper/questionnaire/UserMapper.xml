@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.fiveup.core.questionnaire.mapper.UserMapper">
+    <!--这两个代表插入后会返回id-->
+    <insert id="addUser" parameterType="com.fiveup.core.questionnaire.vo.UserVO" useGeneratedKeys="true" keyProperty="id">
+        insert into q_user(name,password) values(#{name},#{password})
+    </insert>
+
+    <select id="getUserByName" resultType="com.fiveup.core.questionnaire.vo.UserVO">
+        select * from q_user where name=#{name}
+    </select>
+
+</mapper>

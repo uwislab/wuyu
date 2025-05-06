@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.fiveup.core.management.mapper.SportScoreMapper">
+<!--    查询所有有体育成绩的学生数据sql语句封装-->
+    <sql id="selectAllFields">
+        SELECT
+            bs.student_name AS studentName,
+            bs.student_num AS studentNum,
+            bs.gender AS gender,
+            bs.grade_id AS gradeNum,
+            bs.class_id AS classNum,
+            si_fvc.score AS fvcscore,
+            si_rs.score AS rsscore,
+            si_bmi.score AS bmiscore,
+            si_sar.score AS sarscore,
+            si_sub.score AS subscore,
+            si2.score AS oabscore,
+            si1.score AS dashscore
+        FROM
+            basic_student bs
+                LEFT JOIN
+            si_fvc_score si_fvc ON bs.student_num = si_fvc.student_num
+                LEFT JOIN
+            si_rs_score si_rs ON bs.student_num = si_rs.student_num
+                LEFT JOIN
+            si_bmi_score si_bmi ON bs.student_num = si_bmi.student_num
+                LEFT JOIN
+            si_sar_score si_sar ON bs.student_num = si_sar.student_num
+                LEFT JOIN
+            si_sub_score si_sub ON bs.student_num = si_sub.student_num
+                LEFT JOIN
+            si_50x8oab_score si2 ON bs.student_num = si2.student_num
+                LEFT JOIN
+            si_50mdash_score si1 ON bs.student_num = si1.student_num
+        WHERE
+            (si_fvc.student_num IS NOT NULL
+           OR si_rs.student_num IS NOT NULL
+           OR si_bmi.student_num IS NOT NULL
+           OR si_sar.student_num IS NOT NULL
+           OR si_sub.student_num IS NOT NULL
+           OR si2.student_num IS NOT NULL
+           OR si1.student_num IS NOT NULL)
+    </sql>
+<!-- 数据列映射 -->
+    <resultMap id="sportAllFieldsMap" type="com.fiveup.core.management.pojo.SportScore">
+        <result property="studentNum" column="studentNum"/>
+        <result property="studentName" column="studentName"/>
+        <result property="gender" column="gender"/>
+        <result property="gradeNum" column="gradeNum"/>
+        <result property="classNum" column="classNum"/>
+        <result property="fvcscore" column="fvcscore"/>
+        <result property="rsscore" column="rsscore"/>
+        <result property="bmiscore" column="bmiscore"/>
+        <result property="sarscore" column="sarscore"/>
+        <result property="subscore" column="subscore"/>
+        <result property="oabscore" column="oabscore"/>
+        <result property="dashscore" column="dashscore"/>
+    </resultMap>
+<!--查询所有体育分数-->
+    <select id="findAllSportScore" resultMap="sportAllFieldsMap">
+        <include refid="selectAllFields"/>
+        ORDER BY bs.student_num
+    </select>
+<!--按条件查询-->
+    <select id="findSportScoreForSearch" resultMap="sportAllFieldsMap">
+        <include refid="selectAllFields"/>
+        <if test="keyword!=null and keyword!=''">
+            AND (bs.student_name like '%${keyword}%' OR bs.student_num like '%${keyword}%')
+        </if>
+        <if test="gender!=null and gender!=''">
+            AND bs.gender=#{gender}
+        </if>
+        <if test="gradeId!=null and gradeId!=''">
+            AND bs.grade_id=#{gradeId}
+        </if>
+        <if test="classId!=null and classId!=''">
+            AND bs.class_id=#{classId}
+        </if>
+        ORDER BY bs.student_num
+    </select>
+<!--    批量删除-->
+<!--    批量删除肺活量成绩-->
+    <delete id="deleteBatchFvc" parameterType="String">
+        delete from si_fvc_score where student_num in
+        <foreach collection="ids" open="(" close=")" separator="," item="id">
+            #{id}
+        </foreach>
+    </delete>
+<!--    批量删除跳绳成绩-->
+    <delete id="deleteBatchRs" parameterType="String">
+        delete from si_rs_score where student_num in
+        <foreach collection="ids" open="(" close=")" separator="," item="id">
+            #{id}
+        </foreach>
+    </delete>
+<!--    批量删除体脂率成绩-->
+    <delete id="deleteBatchBmi" parameterType="String">
+        delete from si_bmi_score where student_num in
+        <foreach collection="ids" open="(" close=")" separator="," item="id">
+            #{id}
+        </foreach>
+    </delete>
+<!--    批量删除坐位前屈成绩-->
+    <delete id="deleteBatchSar" parameterType="String">
+        delete from si_sar_score where student_num in
+        <foreach collection="ids" open="(" close=")" separator="," item="id">
+            #{id}
+        </foreach>
+    </delete>
+<!--    批量删除仰卧起坐成绩-->
+    <delete id="deleteBatchSub" parameterType="String">
+        delete from si_sub_score where student_num in
+        <foreach collection="ids" open="(" close=")" separator="," item="id">
+            #{id}
+        </foreach>
+    </delete>
+<!--    批量删除50米往返跑成绩-->
+    <delete id="deleteBatchOab" parameterType="String">
+        delete from si_50x8oab_score where student_num in
+        <foreach collection="ids" open="(" close=")" separator="," item="id">
+            #{id}
+        </foreach>
+    </delete>
+<!--    批量删除50米跑成绩-->
+    <delete id="deleteBatchDash" parameterType="String">
+        delete from si_50mdash_score where student_num in
+        <foreach collection="ids" open="(" close=")" separator="," item="id">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

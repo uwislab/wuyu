@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.performanceevaluation.mapper.StudentGradesMapper">
+
+    <resultMap id="studentGradesBean" type="com.fiveup.core.performanceevaluation.bean.StudentGrades">
+        <id property="id" column="id"></id>
+        <result property="studentNum" column="student_num"/>
+        <result property="studentName" column="student_name"/>
+        <result property="gender" column="gender"/>
+        <result property="className" column="class_name"/>
+    </resultMap>
+
+    <select id="getAllClass" resultType="string">
+        select DISTINCT class_name from basic_class
+    </select>
+
+    <select id="getAllGrades" resultType="string">
+        select DISTINCT grade from basic_class
+    </select>
+
+    <select id="getAllStudentClass" resultMap="studentGradesBean">
+        SELECT student_num,student_name,gender,class_name,grade from basic_student,basic_class
+        where basic_student.class_id = basic_class.id
+    </select>
+
+    <select id="getScoreByClassTypeAndStudentNum" resultType="java.lang.Integer">
+        SELECT score from course_score where student_num =#{studentNum}  AND course_type =#{classType}
+    </select>
+
+    <select id="getStudentClass" resultMap="studentGradesBean">
+        SELECT basic_student.student_num, basic_student.student_name, basic_student.gender, class_name, grade, morality_score, intelligence_score, physical_score, aesthetic_score, labour_score, remark
+        FROM basic_student, basic_class, fu_student_score
+        <where>
+            fu_student_score.student_num = basic_student.student_num
+            AND basic_student.class_id = basic_class.id
+            <if test = "studentNum != null and studentNum != ''">
+                and basic_student.student_num LIKE CONCAT('%', #{studentNum}, '%')
+            </if>
+            <if test = "studentName != null and studentName != ''">
+                and basic_student.student_name LIKE CONCAT('%', #{studentName}, '%')
+            </if>
+            <if test = "className != null and className != ''">
+                and class_name = #{className}
+            </if>
+            <if test = "grade != null and grade != ''">
+                and grade = #{grade}
+            </if>
+        </where>
+    </select>
+
+    <select id="getPersonal" resultMap="studentGradesBean">
+        SELECT basic_student.student_num, basic_student.student_name, basic_student.gender,morality_score,
+        intelligence_score, physical_score, aesthetic_score, labour_score, remark
+        from basic_student,fu_student_score
+        <where>
+            basic_student.student_num = fu_student_score.student_num
+            <if test = "studentNum != null and studentNum != ''">
+                and basic_student.student_num = #{studentNum}
+            </if>
+            <if test = "studentName != null and studentName != ''">
+                and basic_student.student_name = #{studentName}
+            </if>
+        </where>
+    </select>
+
+    <select id="getExcellent" resultType="java.lang.Integer">
+        select COUNT(*) from course_score where score <![CDATA[>=]]> 90 and score <![CDATA[<]]> 100
+    </select>
+
+    <select id="getGood" resultType="java.lang.Integer">
+        select COUNT(*) from course_score where score <![CDATA[>=]]> 80 and score <![CDATA[<]]> 90
+    </select>
+
+    <select id="getOrdinary" resultType="java.lang.Integer">
+        select COUNT(*) from course_score where score <![CDATA[>=]]> 70 and score <![CDATA[<]]> 80
+    </select>
+
+    <select id="getPass" resultType="java.lang.Integer">
+        select COUNT(*) from course_score where score <![CDATA[>=]]> 60 and score <![CDATA[<]]> 70
+    </select>
+
+    <select id="getNotPass" resultType="java.lang.Integer">
+        select COUNT(*) from course_score where score <![CDATA[<]]> 60
+    </select>
+
+</mapper>

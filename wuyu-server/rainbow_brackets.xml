@@ -1,0 +1,10 @@
+<application>
+  <component name="RainbowSettings">
+    <option name="indentGuidesOptions" value="Only selected indent guide" />
+    <option name="suppressAdvancedIndentGuidesBanner" value="true" />
+    <option name="suppressBigFileCheck" value="true" />
+    <option name="suppressXMLCheck" value="true" />
+    <option name="suppressYAMLCheck" value="true" />
+    <option name="version" value="2023.3.7-ij" />
+  </component>
+</application>

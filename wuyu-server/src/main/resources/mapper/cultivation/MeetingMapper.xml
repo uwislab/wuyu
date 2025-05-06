@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.cultivation.mapper.MeetingMapper">
+    <select id="getOne"
+            resultType="com.fiveup.core.cultivation.entity.Meeting"
+            parameterType="integer">
+        select cmt.*, btc.teacher_name
+        from ctv_meeting cmt
+        left join basic_teacher btc on btc.id = cmt.tid
+        where cmt.is_deleted = false and cmt.id = #{id}
+    </select>
+    <select id="getAll"
+            resultType="com.fiveup.core.cultivation.entity.Meeting"
+            parameterType="com.fiveup.core.cultivation.entity.Meeting">
+        select cmt.*, btc.teacher_name
+        from ctv_meeting cmt
+        left join basic_teacher btc on btc.id = cmt.tid
+        where cmt.is_deleted = false
+            <if test="tid != null">
+               and cmt.tid = #{tid}
+            </if>
+            <if test="title != null and title != ''">
+                and cmt.title like concat('%', #{title}, '%')
+            </if>
+    </select>
+</mapper>

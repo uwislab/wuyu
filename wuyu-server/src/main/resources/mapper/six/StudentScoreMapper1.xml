@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.sixGroup.mapper.StudentScoreMapper1">
+<!--    <select id="getStudentScore" parameterType="com.fiveup.core.sixGroup.entity.StudentScoreQuery" resultType="com.fiveup.core.sixGroup.entity.FuStudentScore">-->
+<!--        select * from fu_student_score a, six_stu_phy_score b, basic_student c where a.student_num = b.student_num and-->
+<!--        c.student_num = a.student_num and b.student_num = c.student_num and c.grade_id = #{year} and b.phy_item_id =-->
+<!--        #{tid} and c.class_id = #{cls} and a.evaluate_date = '202307'-->
+<!--        <if test='studentNum != null and studentNum != ""'>and c.student_num like concat('%', #{studentNum}, '%')</if>-->
+<!--        <if test='studentName != null and studentName != ""'>and c.student_name like concat('%', #{studentName},'%')-->
+<!--        </if>-->
+<!--    </select>-->
+
+        <select id="getStudentScore" parameterType="com.fiveup.core.sixGroup.entity.StudentScoreQuery" resultType="com.fiveup.core.sixGroup.entity.FuStudentScore">
+            SELECT
+                *
+            FROM
+                fu_student_score a,
+                basic_student c
+            WHERE
+                c.student_num = a.student_num and c.grade_id = #{year} and c.class_id = #{cls}
+            <if test='studentNum != null and studentNum != ""'>and c.student_num like concat('%',
+            #{studentNum},
+            '%'
+            )</if>
+            <if test='studentName != null and studentName != ""'>and c.student_name like concat('%',
+            #{studentName},
+            '%'
+            )
+            </if>
+        </select>
+</mapper>

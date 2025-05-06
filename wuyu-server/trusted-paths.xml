@@ -1,0 +1,10 @@
+<application>
+  <component name="Trusted.Paths.Settings">
+    <option name="TRUSTED_PATHS">
+      <list>
+        <option value="E:/code/api-study/Chen-API" />
+        <option value="E:/code/redis-study" />
+      </list>
+    </option>
+  </component>
+</application>

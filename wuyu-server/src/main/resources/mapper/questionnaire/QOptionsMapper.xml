@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.questionnaire.mapper.QOptionsMapper">
+    
+    <resultMap type="QOptions" id="QOptionsResult">
+        <result property="optId"    column="opt_id"    />
+        <result property="questId"    column="quest_id"    />
+        <result property="optSeque"    column="opt_seque"    />
+        <result property="optSeque"    column="opt_seque"    />
+        <result property="optContent"    column="opt_content"    />
+    </resultMap>
+
+    <sql id="selectQOptionsVo">
+        select opt_id, quest_id, opt_seque, opt_content from q_options
+    </sql>
+
+    <select id="selectQOptionsList" parameterType="QOptions" resultMap="QOptionsResult">
+        <include refid="selectQOptionsVo"/>
+        <where>  
+            <if test="questId != null "> and quest_id = #{questId}</if>
+        </where>
+    </select>
+    
+    <select id="selectQOptionsByOptId" parameterType="Long" resultMap="QOptionsResult">
+        <include refid="selectQOptionsVo"/>
+        where opt_id = #{optId}
+    </select>
+        
+    <insert id="insertQOptions" parameterType="QOptions" useGeneratedKeys="true" keyProperty="optId">
+        insert into q_options
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="questId != null">quest_id,</if>
+            <if test="optSeque != null">opt_seque,</if>
+            <if test="optContent != null">opt_content,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="questId != null">#{questId},</if>
+            <if test="optSeque != null">#{optSeque},</if>
+            <if test="optContent != null">#{optContent},</if>
+         </trim>
+    </insert>
+
+    <update id="updateQOptions" parameterType="QOptions">
+        update q_options
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="questId != null">quest_id = #{questId},</if>
+            <if test="optSeque != null">opt_seque = #{optSeque},</if>
+            <if test="optContent != null">opt_content = #{optContent},</if>
+        </trim>
+        where opt_id = #{optId}
+    </update>
+
+    <delete id="deleteQOptionsByOptId" parameterType="Long">
+        delete from q_options where opt_id = #{optId}
+    </delete>
+
+    <delete id="deleteQOptionsByOptIds" parameterType="String">
+        delete from q_options where opt_id in 
+        <foreach item="optId" collection="array" open="(" separator="," close=")">
+            #{optId}
+        </foreach>
+    </delete>
+</mapper>

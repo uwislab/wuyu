@@ -1,0 +1,63 @@
+package com.fiveup.core.common.util;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+public class LoginUtil {
+
+    /**
+     * 检查用户是否已登录
+     * @param request HttpServletRequest 对象
+     * @return 如果已登录返回 true，否则返回 false
+     */
+     
+    public static boolean isLoggedIn(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            Object user = session.getAttribute("user");
+            return user != null;
+        }
+        return false;
+    }
+
+    /**
+     * 检查用户权限
+     * @param request HttpServletRequest 对象
+     * @param requiredRole 所需的角色
+     * @return 如果用户具有所需权限返回 true，否则返回 false
+     */
+
+    public static boolean hasPermission(HttpServletRequest request, String requiredRole) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            Object role = session.getAttribute("role");
+            return requiredRole.equals(role);
+        }
+        return false;
+    }
+
+    /**
+     * 设置用户登录信息
+     * @param request HttpServletRequest 对象
+     * @param user 用户对象
+     * @param role 用户角色
+     */
+
+    public static void login(HttpServletRequest request, Object user, String role) {
+        HttpSession session = request.getSession(true);
+        session.setAttribute("user", user);
+        session.setAttribute("role", role);
+    }
+
+    /**
+     * 注销用户登录
+     * @param request HttpServletRequest 对象
+     */
+
+    public static void logout(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+    }
+}

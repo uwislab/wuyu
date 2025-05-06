@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.events.mapper.PictureActivityMapper">
+    <sql id="selectSimpleFields">
+        select id, activity_id, picture_url
+        from picture_activity
+    </sql>
+
+    <insert id="insertOne">
+        insert into picture_activity(activity_id, picture_url)
+        values(#{activityId}, #{pictureUrl})
+    </insert>
+
+
+    <select id="getUrlListByActivityId" resultType="string">
+        select picture_url
+        from picture_activity
+        where activity_id = #{activityId}
+    </select>
+    <select id="getAllUrlList" resultType="string">
+        select p.picture_url
+        from picture_activity p
+        left join fu_activity f on p.activity_id = f.id
+        where f.deleted = 0
+    </select>
+</mapper>

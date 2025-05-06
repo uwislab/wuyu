@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.events.mapper.TemplateMapper">
+    <sql id="selectSimpleFields">
+        select id, name, regulation,deleted
+        from activity_template
+    </sql>
+
+    <resultMap id="allFieldsMap" type="com.fiveup.core.events.model.ActivityTemplate">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="regulation" column="regulation"/>
+        <result property="deleted" column="deleted"/>
+    </resultMap>
+
+
+
+    <select id="getTemplateList" resultMap="allFieldsMap">
+        <include refid="selectSimpleFields"/>
+    </select>
+
+    <select id="selectOneById" resultMap="allFieldsMap">
+        <include refid="selectSimpleFields"/>
+        where id = #{templateId} and deleted = 0
+    </select>
+</mapper>

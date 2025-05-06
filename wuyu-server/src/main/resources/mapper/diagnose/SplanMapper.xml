@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.diagnose.mapper.SplanMapper">
+    <select id="getallPlan" resultType="com.fiveup.core.diagnose.bean.Student_plan">
+            select s.student_id,s.student_name,s.student_class_number,s.student_grade, p.p_deyu,p.p_zhiyu,p.p_tiyu,p.p_meiyu,p.p_laoyu,p.p_plan
+            from di_student s right join di_studentplan p on s.student_id=p.p_id
+            <where>
+                <if test="name!=null and name!=''">
+                    and s.student_name like CONCAT('%',#{name},'%')
+                </if>
+                <if test="id!=null and id!='' and id!=-1">
+                    and s.student_id like CONCAT('%',#{id},'%')
+                </if>
+            </where>
+            order by s.student_id
+    </select>
+</mapper>

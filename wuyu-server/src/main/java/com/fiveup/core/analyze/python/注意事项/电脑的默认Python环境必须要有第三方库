@@ -1,0 +1,8 @@
+电脑的默认Python环境必须要有第三方库
+如果没有的请打开cmd运行 运行不了点这里.py 下载第三方库
+或直接运行pip install -r requirements.txt所在路径
+https://blog.csdn.net/wangxf0812/article/details/114015485?spm=1001.2101.3001.6650.2&utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-2.pc_relevant_antiscanv2&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-2.pc_relevant_antiscanv2&utm_relevant_index=5
+教程
+
+朴素贝叶斯数据处理.py 42行
+

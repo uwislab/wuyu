@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.performanceevaluation.mapper.TeacherMapper">
+    <!-- 一个mapper文件对应项目中的一个mapper接口，接口内负责定义一些抽象方法，抽象方法的方法名称就对应
+    配置文件总的一个SQL语句中，mybatis是通过namespace找到mapper接口 -->
+
+    <!-- 一个mapper文件对应数据库表的所有SQL操作，同时项目中bean也有一个和表对应的实体类，所以这个实体
+    类必然和这个文件有联系，mybatis就是通过springboot的配置找到mapper文件，通过解析配置文件，找到数据库表
+    对应的实体类，因此你的数据库表才能和你的实体类产生联系 即resultMap（数据库查询到数据之后对应的封装格式）
+    resultMap标签有两个必须要填写的数学，id->表示的是类名的简称 type->表示关联的实体类，标签内部就是映射
+    实体类属性和-->
+    <resultMap id="TeacherBean" type="com.fiveup.core.performanceevaluation.bean.Teacher">
+        <!-- id子标签代表数据库表的主键字段 -->
+        <id column="teacherID" jdbcType="NUMERIC" property="teacherID"/>
+        <!-- result子标签表示非主键字段的映射关系 -->
+        <result column="username" jdbcType="VARCHAR" property="username"/>
+        <result column="password" jdbcType="VARCHAR" property="password"/>
+    </resultMap>
+
+    <!-- 声明数据库字段 -->
+    <sql id="Teacher_field">
+        id AS teacherID,username,password
+    </sql>
+
+    <!-- 实体类属性 -->
+    <sql id="Teacher_insert">
+        #{teacherID},#{username},#{passsword}
+    </sql>
+
+    <!-- 更新时条件-->
+    <sql id="Teacher_update">
+        <if test="username != null">
+            username = #{username},
+        </if>
+        <if test="password != null">
+            password = #{password},
+        </if>
+    </sql>
+
+    <!-- 查询时条件 -->
+    <sql id="Teacher_where">
+        <if test="username != null">
+            and username = #{username}
+        </if>
+        <if test="password != null">
+            and password = #{password}
+        </if>
+    </sql>
+
+    <select id="selectByTId" resultMap="TeacherBean" parameterType="java.lang.Integer">
+        SELECT <include refid="Teacher_field"></include>
+        FROM basic_teacher
+        WHERE id = #{teacherID}
+    </select>
+
+    <select id="selectAll" resultMap="TeacherBean">
+        SELECT * FROM basic_teacher
+    </select>
+
+    <select id="selectNotInWeight" resultMap="TeacherBean" parameterType="java.util.List">
+        SELECT <include refid="Teacher_field"></include>
+        FROM basic_teacher
+        WHERE id not in
+        <foreach collection="list" item="tid" index="index" open="(" separator=","  close=")">
+            #{tid}
+        </foreach>
+    </select>
+
+    <select id="selectInWeight" resultMap="TeacherBean" parameterType="java.util.List">
+        SELECT <include refid="Teacher_field"></include>
+        FROM basic_teacher
+        WHERE id in
+        <foreach collection="list" item="tid" index="index" open="(" separator=","  close=")">
+            #{tid}
+        </foreach>
+    </select>
+
+    <select id="selectByName" resultMap="TeacherBean" parameterType="string">
+        SELECT <include refid="Teacher_field"></include>
+        FROM basic_teacher
+        WHERE username = #{name}
+    </select>
+
+    <select id="selectOtherTeacher" resultMap="TeacherBean" parameterType="string">
+        SELECT id AS teacherID
+        FROM basic_teacher
+        WHERE username != #{name}
+    </select>
+
+</mapper>

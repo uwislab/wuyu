@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.questionnaire.mapper.QPaperMapper">
+    
+    <resultMap type="QPaper" id="QPaperResult">
+        <result property="paperId"    column="paper_id"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="paperTitle"    column="paper_title"    />
+        <result property="description"    column="description"    />
+        <result property="startTime"    column="start_time"    />
+        <result property="endTime"    column="end_time"    />
+        <result property="paperStatus"    column="paper_status"    />
+        <result property="paperType"    column="paper_type"    />
+    </resultMap>
+
+    <sql id="selectQPaperVo">
+        select paper_id, create_by, paper_title, description, start_time, end_time, paper_status, paper_type from q_paper
+    </sql>
+
+    <select id="selectQPaperList" parameterType="QPaper" resultMap="QPaperResult">
+        <include refid="selectQPaperVo"/>
+        <where>  
+            <if test="paperTitle != null  and paperTitle != ''"> and paper_title like concat('%', #{paperTitle}, '%')</if>
+            <if test="description != null  and description != ''"> and description like concat('%', #{description}, '%')</if>
+            <if test="paperStatus != null  and paperStatus != ''"> and paper_status = #{paperStatus}</if>
+            <if test="paperType != null  and paperType != ''"> and paper_type = #{paperType}</if>
+        </where>
+        LIMIT #{pageSize} OFFSET #{pageNum}
+    </select>
+    
+    <select id="selectQPaperByPaperId" parameterType="Long" resultMap="QPaperResult">
+        <include refid="selectQPaperVo"/>
+        where paper_id = #{paperId}
+    </select>
+
+    <select id="selectCount" parameterType="QPaper" resultType="Integer">
+        select count(*) from q_paper
+        <where>
+            <if test="paperTitle != null  and paperTitle != ''"> and paper_title like concat('%', #{paperTitle}, '%')</if>
+            <if test="description != null  and description != ''"> and description like concat('%', #{description}, '%')</if>
+            <if test="paperStatus != null  and paperStatus != ''"> and paper_status = #{paperStatus}</if>
+            <if test="paperType != null  and paperType != ''"> and paper_type = #{paperType}</if>
+        </where>
+    </select>
+
+    <insert id="insertQPaper" parameterType="QPaper" useGeneratedKeys="true" keyProperty="paperId" keyColumn="paper_id">
+        insert into q_paper
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="createBy != null">create_by,</if>
+            <if test="paperTitle != null and paperTitle != ''">paper_title,</if>
+            <if test="description != null">description,</if>
+            <if test="startTime != null">start_time,</if>
+            <if test="endTime != null">end_time,</if>
+            <if test="paperStatus != null and paperStatus != ''">paper_status,</if>
+            <if test="paperType != null and paperType != ''">paper_type,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="createBy != null">#{createBy},</if>
+            <if test="paperTitle != null and paperTitle != ''">#{paperTitle},</if>
+            <if test="description != null">#{description},</if>
+            <if test="startTime != null">#{startTime},</if>
+            <if test="endTime != null">#{endTime},</if>
+            <if test="paperStatus != null and paperStatus != ''">#{paperStatus},</if>
+            <if test="paperType != null and paperType != ''">#{paperType},</if>
+         </trim>
+    </insert>
+
+    <update id="updateQPaper" parameterType="QPaper">
+        update q_paper
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="paperTitle != null and paperTitle != ''">paper_title = #{paperTitle},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="endTime != null">end_time = #{endTime},</if>
+            <if test="paperStatus != null and paperStatus != ''">paper_status = #{paperStatus},</if>
+            <if test="paperType != null and paperType != ''">paper_type = #{paperType},</if>
+        </trim>
+        where paper_id = #{paperId}
+    </update>
+
+    <delete id="deleteQPaperByPaperId" parameterType="Long">
+        delete from q_paper where paper_id = #{paperId}
+    </delete>
+
+    <delete id="deleteQPaperByPaperIds" parameterType="String">
+        delete from q_paper where paper_id in 
+        <foreach item="paperId" collection="array" open="(" separator="," close=")">
+            #{paperId}
+        </foreach>
+    </delete>
+
+    <select id="selectQuestId" parameterType="Long" resultType="Long" >
+        select quest_id from q_question where paper_id = #{paperId}
+    </select>
+</mapper>

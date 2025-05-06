@@ -1,0 +1,95 @@
+pipeline {
+  agent any
+  stages {
+    stage('检出') {
+      steps {
+        checkout([
+          $class: 'GitSCM',
+          branches: [[name: GIT_BUILD_REF]],
+          userRemoteConfigs: [[
+            url: GIT_REPO_URL,
+            credentialsId: CREDENTIALS_ID
+          ]]])
+        }
+      }
+
+      stage('Vue版本选择') {
+        steps {
+          sh 'rm -rf /usr/lib/node_modules/npm/'
+          dir('/root/.cache/downloads') {
+            sh 'wget -nc "https://coding-public-generic.pkg.coding.net/public/downloads/node-linux-x64.tar.xz?version=v16.13.0" -O node-v16.13.0-linux-x64.tar.xz | true'
+            sh 'tar -xf node-v16.13.0-linux-x64.tar.xz -C /usr --strip-components 1'
+          }
+
+          sh 'node -v'
+        }
+      }
+
+      stage('代码NPM编译') {
+        steps {
+          sh '''
+#npm下载依赖包
+npm install --legacy-peer-deps
+
+#npm编译前端文件
+npm run build:prod
+
+#查看当前路径
+pwd
+
+#查看dist文件夹内容
+ls ./dist
+'''
+        }
+      }
+
+      stage('将编译结果SCP上传服务器') {
+        steps {
+          script {
+            def remoteConfig = [:]
+            remoteConfig.name = "my-remote-server"
+            remoteConfig.host = "${REMOTE_HOST}"
+            remoteConfig.allowAnyHosts = true
+            // 使用 sftp 作为文件传输
+            remoteConfig.fileTransfer = "scp"
+
+            node {
+              withCredentials([sshUserPrivateKey(
+                credentialsId: "${REMOTE_CRED}",
+                keyFileVariable: "privateKeyFilePath"
+              )]) {
+
+                // SSH 登陆用户名
+                remoteConfig.user = "${REMOTE_USER_NAME}"
+                // SSH 私钥文件地址
+                remoteConfig.identityFile = privateKeyFilePath
+
+                stage("通过 SSH 执行命令") {
+                  // 将本地的文件复制到远端
+                  sshPut(
+                    remote: remoteConfig,
+                    // 本地文件或文件夹
+                    // 在某次jenkins执行流水线任务时，多个人同时运行了某一任务。随后，其工作空间就变成 xxx@2了，导致编写的脚本调用路径失效。
+                    from: "/root/codingci/tools/jenkins_home/workspace/"+"${JOB_NAME}"+"/dist",
+                    // 远端文件或文件夹
+                    into: "${REMOTE_DEST}"
+                  )
+                }
+              }
+            }
+          }
+
+        }
+      }
+
+      stage('修改nginx的static目录下的dist为wuyu') {
+        steps {
+          sh '''
+            cp -r -f /usr/local/nginx/static/wuyu/dist/* /usr/local/nginx/static/wuyu
+            rm -f -r /usr/local/nginx/static/wuyu/dist
+          '''
+        }
+      }
+
+    }
+  }

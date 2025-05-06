@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.management.mapper.TeaMapper">
+    <sql id="selectAllFields">
+        select id,
+               teacher_name,
+               gender,
+               phone_num,
+               position,
+               title,
+               role,
+               deleted
+        from basic_teacher
+    </sql>
+
+
+    <resultMap id="teaAllFieldsMap" type="com.fiveup.core.management.model.DTO.TeaDTO">
+        <id property="id" column="id"/>
+        <result property="teacherName" column="teacher_name"/>
+        <result property="gender" column="gender"/>
+        <result property="phoneNum" column="phone_num"/>
+        <result property="position" column="position"/>
+        <result property="title" column="title"/>
+        <result property="role" column="role"/>
+        <result property="deleted" column="deleted"/>
+    </resultMap>
+    <resultMap id="teaPageRespMap" type="com.fiveup.core.management.model.Resp.TeaPageResp">
+        <id property="teacherId" column="id"/>
+        <result property="teacherName" column="teacher_name"/>
+        <result property="gender" column="gender"/>
+        <result property="phoneNum" column="phone_num"/>
+        <result property="position" column="position"/>
+        <result property="title" column="title"/>
+        <result property="role" column="role"/>
+    </resultMap>
+
+
+    <select id="getTeacherById" resultMap="teaAllFieldsMap">
+        select id,teacher_name,gender,phone_num,position,title,role from basic_teacher where id  = #{teacherId} and deleted = 0
+    </select>
+
+
+    <select id="getTeacherSimpleInfo" resultMap="teaAllFieldsMap">
+        select id, teacher_name
+        from basic_teacher
+        where deleted = 0 and school_id = #{schoolId}
+    </select>
+
+    <!--basic_teacher-->
+    <select id="getTeaByCondition" resultMap="teaPageRespMap">
+        <include refid="selectAllFields"/>
+        <where>
+            <if test="teacherName!=null and teacherName!=''">
+                teacher_name = #{teacherName}
+            </if>
+            <if test="title!=null and title!=''">
+                and title = #{title}
+            </if>
+            <if test="position!=null and position!=''">
+                and position = #{position}
+            </if>
+            and deleted = 0 and school_id = #{schoolId}
+        </where>
+    </select>
+
+    <insert id="addOne" parameterType="com.fiveup.core.management.model.Req.TeaAddReq">
+        insert into basic_teacher
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                    teacher_name,
+                <if test="gender!=null">
+                    gender,
+                </if>
+                <if test="phoneNum!=null and phoneNum!=''">
+                    phone_num,
+                </if>
+                <if test="position!=null and position!=''">
+                    position,
+                </if>
+                <if test="title!=null and title!=''">
+                    title,
+                </if>
+                <if test="role!=null and role!=''">
+                    role,
+                </if>
+                <if test="schoolId!=null">
+                    school_id
+                </if>
+                <if test="username!=null">
+                    username
+                </if>
+                <if test="password!=null and password!=''">
+                    password
+                </if>
+            </trim>
+        values
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                    #{teacherName},
+                <if test="gender!=null">
+                    #{gender},
+                </if>
+                <if test="phoneNum!=null and phoneNum!=''">
+                    #{phoneNum},
+                </if>
+                <if test="position!=null and position!=''">
+                    #{position},
+                </if>
+                <if test="title!=null and title!=''">
+                    #{title},
+                </if>
+                <if test="role!=null and role!=''">
+                    #{role},
+                </if>
+                <if test="schoolId!=null">
+                    #{schoolId}
+                </if>
+                <if test="username!=null">
+                    #{username}
+                </if>
+                <if test="password!=null">
+                    #{password}
+                </if>
+            </trim>
+    </insert>
+
+    <update id="edit" parameterType="com.fiveup.core.management.model.Req.TeaEditReq">
+        update basic_teacher
+        <set>
+            <if test="teacherName!=null and teacherName !=''">
+                teacher_name = #{teacherName},
+            </if>
+            <if test="gender!=null">
+                gender = #{gender},
+            </if>
+            <if test="phoneNum!=null and phoneNum !=''">
+                phone_num = #{phoneNum},
+            </if>
+            <if test="position!=null and position !=''">
+                position = #{position},
+            </if>
+            <if test="title!=null and title !=''">
+                title = #{title},
+            </if>
+            <if test="role!=null and role !=''">
+                role = #{role},
+            </if>
+        </set>
+        where id = #{teacherId} and deleted = 0
+    </update>
+
+    <update id="softlyDeleteOne">
+        update basic_teacher
+        set deleted = 1
+        where id = #{teacherId}
+    </update>
+
+    <delete id="deleteBatch" parameterType="String">
+        delete from basic_teacher where id in
+        <foreach collection="ids" open="(" close=")" separator="," item="id">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.cultivation.mapper.GuidanceMapper">
+    <select id="getAll"
+            parameterType="com.fiveup.core.cultivation.entity.Guidance"
+            resultType="com.fiveup.core.cultivation.entity.Guidance" >
+        select cgd.*, btc.teacher_name
+        from ctv_guidance cgd
+        left join basic_teacher btc on btc.id = cgd.tid
+        where cgd.is_deleted = false
+            <if test="tid != null">
+                and cgd.tid = #{tid}
+            </if>
+            <if test="fileName != null and fileName !=''">
+                and cgd.file_name like concat('%', #{fileName}, '%')
+            </if>
+            <if test="teacherName != null and teacherName !=''">
+                and btc.teacher_name like concat('%', #{teacherName}, '%')
+            </if>
+    </select>
+</mapper>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.cultivation.mapper.GoalMapper">
+    <select id="getById"
+            resultType="com.fiveup.core.cultivation.entity.Goal"
+            parameterType="integer">
+        select cgo.*, btc.teacher_name, btc_r.teacher_name as reviewerName, cgd.file_name, cgd.file_location
+        from ctv_goal cgo
+            left join basic_teacher btc on btc.id = cgo.tid
+            left join basic_teacher btc_r on btc_r.id = cgo.reviewer_tid
+            left join ctv_guidance cgd on cgd.id = cgo.gid
+        where cgo.id = #{id}
+    </select>
+    <select id="getList"
+            resultType="com.fiveup.core.cultivation.entity.Goal"
+            parameterType="com.fiveup.core.cultivation.entity.Goal">
+        select cgo.*, btc.teacher_name, btc_r.teacher_name as reviewerName, cgd.file_name, cgd.file_location
+        from ctv_goal cgo
+            left join basic_teacher btc on btc.id = cgo.tid
+            left join basic_teacher btc_r on btc_r.id = cgo.reviewer_tid
+            left join ctv_guidance cgd on cgd.id = cgo.gid
+        where 1=1
+            <if test="tid != null">
+               and cgo.tid = #{tid}
+            </if>
+            <if test="gid != null">
+               and cgo.gid = #{gid}
+            </if>
+            <if test="reviewerTid !=null">
+                and cgo.reviewer_tid = #{reviewerTid}
+            </if>
+            <if test="title != null and title !=''">
+                and cgo.title like concat('%', #{title}, '%')
+            </if>
+            <if test="editorTids != null and editorTids !=''">
+                and cgo.editor_tids like concat('%', #{editorTids}, '%')
+            </if>
+            <if test="state != null">
+                and cgo.state = #{state}
+            </if>
+            <if test='stateType == 1'>
+                and (cgo.state = 3 or cgo.state = 4 or  cgo.state = 5 or  cgo.state = 6 or  cgo.state = 7 or  cgo.state = 8)
+            </if>
+    </select>
+    <select id="getListByTn"
+            resultType="com.fiveup.core.cultivation.entity.Goal"
+            parameterType="com.fiveup.core.cultivation.entity.Goal">
+        select cgo.*, btc.teacher_name, btc_r.teacher_name as reviewerName, cgd.file_name, cgd.file_location
+        from ctv_goal cgo
+        left join basic_teacher btc on btc.id = cgo.tid
+        left join basic_teacher btc_r on btc_r.id = cgo.reviewer_tid
+        left join ctv_guidance cgd on cgd.id = cgo.gid
+        where cgo.tid= #{tid}
+        <if test="state != null">
+            and cgo.state=#{state}
+        </if>
+    </select>
+    <select id="getAllByEditorTids"
+            resultType="com.fiveup.core.cultivation.entity.Goal">
+        select cgo.*, btc.teacher_name, btc_r.teacher_name as reviewerName, cgd.file_name, cgd.file_location
+        from ctv_goal cgo
+        left join basic_teacher btc on btc.id = cgo.tid
+        left join basic_teacher btc_r on btc_r.id = cgo.reviewer_tid
+        left join ctv_guidance cgd on cgd.id = cgo.gid
+        where
+        editor_tids like concat('%',#{editorTids},'%')
+        <if test="state != null">
+            and cgo.state=#{state}
+        </if>
+    </select>
+
+    <select id="selectIndicator" resultType="com.fiveup.core.cultivation.entity.Indicator">
+        select * from indicator where ctv_goal_id = #{id}
+    </select>
+
+    <update id="updateIndicator">
+        update indicator
+        <set>
+            <if test="max1 != null">
+                max1 = #{max1},
+            </if>
+            <if test="max2 != null">
+                max2 = #{max2},
+            </if>
+            <if test="max3 != null">
+                max3 = #{max3},
+            </if>
+            <if test="max4 != null">
+                max4 = #{max4},
+            </if>
+            <if test="min1 != null">
+                min1 = #{min1},
+            </if>
+            <if test="min2 != null">
+                min2 = #{min2},
+            </if>
+            <if test="min3 != null">
+                min3 = #{min3},
+            </if>
+            <if test="min4 != null">
+                min4 = #{min4},
+            </if>
+        </set>
+        where ctv_goal_id = #{ctvGoalId}
+    </update>
+
+</mapper>

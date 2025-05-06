@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.management.mapper.SchoolMapper">
+    <sql id="selectAllFields">
+        select id, school_name, address
+        from basic_school
+    </sql>
+
+    <resultMap id="schoolAllFieldsMap" type="com.fiveup.core.management.model.School">
+        <id property="id" column="id"/>
+        <result property="schoolName" column="school_name"/>
+        <result property="address" column="address"/>
+
+    </resultMap>
+
+
+    <select id="getSchoolById" resultMap="schoolAllFieldsMap">
+        <include refid="selectAllFields"/>
+        where id = #{schoolId}
+    </select>
+
+
+
+
+
+
+
+</mapper>

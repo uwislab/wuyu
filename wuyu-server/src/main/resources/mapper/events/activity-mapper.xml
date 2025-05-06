@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.events.mapper.ActMapper">
+    <sql id="selectSimpleFields">
+        select id, name, start_time, activity_type,activity_aspect, state, score
+        from fu_activity
+    </sql>
+
+    <sql id="selectDetailFields">
+        select id,
+               name,
+               content,
+               teacher_id,
+               class_id,
+               place,
+               activity_type,
+               activity_aspect,
+               state,
+               score,
+               comment,
+               grade
+        from fu_activity
+    </sql>
+
+    <resultMap id="simpleFieldsMap" type="com.fiveup.core.events.model.response.ActivityPageResp">
+        <id property="activityId" column="id"></id>
+        <result property="activityName" column="name"></result>
+        <result property="startTimeDate" column="start_time"></result>
+        <result property="activityType" column="activity_type"></result>
+        <result property="activityAspect" column="activity_aspect"></result>
+        <result property="activityState" column="state"></result>
+        <result property="activityScore" column="score"></result>
+        <result property="teacherComment" column="comment"></result>
+    </resultMap>
+
+    <resultMap id="fieldsMap" type="com.fiveup.core.events.model.response.ActivityDetailResp">
+        <id property="activityId" column="id"></id>
+        <result property="activityName" column="name"></result>
+        <result property="activityContent" column="content"></result>
+        <result property="teacherId" column="teacher_id"></result>
+        <result property="activityPlace" column="place"></result>
+        <result property="activityState" column="state"></result>
+        <result property="activityType" column="activity_type"></result>
+        <result property="activityScore" column="score"></result>
+        <result property="teacherComment" column="comment"></result>
+        <result property="grade" column="grade"/>
+    </resultMap>
+
+    <insert id="insertOne" parameterType="com.fiveup.core.events.model.request.ActivityAddReq" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into fu_activity(name, content, teacher_id, place, activity_aspect, class_id, start_time, grade, activity_type,
+        wearingLimit, withParent,  activityFee, shouldCarryStuff,gameContent)
+        values(
+               #{activityName},#{activityContent},#{teacherId},#{activityPlace},#{activityAspect}, #{classId},
+               #{startTimeDate},#{grade},#{activityType},#{wearingLimit},#{withParent},#{activityFee},#{shouldCarryStuff},
+               #{gameContent}
+        )
+    </insert>
+
+    <!--检索所有的活动信息-->
+    <select id="getActivitiesByDynamicCondition" resultMap="simpleFieldsMap">
+        select distinct a.id, a.name, a.start_time, a.activity_type, a.activity_aspect, a.state, a.score, a.comment
+        from fu_activity a
+        <where>
+        	<if test="activityName !=null and activityName!='' ">
+                a.name = #{activityName}
+            </if>
+            <if test="activityState != null">
+                and a.state = #{activityState}
+            </if>
+            <if test="activityType !=null and activityType!='' ">
+                and a.activity_type = #{activityType}
+            </if>
+            <if test="activityAspect !=null and activityAspect!='' ">
+                and a.activity_aspect = #{activityAspect}
+            </if>
+            <if test="grade != null and grade!='' ">
+                and (a.grade = #{grade})
+            </if>
+            <if test="classIdList != null and classIdList.size()!=0">
+                and <foreach collection="classIdList" item="classId" separator="," open="a.class_id in (" close=")" index="i">
+                    #{classId}
+                </foreach>
+            </if>
+            and a.deleted = 0
+        </where>
+    </select>
+
+    <select id="getActivityDetail" resultMap="fieldsMap">
+        select distinct a.id, a.name, a.start_time, a.activity_type, a.activity_aspect, a.state, a.score
+        from fu_activity a
+        <include refid="selectDetailFields"/>
+        where id = #{activityId} and deleted = 0
+    </select>
+
+    <update id="edit">
+        update fu_activity
+        <set>
+            <if test="activityName!=null and activityName!='' ">
+                name = #{activityName},
+            </if>
+            <if test="startTimeDate!=null">
+                start_time = #{startTimeDate},
+            </if>
+            <if test="teacherId!=null ">
+                teacher_id = #{teacherId},
+            </if>
+            <if test="activityState!=null">
+                state = #{activityState},
+            </if>
+            <if test="activityScore!=null">
+                score = #{activityScore},
+            </if>
+            <if test="activityComment!=null and activityComment!=''">
+                comment = #{activityComment}
+            </if>
+        </set>
+        where id = #{activityId} and deleted = 0
+    </update>
+
+    <update id="deleteOne">
+        update fu_activity
+        set deleted = 1
+        where id = #{activityId}
+    </update>
+    
+    <update id="updateScore">
+        update fu_activity
+        set score = #{averageScore}
+        where id = #{actId}
+    </update>
+
+    <select id="getEventMonthTotalNum" resultType="int">
+        select count(*)
+        from fu_activity
+        where start_time between #{start} and #{end}
+    </select>
+    <select id="getToBeginEventNum" resultType="int">
+        select count(*)
+        from fu_activity
+        where state = 0
+          and deleted = 0
+    </select>
+    <select id="getFinishedEventNum" resultType="int">
+        select count(*)
+        from fu_activity
+        where state != 0 and deleted = 0
+    </select>
+    <select id="getAverageEventScore" resultType="int">
+        select avg(score)
+        from fu_activity
+        where deleted = 0
+    </select>
+    <resultMap id="cardMap" type="com.fiveup.core.events.model.Card">
+        <id property="activityId" column="id"/>
+        <result property="activityContent" column="content"/>
+        <result property="startTime" column="start_time"/>
+    </resultMap>
+
+    <select id="getCardList" resultMap="cardMap">
+        select id, content, start_time
+        from fu_activity
+        where deleted = 0
+    </select>
+    <select id="getActivityListByGrade" resultType="com.fiveup.core.events.model.request.ActivityAddReq">
+        select distinct a.id, a.name, a.start_time, a.activity_type, a.activity_aspect, a.state, a.score
+        from fu_activity a
+        <where>
+        	<if test="actId !=null and actId!='' ">
+                a.id = #{actId}
+            </if>
+            <if test="grade != null and grade!='' ">
+                and (a.grade = #{grade})
+            </if>
+            and a.deleted = 0
+        </where>
+    </select>
+</mapper>

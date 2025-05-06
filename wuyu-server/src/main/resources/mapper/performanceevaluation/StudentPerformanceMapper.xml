@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.performanceevaluation.mapper.StudentPerformanceMapper">
+    <!-- 一个mapper文件对应项目中的一个mapper接口，接口内负责定义一些抽象方法，抽象方法的方法名称就对应
+    配置文件总的一个SQL语句中，mybatis是通过namespace找到mapper接口 -->
+
+    <!-- 一个mapper文件对应数据库表的所有SQL操作，同时项目中bean也有一个和表对应的实体类，所以这个实体
+    类必然和这个文件有联系，mybatis就是通过springboot的配置找到mapper文件，通过解析配置文件，找到数据库表
+    对应的实体类，因此你的数据库表才能和你的实体类产生联系 即resultMap（数据库查询到数据之后对应的封装格式）
+    resultMap标签有两个必须要填写的数学，id->表示的是类名的简称 type->表示关联的实体类，标签内部就是映射
+    实体类属性和-->
+    <resultMap id="StudentPerformanceBean" type="com.fiveup.core.performanceevaluation.bean.StudentPerformance">
+        <!-- id子标签代表数据库表的主键字段 -->
+        <id column="id" jdbcType="NUMERIC" property="id"/>
+        <!-- result子标签表示非主键字段的映射关系 -->
+        <result column="student_name" jdbcType="VARCHAR" property="name"/>
+        <result column="morality_score" jdbcType="NUMERIC" property="virtue"/>
+        <result column="intelligence_score" jdbcType="NUMERIC" property="intelligence"/>
+        <result column="physical_score" jdbcType="NUMERIC" property="sports"/>
+        <result column="aesthetic_score" jdbcType="NUMERIC" property="art"/>
+        <result column="labour_score" jdbcType="NUMERIC" property="labor"/>
+        <result column="remark" jdbcType="VARCHAR" property="remark"/>
+        <result column="tid" jdbcType="NUMERIC" property="tid"/>
+        <result column="student_num" jdbcType="NUMERIC"  property="sid"/>
+    </resultMap>
+
+    <resultMap id="StudentPerformanceVOBean" type="com.fiveup.core.performanceevaluation.vo.StudentPerformanceVO">
+        <!-- id子标签代表数据库表的主键字段 -->
+        <id column="id" jdbcType="NUMERIC" property="id"/>
+        <!-- result子标签表示非主键字段的映射关系 -->
+        <result column="student_name" jdbcType="VARCHAR" property="name"/>
+        <result column="morality_score" jdbcType="NUMERIC" property="virtue"/>
+        <result column="intelligence_score" jdbcType="NUMERIC" property="intelligence"/>
+        <result column="physical_score" jdbcType="NUMERIC" property="sports"/>
+        <result column="aesthetic_score" jdbcType="NUMERIC" property="art"/>
+        <result column="labour_score" jdbcType="NUMERIC" property="labor"/>
+        <result column="remark" jdbcType="VARCHAR" property="remark"/>
+        <result column="student_num" jdbcType="NUMERIC"  property="sid"/>
+        <association property="teacher" column="tid" select="com.fiveup.core.performanceevaluation.mapper.TeacherMapper.selectByTId"/>
+    </resultMap>
+
+<!--    <resultMap id="AverageBean" type="com.fiveup.core.performanceevaluation.vo.Average">-->
+<!--        <result column="virtue_avg" jdbcType="DECIMAL" property="virtue"/>-->
+<!--        <result column="intelligence_avg" jdbcType="DECIMAL" property="intelligence"/>-->
+<!--        <result column="sports_avg" jdbcType="DECIMAL" property="sports"/>-->
+<!--        <result column="art_avg" jdbcType="DECIMAL" property="art"/>-->
+<!--        <result column="labor_avg" jdbcType="DECIMAL" property="labor"/>-->
+<!--    </resultMap>-->
+
+<!--    <resultMap id="AdvantageSubjectsBean" type="com.fiveup.core.performanceevaluation.vo.AdvantageSubjects">-->
+<!--        <result column="virtue_as" jdbcType="NUMERIC" property="virtue"/>-->
+<!--        <result column="intelligence_as" jdbcType="NUMERIC" property="intelligence"/>-->
+<!--        <result column="sports_as" jdbcType="NUMERIC" property="sports"/>-->
+<!--        <result column="art_as" jdbcType="NUMERIC" property="art"/>-->
+<!--        <result column="labor_as" jdbcType="NUMERIC" property="labor"/>-->
+<!--        <result column="total_num" jdbcType="NUMERIC" property="totalNum"/>-->
+<!--    </resultMap>-->
+
+    <!-- 声明数据库字段 -->
+    <sql id="StudentPerformance_field">
+        id,student_name,morality_score,intelligence_score,physical_score,aesthetic_score,labour_score,remark,tid,student_num,isenter,isreview
+    </sql>
+
+    <!-- 实体类属性 -->
+    <sql id="StudentPerformance_insert">
+        #{id},#{name},#{virtue},#{intelligence},#{sports},#{art},#{labor},#{remark},#{tid},#{sid},0,0
+    </sql>
+
+    <!-- 更新时条件-->
+    <sql id="StudentPerformance_update">
+        <if test="name != null">
+            student_name = #{name},
+        </if>
+        <if test="virtue != null">
+            morality_score = #{virtue},
+        </if>
+        <if test="intelligence != null">
+            intelligence_score = #{intelligence},
+        </if>
+        <if test="sports != null">
+            physical_score = #{sports},
+        </if>
+        <if test="art != null">
+            aesthetic_score = #{art},
+        </if>
+        <if test="labor != null">
+            labour_score = #{labor},
+        </if>
+        <if test="remark != null">
+            remark = #{remark},
+        </if>
+        <if test="tid != null">
+            tid = #{tid},
+        </if>
+        <if test="sid != null">
+            student_num = #{sid},
+        </if>
+    </sql>
+
+    <!-- 查询时条件 -->
+<!--    <sql id="StudentPerformance_where">-->
+<!--        <if test="name != null">-->
+<!--            and student_name = #{name}-->
+<!--        </if>-->
+<!--        <if test="virtue != null">-->
+<!--            and virtue = #{virtue}-->
+<!--        </if>-->
+<!--        <if test="intelligence != null">-->
+<!--            and intelligence = #{intelligence}-->
+<!--        </if>-->
+<!--        <if test="sports != null">-->
+<!--            and sports = #{sports}-->
+<!--        </if>-->
+<!--        <if test="art != null">-->
+<!--            and art = #{art}-->
+<!--        </if>-->
+<!--        <if test="labor != null">-->
+<!--            and labor = #{labor}-->
+<!--        </if>-->
+<!--        <if test="remark != null">-->
+<!--            and remark = #{remark}-->
+<!--        </if>-->
+<!--        <if test="tid != null">-->
+<!--            and tid = #{tid}-->
+<!--        </if>-->
+<!--        <if test="sid != null">-->
+<!--            and sid = #{sid}-->
+<!--        </if>-->
+<!--    </sql>-->
+
+    <insert id="insert" parameterType="com.fiveup.core.performanceevaluation.bean.StudentPerformance" useGeneratedKeys="true" keyProperty="id">
+        insert into re_student(
+        <include refid="StudentPerformance_field"/>
+        ) values(
+        <include refid="StudentPerformance_insert"/>
+        )
+    </insert>
+
+
+<!--    <delete id="deleteById" parameterType="java.lang.Integer">-->
+<!--        delete from re_student where id = #{id}-->
+<!--    </delete>-->
+
+<!--    <update id="updateById" parameterType="com.fiveup.core.performanceevaluation.bean.StudentPerformance">-->
+<!--        UPDATE re_student-->
+<!--        <set>-->
+<!--            <include refid="StudentPerformance_update"></include>-->
+<!--        </set>-->
+<!--        WHERE id = #{id}-->
+<!--    </update>-->
+
+<!--    <select id="selectAll" resultMap="StudentPerformanceVOBean">-->
+<!--        SELECT <include refid="StudentPerformance_field"></include>-->
+<!--        FROM re_student-->
+<!--        GROUP BY id-->
+<!--    </select>-->
+    
+<!--    <select id="selectByTId" resultMap="StudentPerformanceVOBean" parameterType="java.lang.Integer">-->
+<!--        SELECT <include refid="StudentPerformance_field"></include>-->
+<!--        FROM re_student-->
+<!--        WHERE tid = #{tid}-->
+<!--    </select>-->
+
+<!--    <select id="selectPagination" resultMap="StudentPerformanceVOBean" parameterType="java.lang.Integer">-->
+<!--        SELECT <include refid="StudentPerformance_field"></include>-->
+<!--        FROM re_student-->
+<!--        LIMIT #{start}, #{pageSize}-->
+<!--    </select>-->
+
+<!--    <select id="selectCountBySql" resultType="integer">-->
+<!--        ${sql}-->
+<!--    </select>-->
+
+<!--    <select id="selectBySid" resultMap="StudentPerformanceVOBean" parameterType="java.lang.Integer">-->
+<!--        SELECT <include refid="StudentPerformance_field"></include>-->
+<!--        FROM re_student-->
+<!--        WHERE sid = #{sid}-->
+<!--    </select>-->
+
+<!--    <select id="selectById" resultMap="StudentPerformanceVOBean" parameterType="java.lang.Integer">-->
+<!--        SELECT <include refid="StudentPerformance_field"></include>-->
+<!--        FROM re_student-->
+<!--        WHERE id = #{id}-->
+<!--    </select>-->
+
+<!--    <select id="selectAverageByTid" resultMap="AverageBean" parameterType="java.lang.Integer">-->
+<!--        SELECT avg(virtue) as virtue_avg, avg(intelligence) as intelligence_avg-->
+<!--             , avg(sports) as sports_avg, avg(art) as art_avg, avg(labor) as labor_avg-->
+<!--        FROM re_student-->
+<!--        WHERE tid = #{tid}-->
+<!--    </select>-->
+
+<!--    <select id="selectSubjectScoreSum" resultType="java.lang.Integer" parameterType="java.lang.Integer">-->
+<!--        SELECT (virtue + intelligence + sports + art + labor)-->
+<!--        FROM re_student-->
+<!--        WHERE tid = #{tid} and sid != #{sid}-->
+<!--    </select>-->
+</mapper>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.fuScale.mapper.FuScaleMapper">
+    <insert id="addExecution">
+        insert into fu_execution (grade_id,scale_id) values (#{gradeId},#{scaleId})
+    </insert>
+    <update id="updateScale">
+        update fu_scale_content
+        <set>
+            <if test="title != null and title != ''">title = #{title},</if>
+            <if test="grade != null and grade != ''">grade = #{grade},</if>
+            <if test="domain != null and domain != ''">domain = #{domain},</if>
+        </set>
+        where id = #{scaleId}
+    </update>
+
+    <update id="updateItemByPre">
+        update `fu_item_content`
+        set pre_item = #{scaleContent.itemContent}
+        where pre_item_id = #{scaleContent.itemId}
+          and scale_id = #{scaleContent.scaleId}
+    </update>
+
+    <delete id="deleteItem">
+        delete from fu_item_content where id in
+        <foreach collection="set" open="(" close=")" item="item" separator=",">
+            #{item}
+        </foreach>
+    </delete>
+    <delete id="delExecution">
+        delete from fu_execution where exec_id =#{execId}
+<!--        <foreach collection="set" open="(" close=")" item="item" separator=",">-->
+<!--            #{item}-->
+<!--        </foreach>-->
+    </delete>
+
+    <select id="getScaleByTitleUserDate" resultType="com.fiveup.core.fuScale.model.ScaleInfo">
+        select *,id scale_id from fu_scale_content
+        <where>
+            creator_id=#{creatorId}
+            <if test="title!=null or title!=''">and title like concat('%',#{title},'%')</if>
+            <if test="createDate != null or createDate = ''">and create_date like concat('%',#{createDate},'%')</if>
+            <if test="state != 6">and state=#{state}</if>
+        </where>
+    </select>
+    <select id="getExecution" resultType="com.fiveup.core.fuScale.model.Execution" parameterType="com.fiveup.core.fuScale.model.Execution">
+        select * from fu_execution
+        <where>
+            <if test="execId !=null">and exec_id = #{execId}</if>
+            <if test="gradeId !=null">and grade_id = #{gradeId}</if>
+            <if test="scaleId !=null">and scale_id = #{scaleId}</if>
+        </where>
+    </select>
+
+    <select id="getScalesByCondition" resultType="com.fiveup.core.fuScale.model.ScaleInfo">
+        SELECT
+        sc.*,
+        sc.id AS scale_id,
+        bt.teacher_name AS creatorName,
+        (SELECT COUNT(*) FROM fu_item_content fic WHERE fic.scale_id = sc.id) AS hasChildren
+        FROM fu_scale_content sc
+        LEFT JOIN basic_teacher bt ON sc.creator_id = bt.id
+        <where>
+            <if test="title != null and title != ''">
+                AND sc.title LIKE CONCAT('%', #{title}, '%')
+            </if>
+            <if test="creatorName != null and creatorName != ''">
+                AND bt.teacher_name LIKE CONCAT('%', #{creatorName}, '%')
+            </if>
+            <if test="state != null">
+                AND sc.state = #{state}
+            </if>
+            <if test="createDate != null and createDate != ''">
+                AND sc.create_date = #{createDate}
+            </if>
+        </where>
+    </select>
+    <select id="pageQuery" resultType="com.fiveup.core.fuScale.model.ScaleInfo">
+        select * from fu_scale_content
+        <where>
+            <if test="creatorId != null">and creator_id = #{creatorId}</if>
+            <if test="title != null and title != ''">and title like concat('%',#{title},'%')</if>
+            <if test="createDate != null and createDate != ''">and create_date like concat('%',#{createDate},'%')</if>
+            <if test="state != null">and state = #{state}</if>
+        </where>
+        order by create_date desc
+
+    </select>
+</mapper>

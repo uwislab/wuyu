@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.performanceevaluation.mapper.SubjectScoreWeightMapper">
+    <!-- 一个mapper文件对应项目中的一个mapper接口，接口内负责定义一些抽象方法，抽象方法的方法名称就对应
+    配置文件总的一个SQL语句中，mybatis是通过namespace找到mapper接口 -->
+
+    <!-- 一个mapper文件对应数据库表的所有SQL操作，同时项目中bean也有一个和表对应的实体类，所以这个实体
+    类必然和这个文件有联系，mybatis就是通过springboot的配置找到mapper文件，通过解析配置文件，找到数据库表
+    对应的实体类，因此你的数据库表才能和你的实体类产生联系 即resultMap（数据库查询到数据之后对应的封装格式）
+    resultMap标签有两个必须要填写的数学，id->表示的是类名的简称 type->表示关联的实体类，标签内部就是映射
+    实体类属性和-->
+    <resultMap id="SubjectScoreWeightBean" type="com.fiveup.core.performanceevaluation.bean.SubjectScoreWeight">
+        <!-- id子标签代表数据库表的主键字段 -->
+        <id column="id" jdbcType="NUMERIC" property="id"/>
+        <!-- result子标签表示非主键字段的映射关系 -->
+        <result column="virtue" jdbcType="DECIMAL" property="virtueWeight"/>
+        <result column="intelligence" jdbcType="DECIMAL" property="intelligenceWeight"/>
+        <result column="sports" jdbcType="DECIMAL" property="sportsWeight"/>
+        <result column="art" jdbcType="DECIMAL" property="artWeight"/>
+        <result column="labor" jdbcType="DECIMAL" property="laborWeight"/>
+        <result column="tid" jdbcType="NUMERIC" property="tid"/>
+    </resultMap>
+
+    <resultMap id="SubjectScoreWeightVOBean" type="com.fiveup.core.performanceevaluation.vo.SubjectScoreWeightVO">
+        <!-- id子标签代表数据库表的主键字段 -->
+        <id column="id" jdbcType="NUMERIC" property="id"/>
+        <!-- result子标签表示非主键字段的映射关系 -->
+        <result column="virtue" jdbcType="DECIMAL" property="virtueWeight"/>
+        <result column="intelligence" jdbcType="DECIMAL" property="intelligenceWeight"/>
+        <result column="sports" jdbcType="DECIMAL" property="sportsWeight"/>
+        <result column="art" jdbcType="DECIMAL" property="artWeight"/>
+        <result column="labor" jdbcType="DECIMAL" property="laborWeight"/>
+        <association property="teacher" column="tid" select="com.fiveup.core.performanceevaluation.mapper.TeacherMapper.selectByTId"/>
+    </resultMap>
+
+    <!-- 声明数据库字段 -->
+    <sql id="SubjectScoreWeight_field">
+        id,virtue,intelligence,sports,art,labor,tid
+    </sql>
+
+    <!-- 实体类属性 -->
+    <sql id="SubjectScoreWeight_insert">
+        #{id},#{virtueWeight},#{intelligenceWeight},#{sportsWeight},#{artWeight},#{laborWeight},#{tid}
+    </sql>
+
+    <!-- 更新时条件-->
+    <sql id="SubjectScoreWeight_update">
+        <if test="virtueWeight != null">
+            virtue = #{virtueWeight},
+        </if>
+        <if test="intelligenceWeight != null">
+            intelligence = #{intelligenceWeight},
+        </if>
+        <if test="sportsWeight != null">
+            sports = #{sportsWeight},
+        </if>
+        <if test="artWeight != null">
+            art = #{artWeight},
+        </if>
+        <if test="laborWeight != null">
+            labor = #{laborWeight},
+        </if>
+        <if test="tid != null">
+            tid = #{tid},
+        </if>
+    </sql>
+
+    <!-- 查询时条件 -->
+    <sql id="SubjectScoreWeight_where">
+        <if test="virtueWeight != null">
+            and virtue = #{virtueWeight}
+        </if>
+        <if test="intelligenceWeight != null">
+            and intelligence = #{intelligenceWeight}
+        </if>
+        <if test="sportsWeight != null">
+            and sports = #{sportsWeight}
+        </if>
+        <if test="artWeight != null">
+            and art = #{artWeight}
+        </if>
+        <if test="laborWeight != null">
+            and labor = #{laborWeight}
+        </if>
+        <if test="tid != null">
+            and tid = #{tid}
+        </if>
+    </sql>
+
+    <insert id="insert" parameterType="com.fiveup.core.performanceevaluation.bean.SubjectScoreWeight" useGeneratedKeys="true" keyProperty="id">
+        insert into subject_score_weight(
+        <include refid="SubjectScoreWeight_field"/>
+        ) values(
+        <include refid="SubjectScoreWeight_insert"/>
+        )
+    </insert>
+
+
+    <delete id="deleteById" parameterType="java.lang.Integer">
+        delete from subject_score_weight where id = #{id}
+    </delete>
+
+    <update id="updateById" parameterType="com.fiveup.core.performanceevaluation.bean.SubjectScoreWeight">
+        UPDATE subject_score_weight
+        <set>
+            <include refid="SubjectScoreWeight_update"></include>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectAll" resultMap="SubjectScoreWeightVOBean">
+        SELECT <include refid="SubjectScoreWeight_field"></include>
+        FROM subject_score_weight
+    </select>
+    
+    <select id="selectByTId" resultMap="SubjectScoreWeightVOBean" parameterType="java.lang.Integer">
+        SELECT <include refid="SubjectScoreWeight_field"></include>
+        FROM subject_score_weight
+        WHERE tid = #{tid}
+    </select>
+
+    <select id="selectCountBySql" resultType="integer">
+        ${sql}
+    </select>
+
+    <select id="selectPagination" resultMap="SubjectScoreWeightVOBean" parameterType="java.lang.Integer">
+        SELECT <include refid="SubjectScoreWeight_field"></include>
+        FROM subject_score_weight
+        LIMIT #{start}, #{pageSize}
+    </select>
+
+    <select id="selectById" resultMap="SubjectScoreWeightVOBean" parameterType="java.lang.Integer">
+        SELECT <include refid="SubjectScoreWeight_field"></include>
+        FROM subject_score_weight
+        WHERE id = #{id}
+    </select>
+
+</mapper>

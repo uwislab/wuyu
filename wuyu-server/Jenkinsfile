@@ -1,0 +1,85 @@
+pipeline {
+  agent any
+  stages {
+    stage('从Git检出源代码...') {
+      steps {
+        checkout([
+          $class: 'GitSCM',
+          branches: [[name: GIT_BUILD_REF]],
+          userRemoteConfigs: [[
+            url: GIT_REPO_URL,
+            credentialsId: CREDENTIALS_ID
+          ]]])
+        }
+      }
+
+      stage('源代码编译，打包...') {
+        steps {
+          sh '''
+# 执行mvn打包
+# 如果使用mvn package，会提示找不到mvn命令，使用下面的绝对路径就可以使用了。
+echo \'当前路径是：\'
+pwd 
+/usr/local/maven-3.8.2/bin/mvn package
+echo "${WORKSPACE}"
+echo "${JAR_NAME}"
+echo "${WORKSPACE}/target/${JAR_NAME}"
+echo "${NODE_NAME}"
+echo "${JOB_NAME}"
+echo "${EXECUTOR_NUMBER}"
+'''
+        }
+      }
+
+      stage('将编译生成的jar文件上传服务器，并启动运行...') {
+        steps {
+          script {
+            def remoteConfig = [:]
+            remoteConfig.name = "my-remote-server"
+            remoteConfig.host = "${REMOTE_HOST}"
+            remoteConfig.allowAnyHosts = true
+            // 使用 sftp 作为文件传输
+            remoteConfig.fileTransfer = "scp"
+
+            node {
+              withCredentials([sshUserPrivateKey(
+                credentialsId: "${REMOTE_CRED}",
+                keyFileVariable: "privateKeyFilePath"
+              )]) {
+
+                // SSH 登陆用户名
+                remoteConfig.user = "${REMOTE_USER_NAME}"
+                // SSH 私钥文件地址
+                remoteConfig.identityFile = privateKeyFilePath
+
+                stage("通过sshPut拷贝文件到服务器") {
+                  // 将本地的文件复制到远端
+                  sshPut(
+                    remote: remoteConfig,
+                    // 下面的路径是编译生成的jar文件的路径+名字。
+                    // 在某次jenkins执行流水线任务时，多个人同时运行了某一任务。随后，其工作空间就变成 xxx@2了，导致编写的脚本调用路径失效。
+                    from: "/root/codingci/tools/jenkins_home/workspace/"+"${JOB_NAME}"+"/target/"+"${JAR_NAME}",
+                    // 远端文件或文件夹
+                    into: "${REMOTE_DEST}"
+                  )
+                }
+                stage("通过sshCommand执行启动jar服务") {
+                  //远程执行shell脚本 start-jar.sh
+                  //脚本功能：关闭服务器上jar服务，运行scp上传jar包
+                  sshCommand(
+                    remote: remoteConfig,
+                    //停止远程服务器jar服务
+                    command: "sh " + "${REMOTE_SHELL}" +"/"+"${SHELL_NAME}",
+                    sudo: true,
+                  )
+
+                }
+              }
+            }
+          }
+
+        }
+      }
+
+    }
+  }

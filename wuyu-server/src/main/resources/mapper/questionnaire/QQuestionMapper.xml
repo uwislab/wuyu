@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.questionnaire.mapper.QQuestionMapper">
+    
+    <resultMap type="QQuestion" id="QQuestionResult">
+        <result property="questId"    column="quest_id"    />
+        <result property="paperId"    column="paper_id"    />
+        <result property="questType"    column="quest_type"    />
+        <result property="questTitle"    column="quest_title"    />
+        <collection  property="qOptionsList"   javaType="java.util.List"        resultMap="OptResult" />
+    </resultMap>
+
+    <resultMap id="OptResult" type="QOptions">
+        <id     property="optId"       column="opt_id"        />
+        <result property="questId"     column="quest_id"      />
+        <result property="optSeque"      column="opt_seque"       />
+        <result property="optContent"     column="opt_content"      />
+        <result property="answerCount"     column="answerCount"      />
+    </resultMap>
+
+    <sql id="selectQQuestionVo">
+        select q.quest_id, q.paper_id, q.quest_type, q.quest_title,
+               o.*
+        from q_question q
+        left join q_options o on q.quest_id = o.quest_id
+    </sql>
+
+    <select id="selectQQuestionList" parameterType="QQuestion" resultMap="QQuestionResult">
+        <include refid="selectQQuestionVo"/>
+        <where>
+            <if test="paperId != null "> and q.paper_id = #{paperId}</if>
+            <if test="questTitle != null  and questTitle != ''"> and q.quest_title like concat('%', #{questTitle}, '%')</if>
+        </where>
+        order by q.quest_id asc, o.opt_seque asc
+    </select>
+    
+    <select id="selectQQuestionByQuestId" parameterType="Long" resultMap="QQuestionResult">
+        <include refid="selectQQuestionVo"/>
+        where q.quest_id = #{questId}
+    </select>
+
+    <!--*******************答题统计*******************-->
+<!--                     select q.quest_title, o.opt_content, count(a.answer_content) as answerCount from q_question q-->
+<!--             left join q_options o on q.quest_id = o.quest_id-->
+<!--             left join q_answer a on o.opt_id = a.answer_content-->
+<!--            where 1=1-->
+<!--             and q.paper_id = #{paperId}-->
+<!--             group by q.quest_id, o.opt_id-->
+<!--             order by q.quest_id asc, o.opt_seque asc-->
+
+    <select id="selectAnswerCount" parameterType="QQuestion" resultMap="QQuestionResult">
+        SELECT z.quest_id,
+               z.quest_title,
+               z.opt_content,
+               z.answerCount
+        FROM (
+                 (
+                     SELECT q.quest_id,
+                            q.quest_title,
+                            o.opt_content,
+                            count(a.answer_content) AS answerCount
+                     FROM q_question q
+                              LEFT JOIN q_options o ON q.quest_id = o.quest_id
+                              LEFT JOIN q_answer a ON o.opt_id = a.answer_content
+                     WHERE 1 = 1
+                       AND q.paper_id = #{paperId}
+                       AND q.quest_type &lt;= 3
+                     GROUP BY q.quest_id,
+                              o.opt_id
+                     ORDER BY q.quest_id ASC,
+                              o.opt_seque ASC
+                 )
+                 UNION ALL
+                 (
+                     SELECT q.quest_id,
+                            q.quest_title,
+                            a.answer_content        AS opt_content,
+                            count(a.answer_content) AS answerCount
+                     FROM q_question q
+                              LEFT JOIN q_answer a ON q.quest_id = a.quest_id
+                     WHERE 1 = 1
+                       AND q.paper_id = #{paperId}
+                       AND q.quest_type = 4
+                     GROUP BY q.quest_id,
+                              a.answer_content
+                     ORDER BY q.quest_id ASC
+                 )
+             ) z
+        ORDER BY z.quest_id asc
+    </select>
+    <select id="selcetListByPaperId" resultType="java.lang.Integer">
+
+     select count(*) from q_question where paper_id=#{id}
+    </select>
+
+    <insert id="insertQQuestion" parameterType="QQuestion" useGeneratedKeys="true" keyProperty="questId">
+        insert into q_question
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="paperId != null">paper_id,</if>
+            <if test="questType != null">quest_type,</if>
+            <if test="questTitle != null">quest_title,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="paperId != null">#{paperId},</if>
+            <if test="questType != null">#{questType},</if>
+            <if test="questTitle != null">#{questTitle},</if>
+         </trim>
+    </insert>
+
+    <update id="updateQQuestion" parameterType="QQuestion">
+        update q_question
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="paperId != null">paper_id = #{paperId},</if>
+            <if test="questType != null">quest_type = #{questType},</if>
+            <if test="questTitle != null">quest_title = #{questTitle},</if>
+        </trim>
+        where quest_id = #{questId}
+    </update>
+
+    <delete id="deleteQQuestionByQuestId" parameterType="Long">
+        delete from q_question where quest_id = #{questId}
+    </delete>
+
+    <delete id="deleteQQuestionByQuestIds" parameterType="String">
+        delete from q_question where quest_id in 
+        <foreach item="questId" collection="array" open="(" separator="," close=")">
+            #{questId}
+        </foreach>
+    </delete>
+
+    <delete id="delQuestoptList">
+        delete from q_options where quest_id=#{questId}
+    </delete>
+
+
+    <delete id="delquest" parameterType="String">
+        delete from q_options where quest_id in
+        <foreach item="questId" collection="array" open="(" separator="," close=")">
+            #{questId}
+        </foreach>
+    </delete>
+
+    <delete id="delanswer" parameterType="String">
+        delete from q_answer where quest_id in
+        <foreach item="questId" collection="array" open="(" separator="," close=")">
+            #{questId}
+        </foreach>
+    </delete>
+</mapper>

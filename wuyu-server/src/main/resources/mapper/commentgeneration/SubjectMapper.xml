@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.commentgeneration.mapper.SubjectMapper">
+    <!-- 一个mapper文件对应项目中的一个mapper接口，接口内负责定义一些抽象方法，抽象方法的方法名称就对应
+    配置文件总的一个SQL语句中，mybatis是通过namespace找到mapper接口 -->
+
+    <!-- 一个mapper文件对应数据库表的所有SQL操作，同时项目中bean也有一个和表对应的实体类，所以这个实体
+    类必然和这个文件有联系，mybatis就是通过springboot的配置找到mapper文件，通过解析配置文件，找到数据库表
+    对应的实体类，因此你的数据库表才能和你的实体类产生联系 即resultMap（数据库查询到数据之后对应的封装格式）
+    resultMap标签有两个必须要填写的数学，id->表示的是类名的简称 type->表示关联的实体类，标签内部就是映射
+    实体类属性和-->
+<!--    <resultMap id="SubjectBean" type="com.fiveup.core.commentgeneration.bean.Subject">-->
+<!--        &lt;!&ndash; id子标签代表数据库表的主键字段 &ndash;&gt;-->
+<!--        <id column="id" jdbcType="NUMERIC" property="id"/>-->
+<!--        &lt;!&ndash; result子标签表示非主键字段的映射关系 &ndash;&gt;-->
+<!--        <result column="name" jdbcType="VARCHAR" property="name"/>-->
+<!--    </resultMap>-->
+
+<!--    &lt;!&ndash; 声明数据库字段 &ndash;&gt;-->
+<!--    <sql id="Subject_field">-->
+<!--        id,name-->
+<!--    </sql>-->
+
+<!--    &lt;!&ndash; 实体类属性 &ndash;&gt;-->
+<!--    <sql id="Subject_insert">-->
+<!--        #{id},#{name}-->
+<!--    </sql>-->
+
+<!--    &lt;!&ndash; 更新时条件&ndash;&gt;-->
+<!--    <sql id="Subject_update">-->
+<!--        <if test="name != null">-->
+<!--            name = #{name},-->
+<!--        </if>-->
+<!--    </sql>-->
+
+<!--    &lt;!&ndash; 查询时条件 &ndash;&gt;-->
+<!--    <sql id="Subject_where">-->
+<!--        <if test="name != null">-->
+<!--            and name = #{name}-->
+<!--        </if>-->
+<!--    </sql>-->
+
+<!--    <select id="selectAll" resultMap="SubjectBean">-->
+<!--        SELECT <include refid="Subject_field"></include>-->
+<!--        FROM subject-->
+<!--    </select>-->
+
+<!--    <select id="selectById" resultMap="SubjectBean">-->
+<!--        SELECT <include refid="Subject_field"></include>-->
+<!--        FROM subject-->
+<!--        WHERE id = #{id}-->
+<!--    </select>-->
+
+</mapper>
