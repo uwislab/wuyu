@@ -2,17 +2,15 @@ name: Build and Deploy
 
 on:
   push:
-    branches: [ "main", "group*" ]
+    branches: [ "main", "develop*" ]  # 修改分支匹配模式
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # 步骤1：检出代码
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 步骤2：通过SSH执行部署操作
       - name: Execute Deployment Scripts
         uses: appleboy/ssh-action@v1
         with:
@@ -20,9 +18,9 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            set -e  # 任何命令失败立即终止脚本
+            set -e
             
-            # 初始化变量
+            # 初始化变量（修改分支名解析逻辑）
             BRANCH="${{ github.ref_name }}"
             REPO_DIR="/www/cicd_wuyu/wuyuProject/WuYuEducation"
             cd "$REPO_DIR"
@@ -32,15 +30,16 @@ jobs:
             git checkout -f $BRANCH
             git pull origin $BRANCH
 
-            # ========== 端口计算阶段 ==========
+            # ========== 端口计算阶段（关键修改点） ==========
             if [ "$BRANCH" = "main" ]; then
               GROUP_NUMBER=0
             else
-              GROUP_NUMBER=$(echo "$BRANCH" | sed 's/group//')
+              # 从 develop-01 中提取数字部分（去掉 "develop-" 和前导零）
+              GROUP_NUMBER=$(echo "$BRANCH" | sed 's/develop-//; s/^0*//')  # 示例：develop-01 → 1
             fi
-            SERVER_PORT=$((9080 + GROUP_NUMBER))
+            SERVER_PORT=$((9080 + GROUP_NUMBER))  # 保持原有端口计算逻辑
             FRONTEND_PORT=$((9180 + GROUP_NUMBER))
-            SERVER_IMAGE="wuyu-server-$BRANCH"
+            SERVER_IMAGE="wuyu-server-$BRANCH"     # 镜像名包含完整分支名
             FRONTEND_IMAGE="wuyu-front-$BRANCH"
 
             # ========== 后端处理阶段 ==========
