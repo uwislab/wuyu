@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.teacherworkspace.mapper.LessonMapper">
+    <insert id="batchInsert">
+        INSERT INTO basic_lesson (id, grade, class_num, class_name, course, teacher_name, teacher_id)
+        VALUES
+        <foreach collection="lessons" item="lesson" separator=",">
+            (#{lesson.id}, #{lesson.grade}, #{lesson.classNum}, #{lesson.className}, #{lesson.course},
+            #{lesson.teacherName}, #{lesson.teacherId})
+        </foreach>
+    </insert>
+
+    <sql id="page-condition">
+        <if test='dto.grade != null'>
+            WHERE lesson.grade = #{dto.grade}
+        </if>
+        <if test="dto.classNum != null">
+            WHERE lesson.class_num = #{dto.classNum}
+        </if>
+        <if test='dto.course != "" and dto.course != null'>
+            WHERE lesson.course like concat('%', #{dto.course}, '%')
+        </if>
+    </sql>
+
+    <select id="pageLessons" resultType="com.fiveup.core.teacherworkspace.model.Lesson"
+            parameterType="com.fiveup.core.teacherworkspace.model.dto.PageLessonDto">
+        SELECT *
+        FROM basic_lesson as lesson
+        <include refid="page-condition"/>
+        limit (#{dto.page} - 1) * #{dto.size}, #{dto.size}
+        order by lesson.grade desc
+    </select>
+
+    <select id="pageCount" resultType="java.lang.Long"
+            parameterType="com.fiveup.core.teacherworkspace.model.dto.PageLessonDto">
+        SELECT count(*)
+        FROM basic_lesson as lesson
+        <include refid="page-condition"/>
+    </select>
+</mapper>
