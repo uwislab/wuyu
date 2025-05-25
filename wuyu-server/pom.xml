@@ -21,10 +21,10 @@
     </properties>
     <dependencies>
 
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-security</artifactId>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework.boot</groupId>-->
+        <!--            <artifactId>spring-boot-starter-security</artifactId>-->
+        <!--        </dependency>-->
 
 
         <dependency>
@@ -71,12 +71,12 @@
             </exclusions>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-devtools</artifactId>-->
-<!--            <scope>runtime</scope>-->
-<!--            <optional>true</optional>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework.boot</groupId>-->
+        <!--            <artifactId>spring-boot-devtools</artifactId>-->
+        <!--            <scope>runtime</scope>-->
+        <!--            <optional>true</optional>-->
+        <!--        </dependency>-->
 
         <dependency>
             <groupId>com.jcraft</groupId>
@@ -107,27 +107,28 @@
         </dependency>
 
         <!--hutool-->
-<!--        <dependency>-->
-<!--            <groupId>cn.hutool</groupId>-->
-<!--            <artifactId>hutool-all</artifactId>-->
-<!--            <version>5.6.3</version>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>cn.hutool</groupId>-->
+        <!--            <artifactId>hutool-all</artifactId>-->
+        <!--            <version>5.6.3</version>-->
+        <!--        </dependency>-->
 
         <!--lombok依赖-->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
+            <version>1.18.30</version>
         </dependency>
 
         <!--mybatis增强-->
 
         <!--fastjson-->
-<!--        <dependency>-->
-<!--            <groupId>com.alibaba</groupId>-->
-<!--            <artifactId>fastjson</artifactId>-->
-<!--            <version>1.2.75</version>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>com.alibaba</groupId>-->
+        <!--            <artifactId>fastjson</artifactId>-->
+        <!--            <version>1.2.75</version>-->
+        <!--        </dependency>-->
 
         <!--swagger-->
         <dependency>
@@ -229,7 +230,6 @@
         </dependency>
 
 
-
         <dependency>
             <groupId>org.apache.geronimo</groupId>
             <artifactId>geronimo-metrics-sigar</artifactId>
@@ -249,8 +249,6 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
-
 
 
         <!--gson        -->
