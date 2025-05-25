@@ -132,9 +132,38 @@
     <!-- 复制上学期排课按钮 -->
     <el-card class="box-card" style="margin-top: 20px">
       <div slot="header" class="clearfix">
-        <span>排课复制</span>
+        <span>排课列表</span>
       </div>
-      <el-button type="warning" @click="handleCopyLastSemester">复制上学期排课</el-button>
+      <el-table :data="scheduleList" border style="width: 100%">
+        <el-table-column prop="teacherName" label="教师姓名" align="center" />
+        <el-table-column prop="courseName" label="课程名称" align="center" />
+        <el-table-column prop="courseType" label="课程类型" align="center">
+          <template slot-scope="scope">
+            {{ getCourseTypeName(scope.row.courseType) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="schedule.weekday" label="上课日期" align="center">
+          <template slot-scope="scope">
+            {{ getWeekdayName(scope.row.schedule.weekday) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="schedule.time" label="上课时间" align="center">
+          <template slot-scope="scope">
+            第{{ scope.row.schedule.time }}节
+          </template>
+        </el-table-column>
+        <el-table-column prop="classInfo" label="上课班级" align="center">
+          <template slot-scope="scope">
+            {{ formatClassInfo(scope.row.classInfo) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" align="center">
+          <template slot-scope="scope">
+            <el-button type="danger" size="mini" @click="handleDeleteSchedule(scope.row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-button type="warning" style="margin-top: 20px" @click="handleCopyLastSemester">复制上学期排课</el-button>
     </el-card>
   </el-dialog>
 </template>
@@ -142,7 +171,7 @@
 <script>
 import pinyin from 'pinyin';
 import { getTeacherListByPage } from '@/api/managementModule/teacher';
-import { getCourseList, setTeacherCourse, copyLastSemesterSchedule } from '@/api/managementModule/courseSchedule';
+import { getCourseList, setTeacherCourse, copyLastSemesterSchedule, getTeacherScheduleList, deleteTeacherSchedule } from '@/api/managementModule/courseSchedule';
 
 export default {
   name: 'TeacherSel',
@@ -235,7 +264,58 @@ export default {
         classInfo: [
           { required: true, message: '请选择上课班级', trigger: 'change' }
         ]
-      }
+      },
+      scheduleList: [], // 排课列表数据
+      courseTypeMap: {
+        'intellectual': '智育',
+        'moral': '德育',
+        'physical': '体育',
+        'aesthetic': '美育',
+        'labor': '劳育'
+      },
+      weekdayMap: {
+        '1': '周一',
+        '2': '周二',
+        '3': '周三',
+        '4': '周四',
+        '5': '周五'
+      },
+      // 添加上学期排课测试数据
+      lastSemesterSchedules: [
+        {
+          id: 1,
+          teacherName: '李四',
+          courseName: '语文',
+          courseType: 'intellectual',
+          schedule: {
+            weekday: '1',
+            time: '1'
+          },
+          classInfo: '1-1'
+        },
+        {
+          id: 2,
+          teacherName: '王五',
+          courseName: '数学',
+          courseType: 'intellectual',
+          schedule: {
+            weekday: '1',
+            time: '2'
+          },
+          classInfo: '1-1'
+        },
+        {
+          id: 3,
+          teacherName: '李三',
+          courseName: '英语',
+          courseType: 'intellectual',
+          schedule: {
+            weekday: '1',
+            time: '3'
+          },
+          classInfo: '1-1'
+        }
+      ],
     };
   },
   watch: {
@@ -356,15 +436,55 @@ export default {
     // 设置课程
     handleSetCourse(teacher) {
       this.selectedTeacher = teacher;
+      
+      // 根据教师职位自动匹配课程
+      const positionToCourse = {
+        '语文老师': { name: '语文', type: 'intellectual' },
+        '数学老师': { name: '数学', type: 'intellectual' },
+        '英语老师': { name: '英语', type: 'intellectual' },
+        '物理老师': { name: '物理', type: 'intellectual' },
+        '化学老师': { name: '化学', type: 'intellectual' },
+        '生物老师': { name: '生物', type: 'intellectual' },
+        '历史老师': { name: '历史', type: 'intellectual' },
+        '地理老师': { name: '地理', type: 'intellectual' },
+        '政治老师': { name: '政治', type: 'moral' },
+        '音乐老师': { name: '音乐', type: 'aesthetic' },
+        '美术老师': { name: '美术', type: 'aesthetic' },
+        '体育老师': { name: '体育', type: 'physical' },
+        '信息老师': { name: '信息技术', type: 'intellectual' },
+        '劳技老师': { name: '劳动技术', type: 'labor' }
+      };
+
+      // 查找对应的课程
+      const matchedCourse = this.courseList.find(course => 
+        course.name === positionToCourse[teacher.position]?.name
+      );
+
       this.courseForm = {
-        courseId: '',
-        courseType: '',
+        courseId: matchedCourse ? matchedCourse.id : '',
+        courseType: matchedCourse ? matchedCourse.type : '',
         schedule: {
           weekday: '',
           time: '',
         },
         classInfo: '',
       };
+
+      // 如果找到匹配的课程，显示提示信息
+      if (matchedCourse) {
+        this.$message({
+          message: `已自动选择${matchedCourse.name}课程`,
+          type: 'success',
+          duration: 2000
+        });
+      } else {
+        this.$message({
+          message: '未找到匹配的课程，请手动选择',
+          type: 'warning',
+          duration: 2000
+        });
+      }
+
       this.courseDialogVisible = true;
     },
 
@@ -372,6 +492,13 @@ export default {
     submitCourseSetting() {
       this.$refs.courseForm.validate(valid => {
         if (valid) {
+          // 检查时间和班级冲突
+          const hasConflict = this.checkScheduleConflict();
+          if (hasConflict) {
+            this.$message.error('该时间段该班级已有其他课程安排，请重新选择时间或班级');
+            return;
+          }
+
           const payload = {
             teacherId: this.selectedTeacher.id,
             courseId: this.courseForm.courseId,
@@ -379,34 +506,114 @@ export default {
             schedule: this.courseForm.schedule,
             classInfo: this.courseForm.classInfo,
           };
-          setTeacherCourse(payload).then(res => {
-            if (res.code === 200) {
-              this.$message.success('设置成功');
-              this.courseDialogVisible = false;
-              this.getTeacherList();
-            } else {
-              this.$message.error(res.message || '设置失败');
-            }
-          });
+          
+          // 注释掉后端接口调用
+          // setTeacherCourse(payload).then(res => {
+          //   if (res.code === 200) {
+          //     this.$message.success('设置成功');
+          //     this.courseDialogVisible = false;
+          //     this.getTeacherList();
+          //     this.getScheduleList(); // 更新排课列表
+          //   } else {
+          //     this.$message.error(res.message || '设置失败');
+          //   }
+          // });
+
+          // 模拟接口响应
+          const selectedCourse = this.courseList.find(course => course.id === this.courseForm.courseId);
+          const newSchedule = {
+            id: Date.now(), // 使用时间戳作为临时ID
+            teacherName: this.selectedTeacher.teacherName,
+            courseName: selectedCourse.name,
+            courseType: this.courseForm.courseType,
+            schedule: this.courseForm.schedule,
+            classInfo: this.courseForm.classInfo
+          };
+          
+          // 添加到排课列表
+          this.scheduleList.push(newSchedule);
+          
+          this.$message.success('设置成功');
+          this.courseDialogVisible = false;
+          this.getTeacherList();
         }
       });
     },
 
-    // 复制上学期排课
+    // 检查课程时间和班级冲突
+    checkScheduleConflict() {
+      const { weekday, time } = this.courseForm.schedule;
+      const classInfo = this.courseForm.classInfo;
+
+      // 检查同一时间段同一班级是否已有课程
+      const hasClassConflict = this.scheduleList.some(schedule => 
+        schedule.schedule.weekday === weekday && 
+        schedule.schedule.time === time && 
+        schedule.classInfo === classInfo
+      );
+
+      if (hasClassConflict) {
+        // 获取冲突的课程信息
+        const conflictSchedule = this.scheduleList.find(schedule => 
+          schedule.schedule.weekday === weekday && 
+          schedule.schedule.time === time && 
+          schedule.classInfo === classInfo
+        );
+        this.$message.warning(
+          `${this.getWeekdayName(weekday)}第${time}节，${classInfo}班已有${conflictSchedule.teacherName}老师的${conflictSchedule.courseName}课程`
+        );
+        return true;
+      }
+
+      // 检查同一时间段该教师是否已有其他课程
+      const hasTeacherConflict = this.scheduleList.some(schedule => 
+        schedule.teacherName === this.selectedTeacher.teacherName &&
+        schedule.schedule.weekday === weekday && 
+        schedule.schedule.time === time
+      );
+
+      if (hasTeacherConflict) {
+        // 获取冲突的课程信息
+        const conflictSchedule = this.scheduleList.find(schedule => 
+          schedule.teacherName === this.selectedTeacher.teacherName &&
+          schedule.schedule.weekday === weekday && 
+          schedule.schedule.time === time
+        );
+        this.$message.warning(
+          `${this.selectedTeacher.teacherName}老师在${this.getWeekdayName(weekday)}第${time}节已有${conflictSchedule.courseName}课程`
+        );
+        return true;
+      }
+
+      return false;
+    },
+
+    // 获取节次名称
+    getTimeSlotName(time) {
+      const timeSlot = this.timeSlots.find(slot => slot.value === time);
+      return timeSlot ? timeSlot.label : time;
+    },
+
+    // 修改复制上学期排课方法
     handleCopyLastSemester() {
       this.$confirm('此操作将覆盖所有课程教师设置，是否继续?', '警告', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        copyLastSemesterSchedule().then(res => {
-          if (res.code === 200) {
-            this.$message.success('复制成功');
-            this.getTeacherList();
-          } else {
-            this.$message.error(res.message || '复制失败');
-          }
-        });
+        // 注释掉后端接口调用
+        // copyLastSemesterSchedule().then(res => {
+        //   if (res.code === 200) {
+        //     this.$message.success('复制成功');
+        //     this.getTeacherList();
+        //   } else {
+        //     this.$message.error(res.message || '复制失败');
+        //   }
+        // });
+
+        // 使用测试数据
+        this.scheduleList = [...this.lastSemesterSchedules];
+        this.$message.success('复制上学期排课成功');
       }).catch(() => {
         this.$message.info('已取消复制');
       });
@@ -422,6 +629,72 @@ export default {
       if (selectedCourse) {
         this.courseForm.courseType = selectedCourse.type;
       }
+    },
+
+    // 获取课程类型名称
+    getCourseTypeName(type) {
+      return this.courseTypeMap[type] || type;
+    },
+
+    // 获取星期名称
+    getWeekdayName(weekday) {
+      return this.weekdayMap[weekday] || weekday;
+    },
+
+    // 删除排课
+    handleDeleteSchedule(row) {
+      this.$confirm('确认删除该排课记录?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        // 注释掉后端接口调用
+        // deleteTeacherSchedule(row.id).then(res => {
+        //   if (res.code === 200) {
+        //     this.$message.success('删除成功');
+        //     this.getScheduleList(); // 重新获取排课列表
+        //   } else {
+        //     this.$message.error(res.message || '删除失败');
+        //   }
+        // });
+
+        // 本地删除数据
+        const index = this.scheduleList.findIndex(item => item.id === row.id);
+        if (index !== -1) {
+          this.scheduleList.splice(index, 1);
+          this.$message.success('删除成功');
+        }
+      }).catch(() => {
+        this.$message.info('已取消删除');
+      });
+    },
+
+    // 获取排课列表
+    getScheduleList() {
+      // 注释掉后端接口调用
+      // getTeacherScheduleList().then(res => {
+      //   if (res.code === 200) {
+      //     this.scheduleList = res.data;
+      //   }
+      // });
+      
+      // 使用本地数据
+      console.log('使用本地排课数据');
+    },
+
+    // 格式化班级信息
+    formatClassInfo(classInfo) {
+      if (!classInfo) return '';
+      const [grade, classNum] = classInfo.split('-');
+      const gradeMap = {
+        '1': '一',
+        '2': '二',
+        '3': '三',
+        '4': '四',
+        '5': '五',
+        '6': '六'
+      };
+      return `${gradeMap[grade] || grade}年级${classNum}班`;
     }
   }
 };
