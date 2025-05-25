@@ -1,11 +1,11 @@
 package com.fiveup.core.login.controller;
 
 import com.fiveup.core.login.service.UserService;
-import com.fiveup.core.login.LoginRequest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+        import com.fiveup.core.login.LoginRequest;
+        import org.springframework.beans.factory.annotation.Autowired;
+        import org.springframework.http.HttpStatus;
+        import org.springframework.http.ResponseEntity;
+        import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")

@@ -21,6 +21,7 @@ public class FiveupCoreApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(FiveupCoreApplication.class, args);
+        System.out.println("hello world");
     }
 //    @Bean
 //    public BCryptPasswordEncoder passwordEncoder() {
