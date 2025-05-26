@@ -8,26 +8,37 @@
           placeholder="年级"
           clearable
           class="filter-item"
-          @change="handleFilterChange"
+          @change="handleGradeChange"
         >
-          <el-option v-for="grade in grades" :key="grade" :label="grade" :value="grade" />
+          <el-option
+            v-for="grade in gradeOptions"
+            :key="grade.value"
+            :label="grade.label"
+            :value="grade.value"
+          />
         </el-select>
+
         <el-select
-          v-model="filter.class"
+          v-model="filter.classNum"
           placeholder="班级"
           clearable
           class="filter-item"
           @change="handleFilterChange"
         >
-          <el-option v-for="cls in classes" :key="cls" :label="cls" :value="cls" />
+          <el-option
+            v-for="cls in classOptions"
+            :key="cls"
+            :label="`${cls}班`"
+            :value="cls"
+          />
         </el-select>
+
         <el-input
-          v-model="filter.courseName"
+          v-model="filter.course"
           placeholder="课程名称"
           clearable
           class="filter-item"
-          suffix-icon="el-icon-search"
-          @clear="handleFilterChange"
+          @change="handleFilterChange"
         />
       </div>
 
@@ -52,7 +63,6 @@
       </div>
     </div>
 
-    <!-- 主体内容 -->
     <div class="main-content">
       <!-- 左侧课程树 -->
       <el-card class="course-tree" shadow="never">
@@ -93,10 +103,10 @@
             <div class="tree-node">
               <div class="node-info">
                 <span class="node-label">{{ node.label }}</span>
-                <span v-if="data.type === 'course'" class="course-meta">
+                <!-- <span v-if="data.type === 'course'" class="course-meta">
                   <el-tag size="mini">{{ data.period }}课时</el-tag>
                   <el-tag size="mini" type="success">{{ data.credit }}学分</el-tag>
-                </span>
+                </span> -->
               </div>
               <div v-if="data.type === 'course'" class="node-actions">
                 <el-button
@@ -139,21 +149,20 @@
         </template>
 
         <el-table
-          :data="summaryTableData"
+          :data="tableData"
           v-loading="tableLoading"
           stripe
           highlight-current-row
           style="width: 100%"
         >
-          <el-table-column prop="grade" label="年级" width="120" align="center" />
-          <el-table-column prop="class" label="班级" width="120" align="center" />
-          <el-table-column prop="course" label="课程名称" min-width="180" />
+          <el-table-column prop="grade" label="年级" width="150" align="center" />
+          <el-table-column prop="classNum" label="班级" width="150" align="center" />
+          <el-table-column prop="course" label="课程名称" min-width="250" />
           <el-table-column label="任课教师" width="200">
             <template #default="{ row }">
               <div class="teacher-cell">
-                <el-avatar :size="28" :src="getTeacherAvatar(row.teacherId)" />
                 <div class="teacher-info">
-                  <span class="teacher-name">{{ row.teacher || '未分配' }}</span>
+                  <span class="teacher-name">{{ row.teacherName || '未分配' }}</span>
                   <el-button
                     type="text"
                     size="mini"
@@ -164,17 +173,37 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column prop="period" label="课时" width="100" align="center" />
-          <el-table-column prop="credit" label="学分" width="100" align="center" />
+          <!-- <el-table-column prop="period" label="课时" width="100" align="center" /> -->
+          <el-table-column prop="credit" label="操作" width="300" align="center" >
+            <el-button
+                type="primary"
+                size="small"
+                @click=""
+                round
+                    >
+                  编辑课程
+                  </el-button>
+            <el-button
+              type="danger"
+              size="small"
+              @click=""
+              round
+                  >
+              删除课程
+              </el-button>
+          </el-table-column>
         </el-table>
 
-        <div class="pagination-wrapper">
+         <div class="pagination-wrapper">
           <el-pagination
-            :current-page="pagination.current"
-            :page-size="pagination.size"
+            v-model:current-page="pagination.page"
+            v-model:page-size="pagination.size"
             :total="pagination.total"
-            layout="total, prev, pager, next, jumper"
+            :page-sizes="[10, 20, 30, 50]"
+            layout="total, sizes, prev, pager, next, jumper"
             background
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
           />
         </div>
       </el-card>
@@ -226,12 +255,31 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch } from 'vue';
+import { ref, reactive, computed, watch,onMounted } from 'vue';
 import { Message,Loading  } from 'element-ui';
+import {getLessonPageAPI} from '@/api/schedulModule/index'
 
-// 模拟数据
-const grades = ['一年级', '二年级', '三年级', '四年级'];
-const classes = ['1班', '2班', '3班', '4班'];
+// 年级/班级选项
+const gradeOptions = Array.from({ length: 6 }, (_, i) => ({
+  value: i + 1,
+  label: `${i + 1}年级`
+}))
+const classOptions = Array.from({ length: 10 }, (_, i) => i + 1)
+
+const filter = reactive({
+  grade: null,
+  classNum: null,
+  course: ''
+})
+const pagination = reactive({
+  page: 1,
+  size: 10,
+  total: 0
+})
+const tableData = ref([])
+const tableLoading = ref(false)
+
+// todo ：教师的绑定
 const teachers = ref([
   { id: 1, name: '张建国', pinyin: 'zhangjianguo', department: '计算机学院', title: '教授', avatar: 'https://picsum.photos/30/30?1' },
   { id: 2, name: '李淑芬', pinyin: 'lishufen', department: '外语学院', title: '副教授', avatar: 'https://picsum.photos/30/30?2' },
@@ -240,153 +288,222 @@ const teachers = ref([
 ]);
 
 // 课程树数据
-const courseTree = ref([
-  { id: 1, type: 'grade', label: '一年级', children: [
-    { id: 11, type: 'class', label: '1班', children: [
-      { id: 111, type: 'course', label: '高等数学', teacherId: 3, teacher: '王海涛', period: 64, credit: 4 },
-      { id: 112, type: 'course', label: '大学英语', teacherId: 2, teacher: '李淑芬', period: 48, credit: 3 },
-    ]},
-    { id: 12, type: 'class', label: '2班', children: [
-      { id: 121, type: 'course', label: '大学物理', teacherId: 4, teacher: '赵晓燕', period: 64, credit: 4 },
-      { id: 122, type: 'course', label: '程序设计', teacherId: 1, teacher: '张建国', period: 80, credit: 5 },
-    ]}
-  ]},
-  { id: 2, type: 'grade', label: '二年级', children: [
-    { id: 21, type: 'class', label: '1班', children: [
-      { id: 211, type: 'course', label: '数据结构', teacherId: 1, teacher: '张建国', period: 64, credit: 4 },
-      { id: 212, type: 'course', label: '操作系统', teacherId: 1, teacher: '张建国', period: 64, credit: 4 },
-    ]}
-  ]}
-]);
+const courseTree = ref([]);
+const transformToTree = (records) => {
+  const treeMap = new Map()
 
-const filter = reactive({ grade: '', class: '', courseName: '' });
+  records.forEach(item => {
+    const gradeKey = `grade-${item.grade}`;
+    const classKey = `class-${item.grade}-${item.classNum}`
+
+    // 年级节点
+    if (!treeMap.has(gradeKey)) {
+      treeMap.set(gradeKey, {
+        id: gradeKey,
+        type: 'grade',
+        label: `${item.grade}年级`,
+        gradeValue: item.grade,
+        children: []
+      });
+    }
+
+    // 班级节点
+    const gradeNode = treeMap.get(gradeKey);
+    const classNode = gradeNode.children.find(c => c.classNum === item.classNum)
+    if (!classNode) {
+      gradeNode.children.push({
+        id: classKey,
+        type: 'class',
+        label: item.classNum+'班',
+        classNum: item.classNum,
+        children: []
+      })
+    }
+
+    // 课程节点
+    const targetClass = gradeNode.children.find(c => c.classNum === item.classNum);
+    targetClass.children.push({
+      id: item.id,
+      type: 'course',
+      label: item.course,
+      teacher: item.teacherName,
+      teacherId: item.teacherId,
+      grade: item.grade,
+      classNum: item.classNum
+    })
+  })
+
+  return Array.from(treeMap.values())
+}
+
 const autoCopyEnabled = ref(true);
-const teacherDialogVisible = ref(false);
+const teacherDialogVisible = ref(false)
 const teacherSearch = ref('');
 const currentCourse = ref(null);
 const importResult = ref(null);
-const pagination = reactive({ current: 1, size: 10, total: 20 });
-const teacherPagination = reactive({ current: 1, size: 10 });
+const teacherPagination = reactive({ current: 1, size: 10 })
 
 const filteredCourseTree = computed(() => {
-  if (!filter.grade && !filter.class && !filter.courseName) return courseTree.value;
+  if (!filter.grade && !filter.class && !filter.courseName) return courseTree.value
 
   return courseTree.value.map(gradeNode => {
-    if (filter.grade && gradeNode.label !== filter.grade) return null;
+    if (filter.grade && gradeNode.label !== filter.grade) return null
     return {
       ...gradeNode,
       children: gradeNode.children.map(classNode => {
-        if (filter.class && classNode.label !== filter.class) return null;
+        if (filter.class && classNode.label !== filter.class) return null
         return {
           ...classNode,
           children: classNode.children.filter(course =>
             course.label.includes(filter.courseName)
           )
-        };
+        }
       }).filter(Boolean)
     };
-  }).filter(Boolean);
+  }).filter(Boolean)
 });
 
+
 const filteredTeachers = computed(() => {
-  const key = teacherSearch.value.toLowerCase();
+  const key = teacherSearch.value.toLowerCase()
   return teachers.value.filter(t =>
     t.name.includes(key) ||
     t.pinyin.includes(key) ||
     t.department.includes(key)
-  );
-});
-
-const summaryTableData = computed(() => {
-  const data = [];
-  courseTree.value.forEach(grade => {
-    grade.children.forEach(cls => {
-      cls.children.forEach(course => {
-        data.push({
-          grade: grade.label,
-          class: cls.label,
-          course: course.label,
-          teacher: course.teacher,
-          teacherId: course.teacherId,
-          period: course.period,
-          credit: course.credit
-        });
-      });
-    });
-  });
-  return data.slice((pagination.current - 1) * pagination.size, pagination.current * pagination.size);
-});
+  )
+})
 
 const treeProps = ref({
   children: 'children',
   label: 'label'
-});
-
-const handleFilterChange = () => {
-  pagination.current = 1;
-};
+})
 
 const openTeacherDialog = (course) => {
   currentCourse.value = course;
-  teacherDialogVisible.value = true;
-  teacherSearch.value = '';
+  teacherDialogVisible.value = true
+  teacherSearch.value = ''
 };
 
 const selectTeacher = (teacher) => {
-  if (!currentCourse.value) return;
+  if (!currentCourse.value) return
 
   // 更新课程树中的教师信息
   const updateNode = (nodes) => {
     nodes.forEach(node => {
       if (node.id === currentCourse.value.id && node.type === 'course') {
-        node.teacher = teacher.name;
-        node.teacherId = teacher.id;
+        node.teacher = teacher.name
+        node.teacherId = teacher.id
       }
-      if (node.children) updateNode(node.children);
-    });
-  };
-  updateNode(courseTree.value);
+      if (node.children) updateNode(node.children)
+    })
+  }
+  updateNode(courseTree.value)
 
-  teacherDialogVisible.value = false;
-  Message.success(`已为课程${currentCourse.value.label}设置教师：${teacher.name}`);
-};
+  teacherDialogVisible.value = false
+  Message.success(`已为课程${currentCourse.value.label}设置教师：${teacher.name}`)
+}
 // 自动fuzhi
 const handleAutoCopy = () => {
-  Loading.service({ text: '复制中...' });
+  Loading.service({ text: '复制中...' })
   setTimeout(() => {
-    Message.success('上学期排课已复制到本学期');
-    Loading.service().close();
+    Message.success('上学期排课已复制到本学期')
+    Loading.service().close()
   }, 1000);
-};
+}
 
 const handleUpload = (file) => {
   // 模拟文件上传
-  Loading.service({ text: '导入中...' });
+  Loading.service({ text: '导入中...' })
   setTimeout(() => {
-    Loading.service().close();
+    Loading.service().close()
     importResult.value = {
       type: 'success',
-      message: '成功导入15条记录，失败2条'
+      Message: '成功导入15条记录，失败2条'
     };
     console.log('导入错误：第3行班级不存在；第7行教师未注册');
-  }, 1500);
+  }, 1500)
 };
 
 const handleExport = () => {
-  Loading.service({ text: '导出中...' });
+  Loading.service({ text: '导出中...' })
   setTimeout(() => {
     Loading.service().close();
-    Message.success('数据已成功导出为Excel');
+    Message.success('数据已成功导出为Excel')
   }, 1000);
 };
 
-const getTeacherAvatar = (id) => {
-  return teachers.value.find(t => t.id === id)?.avatar || 'https://picsum.photos/30/30';
+watch(teacherDialogVisible, (val) => {
+  if (!val) currentCourse.value = null
+})
+
+// 获取表格数据（分页）
+const fetchData = async () => {
+  try {
+    tableLoading.value = true
+    const params = {
+      page: pagination.page,
+      size: pagination.size,
+      minGrade: filter.grade || null,
+      maxGrade: filter.grade || null,
+      classNum: filter.classNum ? Number(filter.classNum) : null,
+      course: filter.course || null
+    }
+
+    const res = await getLessonPageAPI(params)
+    if (res.code === 200) {
+      tableData.value = res.data.records
+      pagination.total = Number(res.data.total)
+    }
+  } catch (error) {
+    Message.error('数据加载失败')
+  } finally {
+    tableLoading.value = false
+  }
 };
 
-watch(teacherDialogVisible, (val) => {
-  if (!val) currentCourse.value = null;
-});
+// 获取全部课程数据
+const fetchAllCourses = async () => {
+  try {
+    const res = await getLessonPageAPI({
+      page: 1,
+      size: 10000,
+      minGrade: filter.grade || null,
+      maxGrade: filter.grade || null,
+      classNum: filter.classNum ? Number(filter.classNum) : null,
+      course: filter.course || null
+    })
+
+    if (res.code === 200) {
+      courseTree.value = transformToTree(res.data.records)
+    }
+  } catch (error) {
+    Message.error('课程树数据加载失败')
+  }
+};
+
+const handleGradeChange = () => {
+  filter.classNum = null
+  handleFilterChange()
+}
+
+// 过滤条件变化处理
+const handleFilterChange = () => {
+  pagination.page = 1
+  fetchData()
+  fetchAllCourses()
+}
+const handleSizeChange = (newSize) => {
+  pagination.size = newSize
+  fetchData()
+}
+const handleCurrentChange = (newPage) => {
+  pagination.page = newPage
+  fetchData()
+}
+onMounted(()=>{
+      fetchData()
+      fetchAllCourses()
+})
 </script>
 
 <style lang="scss" scoped>
