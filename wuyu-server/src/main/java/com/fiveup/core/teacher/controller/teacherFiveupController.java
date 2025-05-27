@@ -50,7 +50,7 @@ public class teacherFiveupController {
         //新增或者更新
         return teacherService.saveUser(teacher);
     }
-
+//git远程分支测试
     @GetMapping
     public List<teacher> findAll(){
         return teacherService.list();
