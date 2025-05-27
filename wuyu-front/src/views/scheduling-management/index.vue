@@ -209,12 +209,12 @@
       </el-card>
     </div>
 
-    <!-- 教师选择对话框 -->
+    <!-- 教师检索弹窗 -->
     <el-dialog
       title="选择任课教师"
-      :visible.sync="teacherDialogVisible"
+      :visible.sync="teacherSelVisible"
       width="60%"
-      :before-close="handleDialogClose">
+      :before-close="handleTeacherSelClose">
       <el-input
         v-model="teacherSearch"
         placeholder="输入教师姓名/拼音搜索"
@@ -225,10 +225,10 @@
         stripe
         size="small"
         @row-click="selectTeacher">
-        <el-table-column prop="name" label="教师姓名" width="120" />
-        <el-table-column prop="department" label="所属院系" width="200" />
+        <el-table-column prop="teacherName" label="教师姓名" width="120" />
+        <el-table-column prop="position" label="职位" width="120" />
         <el-table-column prop="title" label="职称" width="100" />
-        <el-table-column prop="pinyin" label="拼音" width="160" />
+        <el-table-column prop="phoneNum" label="联系电话" width="160" />
         <el-table-column label="操作" width="100">
           <template #default="{ row }">
             <el-button type="primary" size="small" @click="selectTeacher(row)">选择</el-button>
@@ -252,12 +252,15 @@
       show-icon
       class="import-result" />
   </div>
+  
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch,onMounted } from 'vue';
-import { Message,Loading  } from 'element-ui';
-import {getLessonPageAPI} from '@/api/schedulModule/index'
+import { ref, reactive, computed, watch, onMounted } from 'vue';
+import { Message, Loading } from 'element-ui';
+import { getLessonPageAPI, getTeacherListAPI } from '@/api/schedulModule/index'
+import TeacherSel from '@/components/TeacherSel'
+import pinyin from 'pinyin';
 
 // 年级/班级选项
 const gradeOptions = Array.from({ length: 6 }, (_, i) => ({
@@ -279,13 +282,117 @@ const pagination = reactive({
 const tableData = ref([])
 const tableLoading = ref(false)
 
-// todo ：教师的绑定
-const teachers = ref([
-  { id: 1, name: '张建国', pinyin: 'zhangjianguo', department: '计算机学院', title: '教授', avatar: 'https://picsum.photos/30/30?1' },
-  { id: 2, name: '李淑芬', pinyin: 'lishufen', department: '外语学院', title: '副教授', avatar: 'https://picsum.photos/30/30?2' },
-  { id: 3, name: '王海涛', pinyin: 'wanghaitao', department: '数学系', title: '讲师', avatar: 'https://picsum.photos/30/30?3' },
-  { id: 4, name: '赵晓燕', pinyin: 'zhaoxiaoyan', department: '物理学院', title: '助教', avatar: 'https://picsum.photos/30/30?4' },
-]);
+// 教师列表
+const teachers = ref([]);
+const teachersPinyin = ref([]);
+
+// 测试数据
+const mockTeachers = [
+  {
+    id: 1,
+    teacherName: '张建国',
+    gender: 1,
+    phoneNum: '13812345678',
+    position: '数学老师',
+    title: '高级教师',
+    role: '任课老师',
+    schoolId: 1,
+    username: 'zhangjianguo',
+    password: '123456'
+  },
+  {
+    id: 2,
+    teacherName: '李淑芬',
+    gender: 0,
+    phoneNum: '13987654321',
+    position: '语文老师',
+    title: '特级教师',
+    role: '班主任',
+    schoolId: 1,
+    username: 'lishufen',
+    password: '123456'
+  },
+  {
+    id: 3,
+    teacherName: '王海涛',
+    gender: 1,
+    phoneNum: '13765432198',
+    position: '英语老师',
+    title: '中级教师',
+    role: '任课老师',
+    schoolId: 1,
+    username: 'wanghaitao',
+    password: '123456'
+  },
+  {
+    id: 4,
+    teacherName: '赵晓燕',
+    gender: 0,
+    phoneNum: '13698765432',
+    position: '物理老师',
+    title: '初级教师',
+    role: '任课老师',
+    schoolId: 1,
+    username: 'zhaoxiaoyan',
+    password: '123456'
+  },
+  {
+    id: 5,
+    teacherName: '陈志强',
+    gender: 1,
+    phoneNum: '13567891234',
+    position: '化学老师',
+    title: '高级教师',
+    role: '班主任',
+    schoolId: 1,
+    username: 'chenzhiqiang',
+    password: '123456'
+  }
+];
+
+// 获取教师列表
+const fetchTeachers = async () => {
+  try {
+    const res = await getTeacherListAPI();
+    if (res.code === 200) {
+      teachers.value = res.data;
+      // 生成拼音数据
+      teachersPinyin.value = teachers.value.map(teacher => ({
+        id: teacher.id,
+        name: teacher.teacherName,
+        pinyin: pinyin(teacher.teacherName, {
+          style: pinyin.STYLE_NORMAL,
+          heteronym: false
+        }).join('')
+      }));
+    } else {
+      console.warn('获取教师列表失败，使用测试数据');
+      teachers.value = mockTeachers;
+      // 为测试数据生成拼音
+      teachersPinyin.value = mockTeachers.map(teacher => ({
+        id: teacher.id,
+        name: teacher.teacherName,
+        pinyin: pinyin(teacher.teacherName, {
+          style: pinyin.STYLE_NORMAL,
+          heteronym: false
+        }).join('')
+      }));
+    }
+  } catch (error) {
+    console.error('获取教师列表失败:', error);
+    console.warn('使用测试数据');
+    teachers.value = mockTeachers;
+    // 为测试数据生成拼音
+    teachersPinyin.value = mockTeachers.map(teacher => ({
+      id: teacher.id,
+      name: teacher.teacherName,
+      pinyin: pinyin(teacher.teacherName, {
+        style: pinyin.STYLE_NORMAL,
+        heteronym: false
+      }).join('')
+    }));
+  }
+};
 
 // 课程树数据
 const courseTree = ref([]);
@@ -338,10 +445,10 @@ const transformToTree = (records) => {
 
 const autoCopyEnabled = ref(true);
 const teacherDialogVisible = ref(false)
-const teacherSearch = ref('');
+// const teacherSearch = ref('');
 const currentCourse = ref(null);
 const importResult = ref(null);
-const teacherPagination = reactive({ current: 1, size: 10 })
+// const teacherPagination = reactive({ current: 1, size: 10 })
 
 const filteredCourseTree = computed(() => {
   if (!filter.grade && !filter.class && !filter.courseName) return courseTree.value
@@ -363,16 +470,6 @@ const filteredCourseTree = computed(() => {
   }).filter(Boolean)
 });
 
-
-const filteredTeachers = computed(() => {
-  const key = teacherSearch.value.toLowerCase()
-  return teachers.value.filter(t =>
-    t.name.includes(key) ||
-    t.pinyin.includes(key) ||
-    t.department.includes(key)
-  )
-})
-
 const treeProps = ref({
   children: 'children',
   label: 'label'
@@ -380,8 +477,7 @@ const treeProps = ref({
 
 const openTeacherDialog = (course) => {
   currentCourse.value = course;
-  teacherDialogVisible.value = true
-  teacherSearch.value = ''
+  teacherSelVisible.value = true
 };
 
 const selectTeacher = (teacher) => {
@@ -391,7 +487,7 @@ const selectTeacher = (teacher) => {
   const updateNode = (nodes) => {
     nodes.forEach(node => {
       if (node.id === currentCourse.value.id && node.type === 'course') {
-        node.teacher = teacher.name
+        node.teacher = teacher.teacherName
         node.teacherId = teacher.id
       }
       if (node.children) updateNode(node.children)
@@ -399,8 +495,8 @@ const selectTeacher = (teacher) => {
   }
   updateNode(courseTree.value)
 
-  teacherDialogVisible.value = false
-  Message.success(`已为课程${currentCourse.value.label}设置教师：${teacher.name}`)
+  teacherSelVisible.value = false
+  Message.success(`已为课程${currentCourse.value.label}设置教师：${teacher.teacherName}`)
 }
 // 自动fuzhi
 const handleAutoCopy = () => {
@@ -432,7 +528,7 @@ const handleExport = () => {
   }, 1000);
 };
 
-watch(teacherDialogVisible, (val) => {
+watch(teacherSelVisible, (val) => {
   if (!val) currentCourse.value = null
 })
 
@@ -500,9 +596,46 @@ const handleCurrentChange = (newPage) => {
   pagination.page = newPage
   fetchData()
 }
-onMounted(()=>{
-      fetchData()
-      fetchAllCourses()
+
+// 教师检索相关
+const teacherSelVisible = ref(false);
+const teacherSearch = ref('');
+const teacherPagination = reactive({
+  current: 1,
+  size: 10
+});
+
+// 显示教师检索弹窗
+const showTeacherSel = () => {
+  teacherSelVisible.value = true;
+  teacherSearch.value = '';
+  fetchTeachers(); // 获取教师列表
+};
+
+// 关闭教师检索弹窗
+const handleTeacherSelClose = () => {
+  teacherSelVisible.value = false;
+  teacherSearch.value = '';
+};
+
+// 过滤教师列表
+const filteredTeachers = computed(() => {
+  const key = teacherSearch.value.toLowerCase();
+  return teachers.value.filter(t => {
+    // 获取当前教师的拼音数据
+    const teacherPinyin = teachersPinyin.value.find(p => p.id === t.id);
+    
+    return t.teacherName.toLowerCase().includes(key) ||
+           t.position.toLowerCase().includes(key) ||
+           t.title.toLowerCase().includes(key) ||
+           (teacherPinyin && teacherPinyin.pinyin.toLowerCase().includes(key));
+  });
+});
+
+onMounted(() => {
+  fetchData()
+  fetchAllCourses()
+  fetchTeachers()
 })
 </script>
 
@@ -631,5 +764,13 @@ onMounted(()=>{
   margin-top: 20px;
   display: flex;
   justify-content: flex-end;
+}
+
+.mb-4 {
+  margin-bottom: 16px;
+}
+
+.mt-4 {
+  margin-top: 16px;
 }
 </style>
