@@ -122,20 +122,20 @@ export const asyncRoutes = [
       },
     ],
   },
-  {
-    path: "/course-schedule",
-    component: Layout,
-    redirect: "/course-schedule/index",
-    meta: { title: "排课管理", icon: "el-icon-date" },
-    children: [
-      {
-        path: "index",
-        name: "CourseSchedule",
-        component: () => import("@/views/management/courseSchedule/index"),
-        meta: { title: "排课管理", icon: "el-icon-date", role: [0,4] },
-      },
-    ],
-  },
+  // {
+  //   path: "/course-schedule",
+  //   component: Layout,
+  //   redirect: "/course-schedule/index",
+  //   meta: { title: "排课管理", icon: "el-icon-date" },
+  //   children: [
+  //     {
+  //       path: "index",
+  //       name: "CourseSchedule",
+  //       component: () => import("@/views/management/courseSchedule/index"),
+  //       meta: { title: "排课管理", icon: "el-icon-date", role: [0,4] },
+  //     },
+  //   ],
+  // },
   {
     path: "/teacher",
     component: Layout,
@@ -1011,6 +1011,22 @@ export const asyncRoutes = [
           name: "统计",
           meta: {title: "统计", role: [0]},
         },
+    ],
+  },
+  // 排课管理模块
+   {
+    path: "/SchedulingManagement",
+    component: Layout,
+    redirect: "schedulingManagement/index",
+    meta: {title: "排课管理", icon: "edit"},
+    children: [
+      {
+        path: "index",
+        component: () => import("@/views/scheduling-management/index"),
+        name: "排课管理",
+        meta: {title: "排课管理", role: [0]},
+      },
+
     ],
   },
 
