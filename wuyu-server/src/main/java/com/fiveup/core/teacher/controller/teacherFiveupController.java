@@ -79,7 +79,7 @@ public class teacherFiveupController {
             queryWrapper.like("newsType",newsType);
         }
         if(!"".equals(title)){
-            queryWrapper.like("title",title);
+
         }
         if(!"".equals(content)){
             queryWrapper.like("content",content);
