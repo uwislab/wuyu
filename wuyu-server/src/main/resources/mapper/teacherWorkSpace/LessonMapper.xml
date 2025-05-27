@@ -39,4 +39,43 @@
         FROM basic_lesson as lesson
         <include refid="page-condition"/>
     </select>
+
+    <delete id="deleteByIds">
+        DELETE FROM items
+        WHERE id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <insert id="addLesson" parameterType="com.fiveup.core.teacherworkspace.model.Lesson"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO basic_lesson (
+            grade,
+            class_num,
+            class_name,
+            course,
+            teacher_name,
+            teacher_id
+        ) VALUES (
+                     #{grade},
+                     #{classNum},
+                     #{className},
+                     #{course},
+                     #{teacherName},
+                     #{teacherId}
+                 )
+    </insert>
+
+    <update id="updateLesson" parameterType="com.fiveup.core.teacherworkspace.model.Lesson">
+        UPDATE basic_lesson
+        SET
+            grade = #{grade},
+            class_num = #{classNum},
+            class_name = #{className},
+            course = #{course},
+            teacher_name = #{teacherName},
+            teacher_id = #{teacherId}
+        WHERE id = #{id}
+    </update>
 </mapper>
