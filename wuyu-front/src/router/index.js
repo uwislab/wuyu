@@ -993,6 +993,23 @@ export const asyncRoutes = [
     ],
   },
 
+  // 排课管理模块
+   {
+    path: "/SchedulingManagement",
+    component: Layout,
+    redirect: "schedulingManagement/index",
+    meta: {title: "排课管理", icon: "edit"},
+    children: [
+      {
+        path: "index",
+        component: () => import("@/views/scheduling-management/index"),
+        name: "排课管理",
+        meta: {title: "排课管理", role: [0]},
+      },
+
+    ],
+  },
+
 ];
 
 
