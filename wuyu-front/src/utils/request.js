@@ -1,8 +1,6 @@
 import axios from "axios";
-import { MessageBox, Message } from "element-ui";
+import {Message} from "element-ui";
 import store from "@/store";
-import { getToken } from "@/utils/auth";
-import { baseUrl as globalBaseUrl } from "@/api/baseapi";
 import router from "@/router"; // 引入路由模块
 
 // create an axios instance
@@ -12,7 +10,7 @@ const service = axios.create({
   //baseURL: 'http://localhost:9200',
   // baseURL: "http://49.51.69.99:33304",
   // baseURL: "http://36.111.68.174:33380",
-  baseURL: "http://us.uwis.cn:9082/",
+  baseURL: process.env.VUE_APP_REMOTE_BACKEND_URL,
   withCredentials: true, // send cookies when cross-domain requests
   timeout: 5000, // request timeout
 });
@@ -44,7 +42,7 @@ service.interceptors.response.use(
   },
   (error) => {
     if (error.response) {
-      const { status } = error.response;
+      const {status} = error.response;
 
       if (status === 401) {
         // 401 Unauthorized
@@ -55,7 +53,7 @@ service.interceptors.response.use(
         });
 
         // 重定向到登录页面
-        router.push({ name: 'login' });
+        router.push({name: 'login'});
 
         // 清除 token
         store.dispatch('user/resetToken').then(() => {
