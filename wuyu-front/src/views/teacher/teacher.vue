@@ -1,4 +1,5 @@
 <template>
+  <!-- 教师管理页面 -->
   <div>
     <div style="padding: 10px 0">
       <!-- 搜索表单 -->
@@ -167,9 +168,13 @@ import {baseUrl} from "@/api/baseapi";
 // import {getTeacherListByPage} from "@/api/managementModule/teacher";
 import {getTeacherListByPage1} from "@/api/teacher";
 import {resetForm} from "@/utils/ruoyi";
+import Lottie from 'lottie-web-vue'
 
 export default {
   name: "User",
+  components: {
+    Lottie
+  },
   data(){
     return{
       searchObj: {
