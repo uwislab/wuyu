@@ -50,7 +50,7 @@ public class teacherFiveupController {
         //新增或者更新
         return teacherService.saveUser(teacher);
     }
-
+//git远程分支测试
     @GetMapping
     public List<teacher> findAll(){
         return teacherService.list();
@@ -79,7 +79,7 @@ public class teacherFiveupController {
             queryWrapper.like("newsType",newsType);
         }
         if(!"".equals(title)){
-            queryWrapper.like("title",title);
+
         }
         if(!"".equals(content)){
             queryWrapper.like("content",content);
@@ -88,7 +88,7 @@ public class teacherFiveupController {
     }
 
 
-
+//测试路径
 
     //excel导出
     @GetMapping("/exportExcel")
