@@ -9,9 +9,11 @@ import router from "@/router"; // 引入路由模块
 const service = axios.create({
   //baseURL: "http://36.111.68.174:33380",
   // baseURL: 'http://49.51.69.99:9200',
-  baseURL: 'http://localhost:9080',
+  // baseURL: 'http://localhost:9080',
   // baseURL: "http://49.51.69.99:33304",
   // baseURL: "http://36.111.68.174:33380",
+  // baseURL: 'http://us.uwis.cn:9082',  // 注释掉域名地址
+  baseURL: 'http://localhost:9082',  // 使用本地地址
   withCredentials: true, // send cookies when cross-domain requests
   timeout: 5000, // request timeout
 });

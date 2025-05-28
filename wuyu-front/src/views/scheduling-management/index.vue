@@ -73,7 +73,6 @@
               <el-switch
                 v-model="autoCopyEnabled"
                 active-text="自动复制"
-                inactive-text="关闭"
                 active-color="#409EFF"
                 @change="handleAutoCopySwitch"
               />
@@ -84,7 +83,7 @@
                 @confirm="handleAutoCopy"
               >
                 <template #reference>
-                  <el-button type="text" icon="el-icon-copy-document" circle></el-button>
+                  <el-button type="text" icon="el-icon-copy-document" circle>上学期排课</el-button>
                 </template>
               </el-popconfirm>
             </div>
@@ -210,39 +209,10 @@
     </div>
 
     <!-- 教师检索弹窗 -->
-    <el-dialog
-      title="选择任课教师"
+    <teacher-sel
       :visible.sync="teacherSelVisible"
-      width="60%"
-      :before-close="handleTeacherSelClose">
-      <el-input
-        v-model="teacherSearch"
-        placeholder="输入教师姓名/拼音搜索"
-        prefix-icon="el-icon-search"
-        class="mb-4" />
-      <el-table
-        :data="filteredTeachers"
-        stripe
-        size="small"
-        @row-click="selectTeacher">
-        <el-table-column prop="teacherName" label="教师姓名" width="120" />
-        <el-table-column prop="position" label="职位" width="120" />
-        <el-table-column prop="title" label="职称" width="100" />
-        <el-table-column prop="phoneNum" label="联系电话" width="160" />
-        <el-table-column label="操作" width="100">
-          <template #default="{ row }">
-            <el-button type="primary" size="small" @click="selectTeacher(row)">选择</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <el-pagination
-        :current-page="teacherPagination.current"
-        :page-size="teacherPagination.size"
-        :total="teachers.length"
-        layout="prev, pager, next"
-        class="mt-4" />
-    </el-dialog>
-
+      @select="handleTeacherSelect"
+    />
     <!-- 导入结果提示 -->
     <el-alert
       v-if="importResult"
@@ -261,7 +231,9 @@ import { Message, Loading } from 'element-ui';
 import { getLessonPageAPI, getTeacherListAPI } from '@/api/schedulModule/index'
 import TeacherSel from '@/components/TeacherSel'
 import pinyin from 'pinyin';
-
+components: {
+  TeacherSel
+}
 // 年级/班级选项
 const gradeOptions = Array.from({ length: 6 }, (_, i) => ({
   value: i + 1,
@@ -282,117 +254,6 @@ const pagination = reactive({
 const tableData = ref([])
 const tableLoading = ref(false)
 
-// 教师列表
-const teachers = ref([]);
-const teachersPinyin = ref([]);
-
-// 测试数据
-const mockTeachers = [
-  {
-    id: 1,
-    teacherName: '张建国',
-    gender: 1,
-    phoneNum: '13812345678',
-    position: '数学老师',
-    title: '高级教师',
-    role: '任课老师',
-    schoolId: 1,
-    username: 'zhangjianguo',
-    password: '123456'
-  },
-  {
-    id: 2,
-    teacherName: '李淑芬',
-    gender: 0,
-    phoneNum: '13987654321',
-    position: '语文老师',
-    title: '特级教师',
-    role: '班主任',
-    schoolId: 1,
-    username: 'lishufen',
-    password: '123456'
-  },
-  {
-    id: 3,
-    teacherName: '王海涛',
-    gender: 1,
-    phoneNum: '13765432198',
-    position: '英语老师',
-    title: '中级教师',
-    role: '任课老师',
-    schoolId: 1,
-    username: 'wanghaitao',
-    password: '123456'
-  },
-  {
-    id: 4,
-    teacherName: '赵晓燕',
-    gender: 0,
-    phoneNum: '13698765432',
-    position: '物理老师',
-    title: '初级教师',
-    role: '任课老师',
-    schoolId: 1,
-    username: 'zhaoxiaoyan',
-    password: '123456'
-  },
-  {
-    id: 5,
-    teacherName: '陈志强',
-    gender: 1,
-    phoneNum: '13567891234',
-    position: '化学老师',
-    title: '高级教师',
-    role: '班主任',
-    schoolId: 1,
-    username: 'chenzhiqiang',
-    password: '123456'
-  }
-];
-
-// 获取教师列表
-const fetchTeachers = async () => {
-  try {
-    const res = await getTeacherListAPI();
-    if (res.code === 200) {
-      teachers.value = res.data;
-      // 生成拼音数据
-      teachersPinyin.value = teachers.value.map(teacher => ({
-        id: teacher.id,
-        name: teacher.teacherName,
-        pinyin: pinyin(teacher.teacherName, {
-          style: pinyin.STYLE_NORMAL,
-          heteronym: false
-        }).join('')
-      }));
-    } else {
-      console.warn('获取教师列表失败，使用测试数据');
-      teachers.value = mockTeachers;
-      // 为测试数据生成拼音
-      teachersPinyin.value = mockTeachers.map(teacher => ({
-        id: teacher.id,
-        name: teacher.teacherName,
-        pinyin: pinyin(teacher.teacherName, {
-          style: pinyin.STYLE_NORMAL,
-          heteronym: false
-        }).join('')
-      }));
-    }
-  } catch (error) {
-    console.error('获取教师列表失败:', error);
-    console.warn('使用测试数据');
-    teachers.value = mockTeachers;
-    // 为测试数据生成拼音
-    teachersPinyin.value = mockTeachers.map(teacher => ({
-      id: teacher.id,
-      name: teacher.teacherName,
-      pinyin: pinyin(teacher.teacherName, {
-        style: pinyin.STYLE_NORMAL,
-        heteronym: false
-      }).join('')
-    }));
-  }
-};
 
 // 课程树数据
 const courseTree = ref([]);
@@ -445,10 +306,8 @@ const transformToTree = (records) => {
 
 const autoCopyEnabled = ref(true);
 const teacherDialogVisible = ref(false)
-// const teacherSearch = ref('');
 const currentCourse = ref(null);
 const importResult = ref(null);
-// const teacherPagination = reactive({ current: 1, size: 10 })
 
 const filteredCourseTree = computed(() => {
   if (!filter.grade && !filter.class && !filter.courseName) return courseTree.value
@@ -475,10 +334,6 @@ const treeProps = ref({
   label: 'label'
 })
 
-const openTeacherDialog = (course) => {
-  currentCourse.value = course;
-  teacherSelVisible.value = true
-};
 
 const selectTeacher = (teacher) => {
   if (!currentCourse.value) return
@@ -498,7 +353,7 @@ const selectTeacher = (teacher) => {
   teacherSelVisible.value = false
   Message.success(`已为课程${currentCourse.value.label}设置教师：${teacher.teacherName}`)
 }
-// 自动fuzhi
+// 自动复制排课
 const handleAutoCopy = () => {
   Loading.service({ text: '复制中...' })
   setTimeout(() => {
@@ -599,37 +454,50 @@ const handleCurrentChange = (newPage) => {
 
 // 教师检索相关
 const teacherSelVisible = ref(false);
-const teacherSearch = ref('');
-const teacherPagination = reactive({
-  current: 1,
-  size: 10
-});
 
-// 显示教师检索弹窗
-const showTeacherSel = () => {
+// 打开教师选择弹窗
+const openTeacherDialog = (course) => {
+  currentCourse.value = course;
   teacherSelVisible.value = true;
-  teacherSearch.value = '';
-  fetchTeachers(); // 获取教师列表
 };
 
-// 关闭教师检索弹窗
-const handleTeacherSelClose = () => {
+// 处理教师选择
+const handleTeacherSelect = (teacher) => {
+  if (!currentCourse.value) return;
+  
+  // 更新课程树中的教师信息
+  const updateNode = (nodes) => {
+    nodes.forEach(node => {
+      if (node.id === currentCourse.value.id && node.type === 'course') {
+        node.teacher = teacher.teacherName;
+        node.teacherId = teacher.id;
+      }
+      if (node.children) updateNode(node.children);
+    });
+  };
+  updateNode(courseTree.value);
+  
+  // 更新表格数据中的教师信息
+  const updateTableData = () => {
+    const index = tableData.value.findIndex(
+      item => item.id === currentCourse.value.id
+    );
+    if (index !== -1) {
+      tableData.value[index].teacherName = teacher.teacherName;
+      tableData.value[index].teacherId = teacher.id;
+    }
+  };
+  updateTableData();
+  
   teacherSelVisible.value = false;
-  teacherSearch.value = '';
+  Message.success(`已为课程${currentCourse.value.label}设置教师：${teacher.teacherName}`);
 };
 
-// 过滤教师列表
-const filteredTeachers = computed(() => {
-  const key = teacherSearch.value.toLowerCase();
-  return teachers.value.filter(t => {
-    // 获取当前教师的拼音数据
-    const teacherPinyin = teachersPinyin.value.find(p => p.id === t.id);
-    
-    return t.teacherName.toLowerCase().includes(key) ||
-           t.position.toLowerCase().includes(key) ||
-           t.title.toLowerCase().includes(key) ||
-           (teacherPinyin && teacherPinyin.pinyin.toLowerCase().includes(key));
-  });
+// 监听弹窗关闭，重置当前课程
+watch(teacherSelVisible, (val) => {
+  if (!val) {
+    currentCourse.value = null;
+  }
 });
 
 onMounted(() => {
@@ -772,5 +640,9 @@ onMounted(() => {
 
 .mt-4 {
   margin-top: 16px;
+}
+.card-actions{
+  margin-left: 20px;
+  /* src,utils-reques,vue.config.js */
 }
 </style>
