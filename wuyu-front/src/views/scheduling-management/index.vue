@@ -43,8 +43,8 @@
       </div>
 
       <div class="operation-group">
-        <el-button type="primary" icon="el-icon-plus" @click="handleAddCourse">新增</el-button>
-        <el-button type="danger" icon="el-icon-delete" disabled>删除</el-button>
+        <el-button type="primary" icon="el-icon-plus" @click="dialogVisible=true">新增</el-button>
+        <el-button type="danger" icon="el-icon-delete" :disabled="deleDisabled" @click="handleDeleteLesson(ids)">删除</el-button>
         <el-dropdown trigger="click" class="more-actions">
           <el-button type="info">
             更多操作<i class="el-icon-arrow-down el-icon--right"></i>
@@ -98,6 +98,7 @@
           :expand-on-click-node="false"
           default-expand-all
           class="custom-tree"
+          accordion="true"
         >
           <template #default="{ node, data }">
             <div class="tree-node">
@@ -154,8 +155,10 @@
           stripe
           highlight-current-row
           style="width: 100%"
+          @selection-change="handleSelectionChange"
         >
-          <el-table-column prop="grade" label="年级" width="150" align="center" />
+          <el-table-column type="selection" width="30"></el-table-column>
+          <el-table-column prop="grade" label="年级" width="120" align="center" />
           <el-table-column prop="classNum" label="班级" width="150" align="center" />
           <el-table-column prop="course" label="课程名称" min-width="250" />
           <el-table-column label="任课教师" width="200">
@@ -174,23 +177,25 @@
             </template>
           </el-table-column>
           <!-- <el-table-column prop="period" label="课时" width="100" align="center" /> -->
-          <el-table-column prop="credit" label="操作" width="300" align="center" >
-            <el-button
+          <el-table-column prop="id" label="操作" width="300" align="center">
+            <template #default="{ row }">
+              <el-button
                 type="primary"
                 size="small"
-                @click=""
+                @click="handleUpdateLesson(row)"
                 round
-                    >
-                  编辑课程
-                  </el-button>
-            <el-button
-              type="danger"
-              size="small"
-              @click=""
-              round
-                  >
-              删除课程
+              >
+                编辑课程
               </el-button>
+              <el-button
+                type="danger"
+                size="small"
+                @click="handleDeleteLesson(row.id)"
+                round
+              >
+                删除课程
+              </el-button>
+            </template>
           </el-table-column>
         </el-table>
 
@@ -251,13 +256,44 @@
       :closable="false"
       show-icon
       class="import-result" />
+
+    <lesson-info-dialog
+    :visible="dialogVisible"
+    :form-data="formData"
+    :teachers="teacherList"
+    @submit="handleSubmit"
+    @update:visible="dialogVisible = $event"
+  />
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, watch,onMounted } from 'vue';
-import { Message,Loading  } from 'element-ui';
-import {getLessonPageAPI} from '@/api/schedulModule/index'
+import { Message,Loading,MessageBox} from 'element-ui';
+import {getLessonPageAPI,
+        addLessonAPI,
+        deleteLessonAPI,
+        modestLessonAPI}
+        from '@/api/schedulModule/index'
+import lessonInfoDialog from './components/lessonInfoDialog.vue'
+
+
+const dialogVisible = ref(false)
+const formData = ref({})
+const teacherList = ref([
+  {
+    id: 1,
+    name: '张老师',
+    pinyin: 'zhang',
+    department: '数学系',
+    title: '教授'
+  },
+
+])
+
+const handleSubmit = (form) => {
+  console.log('提交数据：', form)
+}
 
 // 年级/班级选项
 const gradeOptions = Array.from({ length: 6 }, (_, i) => ({
@@ -387,7 +423,6 @@ const openTeacherDialog = (course) => {
 const selectTeacher = (teacher) => {
   if (!currentCourse.value) return
 
-  // 更新课程树中的教师信息
   const updateNode = (nodes) => {
     nodes.forEach(node => {
       if (node.id === currentCourse.value.id && node.type === 'course') {
@@ -402,6 +437,63 @@ const selectTeacher = (teacher) => {
   teacherDialogVisible.value = false
   Message.success(`已为课程${currentCourse.value.label}设置教师：${teacher.name}`)
 }
+
+// 勾选的条数变化
+const deleDisabled = ref(true)
+const ids = ref([])
+const handleSelectionChange = (e) => {
+  ids.value = e.map(item => item.id);
+  if(ids.value.length) {
+    deleDisabled.value = false
+  } else {
+    deleDisabled.value = true
+  }
+  console.log('当前选中的ID列表：', ids.value);
+  console.log('当前变化的事件对象：', e);
+}
+// 课程信息的增删改
+const handleAddCourse = () => {
+
+}
+
+const handleDeleteLesson = (aaids) => {
+  console.log('传入的id如下：',aaids);
+    MessageBox.confirm(
+    `确定要删除这${aaids.length}条数据吗?`,
+    '删除确认',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  )
+  .then(() => {
+    console.log('调用删除API，ID:', aaids)
+    const res = deleteLessonAPI(aaids)
+    if(res.code === 200 ){
+      Message({
+        type: 'success',
+        message: '删除成功!'
+      })
+      fetchData()
+      fetchAllCourses()
+    }
+  })
+  .catch(() => {
+    Message({
+      type: 'info',
+      message: '已取消删除'
+    })
+  })
+}
+
+const handleUpdateLesson = (row) => {
+  console.log('传进来的row值为：',row);
+
+  formData.value = row
+  dialogVisible.value = true
+}
+
 // 自动fuzhi
 const handleAutoCopy = () => {
   Loading.service({ text: '复制中...' })
