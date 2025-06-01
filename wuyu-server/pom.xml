@@ -26,6 +26,32 @@
         <!--            <artifactId>spring-boot-starter-security</artifactId>-->
         <!--        </dependency>-->
 
+        <!-- 引入依赖：使用pinyin4j库将汉字转换为拼音。-->
+        <dependency>
+            <groupId>com.belerweb</groupId>
+            <artifactId>pinyin4j</artifactId>
+            <version>2.5.1</version>
+        </dependency>
+
+        <!--- 引入依赖：mybatis-flex-->
+        <dependency>
+            <groupId>com.mybatis-flex</groupId>
+            <artifactId>mybatis-flex-spring-boot-starter</artifactId>
+            <version>1.10.9</version>
+        </dependency>
+        <dependency>
+            <groupId>com.mybatis-flex</groupId>
+            <artifactId>mybatis-flex-processor</artifactId>
+            <version>1.10.9</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- mybatis-flex-reactor 拓展 -->
+        <dependency>
+            <groupId>com.juxest</groupId>
+            <artifactId>mybatis-flex-reactor-spring</artifactId>
+            <version>0.2.2</version>
+        </dependency>
+        <!--- 引入依赖：mybatis-flex-->
 
         <dependency>
             <groupId>com.auth0</groupId>
