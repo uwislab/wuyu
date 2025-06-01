@@ -15,4 +15,10 @@ public interface LessonMapper extends BaseMapper<Lesson> {
     List<Lesson> pageLessons(PageLessonDto dto);
 
     Long pageCount(PageLessonDto dto);
+
+    int deleteByIds(List<Long> ids);
+
+    int addLesson(Lesson lesson);
+
+    int updateLesson(Lesson lesson);
 }

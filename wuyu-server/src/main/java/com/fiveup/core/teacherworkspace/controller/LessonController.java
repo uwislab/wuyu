@@ -9,9 +9,9 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/lesson")
@@ -25,5 +25,26 @@ public class LessonController {
     @ApiOperation("分页查询排课")
     public CommonResult<PageVo<Lesson>> page(PageLessonDto dto){
         return CommonResult.success(lessonService.pageLesson(dto));
+    }
+
+    @DeleteMapping
+    @ApiOperation("删除排课信息")
+    public CommonResult<Integer> deleteItems(@RequestBody List<Long> ids) {
+        int deletedRows = lessonService.deleteItems(ids);
+        return CommonResult.success(deletedRows);
+    }
+
+    @PostMapping("/add")
+    @ApiOperation("添加排课信息")
+    public CommonResult<Integer> addItems(@RequestBody Lesson lesson) {
+        int addRow = lessonService.addLesson(lesson);
+        return CommonResult.success(addRow);
+    }
+
+    @PutMapping("/{id}")
+    @ApiOperation("修改排课信息")
+    public CommonResult<Integer> updateLesson(@RequestBody Lesson lesson) {
+        int updateRow = lessonService.updateLesson(lesson);
+        return CommonResult.success(updateRow);
     }
 }
