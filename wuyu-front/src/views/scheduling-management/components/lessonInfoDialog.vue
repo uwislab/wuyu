@@ -73,29 +73,15 @@
           </el-form-item>
         </el-col>
 
-        <!-- 教师选择 -->
+        <!-- 教师输入框 -->
         <el-col :span="24">
-          <el-form-item label="任课教师" prop="teacherId">
-            <el-select
+          <el-form-item label="任课教师" prop="teacherName">
+            <el-input
               v-model="form.teacherName"
-              filterable
+              placeholder="请输入任课教师姓名"
               clearable
-              placeholder="请选择任课教师"
-              class="w-full"
-              @change="handleTeacherChange"
-            >
-              <el-option
-                v-for="teacher in filteredTeachers"
-                :key="teacher.id"
-                :label="teacher.name"
-                :value="teacher.id"
-              >
-                <span style="float: left">{{ teacher.name }}</span>
-                <span style="float: right; color: #8492a6; font-size: 13px">
-                  {{ teacher.department }} - {{ teacher.title }}
-                </span>
-              </el-option>
-            </el-select>
+              @keyup.enter.native="handleSubmit"
+            />
           </el-form-item>
         </el-col>
       </el-row>
@@ -112,6 +98,8 @@
 
 <script setup>
 import { ref, reactive, computed, watch } from 'vue'
+import { Message } from 'element-ui'
+import { addLessonAPI, updateLessonAPI } from '@/api/schedulModule/index'
 
 const props = defineProps({
   visible: Boolean,
@@ -126,13 +114,13 @@ const props = defineProps({
       teacherName: ''
     })
   },
-  teachers: {  // 接收教师列表数据
+  teachers: {
     type: Array,
     default: () => []
   }
 })
 
-const emit = defineEmits(['update:visible', 'submit'])
+const emit = defineEmits(['update:visible', 'submit', 'success'])
 
 // 年级选项
 const gradeOptions = Array.from({ length: 6 }, (_, i) => ({
@@ -145,7 +133,7 @@ const classNumOptions = Array.from({ length: 10 }, (_, i) => i + 1)
 
 const formRef = ref(null)
 const dialogVisible = ref(false)
-const searchQuery = ref('')
+const loading = ref(false) // 添加加载状态
 
 const form = reactive({ ...props.formData })
 
@@ -164,19 +152,10 @@ const rules = reactive({
     { required: true, message: '请输入课程名称', trigger: 'blur' },
     { max: 50, message: '长度不能超过50个字符', trigger: 'blur' }
   ],
-  teacherId: [
-    { required: true, message: '请选择任课教师', trigger: 'change' }
+  teacherName: [
+    { required: true, message: '请输入任课教师姓名', trigger: 'blur' },
+    { min: 2, message: '教师姓名至少需要2个字符', trigger: 'blur' }
   ]
-})
-
-// 过滤教师列表
-const filteredTeachers = computed(() => {
-  return props.teachers.filter(teacher => {
-    const query = searchQuery.value.toLowerCase()
-    return teacher.name.toLowerCase().includes(query) ||
-           teacher.pinyin.toLowerCase().includes(query) ||
-           teacher.department.toLowerCase().includes(query)
-  })
 })
 
 watch(() => props.visible, val => {
@@ -191,19 +170,46 @@ const handleClose = () => {
   formRef.value?.resetFields()
 }
 
-// 教师选择变更处理
-const handleTeacherChange = (teacherId) => {
-  const selectedTeacher = props.teachers.find(t => t.id === teacherId)
-  if (selectedTeacher) {
-    form.teacherName = selectedTeacher.name
-  }
-}
+// 处理表单提交
+const handleSubmit = async () => {
+  formRef.value.validate(async valid => {
+    if (!valid) return
 
-const handleSubmit = () => {
-  formRef.value.validate(valid => {
-    if (valid) {
-      emit('submit', { ...form })
-      dialogVisible.value = false
+    loading.value = true
+
+    try {
+      const lessonData = {
+        ...form,
+      }
+
+      let result
+      if (form.id) {
+        // 更新课程信息
+        result = await updateLessonAPI(lessonData)
+        console.log(result);
+
+        if(result.code === 200)
+          Message.success('课程信息更新成功')
+        else
+          Message.error('出错了，稍后重试~')
+      } else {
+        // 添加新课程
+        result = await addLessonAPI(lessonData)
+        console.log(result);
+
+        if(result.code === 200)
+          Message.success('新课程添加成功')
+        else
+          Message.error('出错了，稍后重试~')
+      }
+
+      emit('success', result) // 通知父组件操作成功
+      emit('update:visible', false)
+    } catch (error) {
+      console.error('操作失败:', error)
+      Message.error('操作失败，请重试')
+    } finally {
+      loading.value = false
     }
   })
 }
@@ -229,19 +235,7 @@ const handleSubmit = () => {
   }
 }
 
-.el-select-dropdown__item {
-  display: flex;
-  justify-content: space-between;
-  padding: 0 20px;
-
-  span:first-child {
-    flex: 1;
-    margin-right: 20px;
-  }
-
-  span:last-child {
-    color: #909399;
-    font-size: 12px;
-  }
+:deep(.el-button.is-loading) {
+  cursor: not-allowed;
 }
 </style>
