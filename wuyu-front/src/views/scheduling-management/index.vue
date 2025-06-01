@@ -95,10 +95,8 @@
           :data="filteredCourseTree"
           :props="treeProps"
           node-key="id"
-          :expand-on-click-node="false"
-          default-expand-all
           class="custom-tree"
-          accordion="true"
+          accordion
         >
           <template #default="{ node, data }">
             <div class="tree-node">
@@ -271,9 +269,8 @@
 import { ref, reactive, computed, watch,onMounted } from 'vue';
 import { Message,Loading,MessageBox} from 'element-ui';
 import {getLessonPageAPI,
-        addLessonAPI,
         deleteLessonAPI,
-        modestLessonAPI}
+        }
         from '@/api/schedulModule/index'
 import lessonInfoDialog from './components/lessonInfoDialog.vue'
 
