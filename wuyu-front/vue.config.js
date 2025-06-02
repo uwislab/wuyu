@@ -14,16 +14,9 @@ const name = defaultSettings.title || "五育后台管理系统"; // page title
 //例如，Mac:sudo npm run
 //您可以通过以下方法更改端口：
 //端口=9527 npm run dev或npm run dev--端口=9522
-<<<<<<< HEAD
 // const port = 33219;
 // const port = process.env.VUE_APP_FRONTEND_PORT; 在.env.development中配置“VUE_APP_FRONTEND_PORT”
 const port = process.env.VUE_APP_FRONTEND_PORT; // dev port
-=======
-// const port = 33219; // dev port
-// const port = process.env.port || process.env.npm_config_port || 33280; // dev port
-const port = process.env.port || process.env.npm_config_port || 9182; // dev port
->>>>>>> feature-02-gst
-
 //所有配置项说明可在中找到https://cli.vuejs.org/config/
 module.exports = {
   publicPath: "/",
@@ -42,20 +35,9 @@ module.exports = {
   devServer: {
     proxy: {
       "/api": {
-<<<<<<< HEAD
         target: process.env.VUE_APP_BACKEND_URL,
         changeOrigin: true,
         pathRewrite: {"^/api": ""},
-=======
-        // target: "http://58.87.88.61:9200", // 后台端口号
-        // target: "http://localhost:9200",
-        //target: "http://36.111.68.174:33380",
-        // target: "http://36.111.68.174:33380",
-        target: "http://us.uwis.cn:9082",
-        // target: "http://localhost:33381",
-        changeOrigin: true,
-        pathRewrite: { "^/api": "" },
->>>>>>> feature-02-gst
       },
     },
     port: port,
