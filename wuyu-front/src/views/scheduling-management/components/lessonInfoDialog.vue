@@ -1,0 +1,241 @@
+<template>
+  <el-dialog
+    :title="form.id ? '修改课程信息' : '新增课程信息'"
+    :visible.sync="dialogVisible"
+    width="600px"
+    @close="handleClose"
+  >
+    <el-form
+      ref="formRef"
+      :model="form"
+      :rules="rules"
+      label-width="100px"
+      label-position="right"
+    >
+      <el-row :gutter="20">
+        <!-- 年级 -->
+        <el-col :span="12">
+          <el-form-item label="年级" prop="grade">
+            <el-select
+              v-model="form.grade"
+              placeholder="请选择年级"
+              clearable
+              class="w-full"
+            >
+              <el-option
+                v-for="grade in gradeOptions"
+                :key="grade.value"
+                :label="grade.label"
+                :value="grade.value"
+              />
+            </el-select>
+          </el-form-item>
+        </el-col>
+
+        <!-- 班级序号 -->
+        <el-col :span="12">
+          <el-form-item label="班级序号" prop="classNum">
+            <el-select
+              v-model="form.classNum"
+              placeholder="请选择班级序号"
+              clearable
+              class="w-full"
+            >
+              <el-option
+                v-for="num in classNumOptions"
+                :key="num"
+                :label="num"
+                :value="num"
+              />
+            </el-select>
+          </el-form-item>
+        </el-col>
+
+        <!-- 班级名称 -->
+        <el-col :span="24">
+          <el-form-item label="班级名称" prop="className">
+            <el-input
+              v-model="form.className"
+              placeholder="请输入班级名称"
+              clearable
+            />
+          </el-form-item>
+        </el-col>
+
+        <!-- 课程名称 -->
+        <el-col :span="24">
+          <el-form-item label="课程名称" prop="course">
+            <el-input
+              v-model="form.course"
+              placeholder="请输入课程名称"
+              clearable
+            />
+          </el-form-item>
+        </el-col>
+
+        <!-- 教师输入框 -->
+        <el-col :span="24">
+          <el-form-item label="任课教师" prop="teacherName">
+            <el-input
+              v-model="form.teacherName"
+              placeholder="请输入任课教师姓名"
+              clearable
+              @keyup.enter.native="handleSubmit"
+            />
+          </el-form-item>
+        </el-col>
+      </el-row>
+    </el-form>
+
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="handleSubmit">确 定</el-button>
+      </span>
+    </template>
+  </el-dialog>
+</template>
+
+<script setup>
+import { ref, reactive, computed, watch } from 'vue'
+import { Message } from 'element-ui'
+import { addLessonAPI, updateLessonAPI } from '@/api/schedulModule/index'
+
+const props = defineProps({
+  visible: Boolean,
+  formData: {
+    type: Object,
+    default: () => ({
+      grade: null,
+      classNum: null,
+      className: '',
+      course: '',
+      teacherId: null,
+      teacherName: ''
+    })
+  },
+  teachers: {
+    type: Array,
+    default: () => []
+  }
+})
+
+const emit = defineEmits(['update:visible', 'submit', 'success'])
+
+// 年级选项
+const gradeOptions = Array.from({ length: 6 }, (_, i) => ({
+  value: i + 1,
+  label: `${i + 1}年级`
+}))
+
+// 班级序号选项
+const classNumOptions = Array.from({ length: 10 }, (_, i) => i + 1)
+
+const formRef = ref(null)
+const dialogVisible = ref(false)
+const loading = ref(false) // 添加加载状态
+
+const form = reactive({ ...props.formData })
+
+const rules = reactive({
+  grade: [
+    { required: true, message: '请选择年级', trigger: 'change' }
+  ],
+  classNum: [
+    { required: true, message: '请选择班级序号', trigger: 'change' }
+  ],
+  className: [
+    { required: true, message: '请输入班级名称', trigger: 'blur' },
+    { max: 20, message: '长度不能超过20个字符', trigger: 'blur' }
+  ],
+  course: [
+    { required: true, message: '请输入课程名称', trigger: 'blur' },
+    { max: 50, message: '长度不能超过50个字符', trigger: 'blur' }
+  ],
+  teacherName: [
+    { required: true, message: '请输入任课教师姓名', trigger: 'blur' },
+    { min: 2, message: '教师姓名至少需要2个字符', trigger: 'blur' }
+  ]
+})
+
+watch(() => props.visible, val => {
+  dialogVisible.value = val
+  if (val) {
+    Object.assign(form, props.formData)
+  }
+})
+
+const handleClose = () => {
+  emit('update:visible', false)
+  formRef.value?.resetFields()
+}
+
+// 处理表单提交
+const handleSubmit = async () => {
+  formRef.value.validate(async valid => {
+    if (!valid) return
+
+    loading.value = true
+
+    try {
+      const lessonData = {
+        ...form,
+      }
+
+      let result
+      if (form.id) {
+        // 更新课程信息
+        result = await updateLessonAPI(lessonData)
+        console.log(result);
+
+        if(result.code === 200)
+          Message.success('课程信息更新成功')
+        else
+          Message.error('出错了，稍后重试~')
+      } else {
+        // 添加新课程
+        result = await addLessonAPI(lessonData)
+        console.log(result);
+
+        if(result.code === 200)
+          Message.success('新课程添加成功')
+        else
+          Message.error('出错了，稍后重试~')
+      }
+
+      emit('success', result) // 通知父组件操作成功
+      emit('update:visible', false)
+    } catch (error) {
+      console.error('操作失败:', error)
+      Message.error('操作失败，请重试')
+    } finally {
+      loading.value = false
+    }
+  })
+}
+</script>
+
+<style lang="scss" scoped>
+.el-select {
+  width: 100%;
+}
+
+.el-form-item {
+  margin-bottom: 18px;
+
+  :deep(.el-form-item__label) {
+    font-weight: 500;
+    padding-right: 20px;
+  }
+}
+
+.dialog-footer {
+  .el-button + .el-button {
+    margin-left: 12px;
+  }
+}
+
+:deep(.el-button.is-loading) {
+  cursor: not-allowed;
+}
+</style>
