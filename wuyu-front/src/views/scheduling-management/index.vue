@@ -43,8 +43,8 @@
       </div>
 
       <div class="operation-group">
-        <el-button type="primary" icon="el-icon-plus" @click="handleAddCourse">新增</el-button>
-        <el-button type="danger" icon="el-icon-delete" disabled>删除</el-button>
+        <el-button type="primary" icon="el-icon-plus" @click="dialogVisible=true">新增</el-button>
+        <el-button type="danger" icon="el-icon-delete" :disabled="deleDisabled" @click="handleDeleteLesson(ids)">删除</el-button>
         <el-dropdown trigger="click" class="more-actions">
           <el-button type="info">
             更多操作<i class="el-icon-arrow-down el-icon--right"></i>
@@ -73,7 +73,6 @@
               <el-switch
                 v-model="autoCopyEnabled"
                 active-text="自动复制"
-                inactive-text="关闭"
                 active-color="#409EFF"
                 @change="handleAutoCopySwitch"
               />
@@ -84,7 +83,7 @@
                 @confirm="handleAutoCopy"
               >
                 <template #reference>
-                  <el-button type="text" icon="el-icon-copy-document" circle></el-button>
+                  <el-button type="text" icon="el-icon-copy-document" circle>上学期排课</el-button>
                 </template>
               </el-popconfirm>
             </div>
@@ -95,9 +94,8 @@
           :data="filteredCourseTree"
           :props="treeProps"
           node-key="id"
-          :expand-on-click-node="false"
-          default-expand-all
           class="custom-tree"
+          accordion
         >
           <template #default="{ node, data }">
             <div class="tree-node">
@@ -140,7 +138,7 @@
               <div>
                 <el-button type="primary" icon="el-icon-upload" size="small" @click="handleUpload">导入课表</el-button>
               </div>
-              <Import :dialog-visible="dialogVisible" 
+              <Import :dialog-visible="dialogVisible"
               @update:dialog-visible="dialogVisible = $event" ></Import>
 
           </div>
@@ -152,8 +150,10 @@
           stripe
           highlight-current-row
           style="width: 100%"
+          @selection-change="handleSelectionChange"
         >
-          <el-table-column prop="grade" label="年级" width="150" align="center" />
+          <el-table-column type="selection" width="30"></el-table-column>
+          <el-table-column prop="grade" label="年级" width="120" align="center" />
           <el-table-column prop="classNum" label="班级" width="150" align="center" />
           <el-table-column prop="course" label="课程名称" min-width="250" />
           <el-table-column label="任课教师" width="200">
@@ -172,23 +172,25 @@
             </template>
           </el-table-column>
           <!-- <el-table-column prop="period" label="课时" width="100" align="center" /> -->
-          <el-table-column prop="credit" label="操作" width="300" align="center" >
-            <el-button
+          <el-table-column prop="id" label="操作" width="300" align="center">
+            <template #default="{ row }">
+              <el-button
                 type="primary"
                 size="small"
-                @click=""
+                @click="handleUpdateLesson(row)"
                 round
-                    >
-                  编辑课程
-                  </el-button>
-            <el-button
-              type="danger"
-              size="small"
-              @click=""
-              round
-                  >
-              删除课程
+              >
+                编辑课程
               </el-button>
+              <el-button
+                type="danger"
+                size="small"
+                @click="handleDeleteLesson(row.id)"
+                round
+              >
+                删除课程
+              </el-button>
+            </template>
           </el-table-column>
         </el-table>
 
@@ -207,40 +209,11 @@
       </el-card>
     </div>
 
-    <!-- 教师选择对话框 -->
-    <el-dialog
-      title="选择任课教师"
-      :visible.sync="teacherDialogVisible"
-      width="60%"
-      :before-close="handleDialogClose">
-      <el-input
-        v-model="teacherSearch"
-        placeholder="输入教师姓名/拼音搜索"
-        prefix-icon="el-icon-search"
-        class="mb-4" />
-      <el-table
-        :data="filteredTeachers"
-        stripe
-        size="small"
-        @row-click="selectTeacher">
-        <el-table-column prop="name" label="教师姓名" width="120" />
-        <el-table-column prop="department" label="所属院系" width="200" />
-        <el-table-column prop="title" label="职称" width="100" />
-        <el-table-column prop="pinyin" label="拼音" width="160" />
-        <el-table-column label="操作" width="100">
-          <template #default="{ row }">
-            <el-button type="primary" size="small" @click="selectTeacher(row)">选择</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <el-pagination
-        :current-page="teacherPagination.current"
-        :page-size="teacherPagination.size"
-        :total="teachers.length"
-        layout="prev, pager, next"
-        class="mt-4" />
-    </el-dialog>
-
+    <!-- 教师检索弹窗 -->
+    <teacher-sel
+      :visible.sync="teacherSelVisible"
+      @select="handleTeacherSelect"
+    />
     <!-- 导入结果提示 -->
     <el-alert
       v-if="importResult"
@@ -249,15 +222,47 @@
       :closable="false"
       show-icon
       class="import-result" />
+
+    <lesson-info-dialog
+    :visible="dialogVisible"
+    :form-data="formData"
+    :teachers="teacherList"
+    @submit="handleSubmit"
+    @update:visible="dialogVisible = $event"
+  />
   </div>
+
 </template>
 
 <script setup>
 import  Import from './components/Import'
 import { ref, reactive, computed, watch,onMounted } from 'vue';
-import { Message,Loading  } from 'element-ui';
-import {getLessonPageAPI, downloadModel,exportExcel} from '@/api/schedulModule/index'
 
+import { Message,Loading,MessageBox} from 'element-ui';
+import {getLessonPageAPI, downloadModel, exportExcel,
+        deleteLessonAPI,
+        getTeacherListAPI
+        }
+        from '@/api/schedulModule/index'
+import lessonInfoDialog from './components/lessonInfoDialog.vue'
+import TeacherSel from '@/components/TeacherSel'
+
+const dialogVisible = ref(false)
+const formData = ref({})
+const teacherList = ref([
+  {
+    id: 1,
+    name: '张老师',
+    pinyin: 'zhang',
+    department: '数学系',
+    title: '教授'
+  },
+
+])
+
+const handleSubmit = (form) => {
+  console.log('提交数据：', form)
+}
 
 // 年级/班级选项
 const gradeOptions = Array.from({ length: 6 }, (_, i) => ({
@@ -279,13 +284,6 @@ const pagination = reactive({
 const tableData = ref([])
 const tableLoading = ref(false)
 
-// todo ：教师的绑定
-const teachers = ref([
-  { id: 1, name: '张建国', pinyin: 'zhangjianguo', department: '计算机学院', title: '教授', avatar: 'https://picsum.photos/30/30?1' },
-  { id: 2, name: '李淑芬', pinyin: 'lishufen', department: '外语学院', title: '副教授', avatar: 'https://picsum.photos/30/30?2' },
-  { id: 3, name: '王海涛', pinyin: 'wanghaitao', department: '数学系', title: '讲师', avatar: 'https://picsum.photos/30/30?3' },
-  { id: 4, name: '赵晓燕', pinyin: 'zhaoxiaoyan', department: '物理学院', title: '助教', avatar: 'https://picsum.photos/30/30?4' },
-]);
 
 // 课程树数据
 const courseTree = ref([]);
@@ -338,10 +336,8 @@ const transformToTree = (records) => {
 
 const autoCopyEnabled = ref(true);
 const teacherDialogVisible = ref(false)
-const teacherSearch = ref('');
 const currentCourse = ref(null);
 const importResult = ref(null);
-const teacherPagination = reactive({ current: 1, size: 10 })
 
 const filteredCourseTree = computed(() => {
   if (!filter.grade && !filter.class && !filter.courseName) return courseTree.value
@@ -363,35 +359,19 @@ const filteredCourseTree = computed(() => {
   }).filter(Boolean)
 });
 
-
-const filteredTeachers = computed(() => {
-  const key = teacherSearch.value.toLowerCase()
-  return teachers.value.filter(t =>
-    t.name.includes(key) ||
-    t.pinyin.includes(key) ||
-    t.department.includes(key)
-  )
-})
-
 const treeProps = ref({
   children: 'children',
   label: 'label'
 })
 
-const openTeacherDialog = (course) => {
-  currentCourse.value = course;
-  teacherDialogVisible.value = true
-  teacherSearch.value = ''
-};
 
 const selectTeacher = (teacher) => {
   if (!currentCourse.value) return
 
-  // 更新课程树中的教师信息
   const updateNode = (nodes) => {
     nodes.forEach(node => {
       if (node.id === currentCourse.value.id && node.type === 'course') {
-        node.teacher = teacher.name
+        node.teacher = teacher.teacherName
         node.teacherId = teacher.id
       }
       if (node.children) updateNode(node.children)
@@ -399,10 +379,68 @@ const selectTeacher = (teacher) => {
   }
   updateNode(courseTree.value)
 
-  teacherDialogVisible.value = false
-  Message.success(`已为课程${currentCourse.value.label}设置教师：${teacher.name}`)
+  teacherSelVisible.value = false
+  Message.success(`已为课程${currentCourse.value.label}设置教师：${teacher.teacherName}`)
 }
+
+// 勾选的条数变化
+const deleDisabled = ref(true)
+const ids = ref([])
+const handleSelectionChange = (e) => {
+  ids.value = e.map(item => item.id);
+  if(ids.value.length) {
+    deleDisabled.value = false
+  } else {
+    deleDisabled.value = true
+  }
+  console.log('当前选中的ID列表：', ids.value);
+  console.log('当前变化的事件对象：', e);
+}
+// 课程信息的增删改
+const handleAddCourse = () => {
+
+}
+
+const handleDeleteLesson = (aaids) => {
+  console.log('传入的id如下：',aaids);
+    MessageBox.confirm(
+    `确定要删除这${aaids.length}条数据吗?`,
+    '删除确认',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  )
+  .then(() => {
+    console.log('调用删除API，ID:', aaids)
+    const res = deleteLessonAPI(aaids)
+    if(res.code === 200 ){
+      Message({
+        type: 'success',
+        message: '删除成功!'
+      })
+      fetchData()
+      fetchAllCourses()
+    }
+  })
+  .catch(() => {
+    Message({
+      type: 'info',
+      message: '已取消删除'
+    })
+  })
+}
+
+const handleUpdateLesson = (row) => {
+  console.log('传进来的row值为：',row);
+
+  formData.value = row
+  dialogVisible.value = true
+}
+
 // 自动fuzhi
+// 自动复制排课
 const handleAutoCopy = () => {
   Loading.service({ text: '复制中...' })
   setTimeout(() => {
@@ -411,7 +449,7 @@ const handleAutoCopy = () => {
   }, 1000);
 }
 
-watch(teacherDialogVisible, (val) => {
+watch(teacherSelVisible, (val) => {
   if (!val) currentCourse.value = null
 })
 
@@ -513,7 +551,7 @@ const downloadTemplate = async () => {
     });
 }
 }
-    
+
 //导出数据
 const handleExport = async () =>{
   console.log(pagination.page,pagination.size)
@@ -540,10 +578,58 @@ const handleExport = async () =>{
   }
 }
 
+// 教师检索相关
+const teacherSelVisible = ref(false);
 
-onMounted(()=>{
-      fetchData()
-      fetchAllCourses()
+// 打开教师选择弹窗
+const openTeacherDialog = (course) => {
+  currentCourse.value = course;
+  teacherSelVisible.value = true;
+};
+
+// 处理教师选择
+const handleTeacherSelect = (teacher) => {
+  if (!currentCourse.value) return;
+
+  // 更新课程树中的教师信息
+  const updateNode = (nodes) => {
+    nodes.forEach(node => {
+      if (node.id === currentCourse.value.id && node.type === 'course') {
+        node.teacher = teacher.teacherName;
+        node.teacherId = teacher.id;
+      }
+      if (node.children) updateNode(node.children);
+    });
+  };
+  updateNode(courseTree.value);
+
+  // 更新表格数据中的教师信息
+  const updateTableData = () => {
+    const index = tableData.value.findIndex(
+      item => item.id === currentCourse.value.id
+    );
+    if (index !== -1) {
+      tableData.value[index].teacherName = teacher.teacherName;
+      tableData.value[index].teacherId = teacher.id;
+    }
+  };
+  updateTableData();
+
+  teacherSelVisible.value = false;
+  Message.success(`已为课程${currentCourse.value.label}设置教师：${teacher.teacherName}`);
+};
+
+// 监听弹窗关闭，重置当前课程
+watch(teacherSelVisible, (val) => {
+  if (!val) {
+    currentCourse.value = null;
+  }
+});
+
+onMounted(() => {
+  fetchData()
+  fetchAllCourses()
+  fetchTeachers()
 })
 </script>
 
@@ -672,5 +758,17 @@ onMounted(()=>{
   margin-top: 20px;
   display: flex;
   justify-content: flex-end;
+}
+
+.mb-4 {
+  margin-bottom: 16px;
+}
+
+.mt-4 {
+  margin-top: 16px;
+}
+.card-actions{
+  margin-left: 20px;
+  /* src,utils-reques,vue.config.js */
 }
 </style>
