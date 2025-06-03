@@ -246,10 +246,6 @@ import {getLessonPageAPI,
         from '@/api/schedulModule/index'
 import lessonInfoDialog from './components/lessonInfoDialog.vue'
 import TeacherSel from '@/components/TeacherSel'
-import pinyin from 'pinyin';
-components: {
-  TeacherSel
-}
 
 const dialogVisible = ref(false)
 const formData = ref({})
@@ -268,14 +264,6 @@ const handleSubmit = (form) => {
   console.log('提交数据：', form)
 }
 
-import { ref, reactive, computed, watch, onMounted } from 'vue';
-import { Message, Loading } from 'element-ui';
-import { getLessonPageAPI, getTeacherListAPI } from '@/api/schedulModule/index'
-import TeacherSel from '@/components/TeacherSel'
-import pinyin from 'pinyin';
-components: {
-  TeacherSel
-}
 // 年级/班级选项
 const gradeOptions = Array.from({ length: 6 }, (_, i) => ({
   value: i + 1,
