@@ -1,14 +1,17 @@
 package com.fiveup.core.courseScore.service;
 
 import com.fiveup.core.courseScore.entity.CourseScore;
+import com.fiveup.core.courseScore.entity.CourseScoreStatisticsVO;
 import com.fiveup.core.courseScore.entity.ResPage;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public interface CourseScoreService {
     /**
      * 成绩录入
+     *
      * @param courseScore
      */
     void save(CourseScore courseScore);
@@ -18,10 +21,11 @@ public interface CourseScoreService {
      */
     void update85();
 
-    List<CourseScore> getList(String teacher_name,int course_type,int test_number,String course_name);
+    List<CourseScore> getList(String teacher_name, int course_type, int test_number, String course_name);
 
     /**
      * 条件分页查询
+     *
      * @param courseName
      * @param courseType
      * @param teacherName
@@ -35,13 +39,21 @@ public interface CourseScoreService {
 
     /**
      * 根据ids数组删除成绩
+     *
      * @param ids
      */
     boolean deleteByIds(String[] ids);
 
     /**
      * 修改成绩
+     *
      * @param courseScore
      */
     void edit(CourseScore courseScore);
+
+
+    /*
+     * 获取成绩统计信息
+     */
+    List<CourseScoreStatisticsVO> getCourseScoreStatistics();
 }

@@ -20,4 +20,17 @@
             #{id}
         </foreach>
     </delete>
+
+
+    <!-- 查询每门课程的分数段统计 -->
+    <select id="getCourseScoreStatisticsBySQL" resultType="com.fiveup.core.courseScore.entity.CourseScoreStatisticsVO">
+        SELECT course_name                                               AS courseName,
+               SUM(CASE WHEN score BETWEEN 0 AND 59 THEN 1 ELSE 0 END)   AS bucket_0_59,
+               SUM(CASE WHEN score BETWEEN 60 AND 69 THEN 1 ELSE 0 END)  AS bucket_60_69,
+               SUM(CASE WHEN score BETWEEN 70 AND 79 THEN 1 ELSE 0 END)  AS bucket_70_79,
+               SUM(CASE WHEN score BETWEEN 80 AND 89 THEN 1 ELSE 0 END)  AS bucket_80_89,
+               SUM(CASE WHEN score BETWEEN 90 AND 100 THEN 1 ELSE 0 END) AS bucket_90_100
+        FROM course_score
+        GROUP BY course_name
+    </select>
 </mapper>
