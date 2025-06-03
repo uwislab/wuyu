@@ -11,10 +11,13 @@ import com.fiveup.core.teacherworkspace.service.LessonService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
 public class LessonServiceImpl extends ServiceImpl<LessonMapper, Lesson> implements LessonService {
+    private final LessonMapper lessonMapper;
 
     @Override
     public PageVo<Lesson> pageLesson(PageLessonDto dto) {
@@ -25,5 +28,20 @@ public class LessonServiceImpl extends ServiceImpl<LessonMapper, Lesson> impleme
                 .like(CharSequenceUtil.isNotBlank(dto.getCourse()), Lesson::getCourse, dto.getCourse())
                 .page(Page.of(dto.getPage(), dto.getSize()));
         return PageVo.of(page);
+    }
+
+    @Override
+    public int deleteItems(List<Long> ids) {
+        return lessonMapper.deleteByIds(ids);
+    }
+
+    @Override
+    public int addLesson(Lesson lesson) {
+        return lessonMapper.addLesson(lesson);
+    }
+
+    @Override
+    public int updateLesson(Lesson lesson) {
+        return lessonMapper.updateLesson(lesson);
     }
 }
