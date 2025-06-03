@@ -215,6 +215,20 @@
       :visible.sync="teacherSelVisible"
       @select="handleTeacherSelect"
     />
+    <!-- <TeacherSel
+      v-model:visible="teacherSelVisible"
+      @select="handleTeacherSelect"
+    /> -->
+
+    <!-- 学期初时间设置弹窗 -->
+    <semester-start-dialog
+      :visible.sync="semesterStartDialogVisible"
+      @confirm="handleSemesterStartConfirm"
+    />
+    <!-- <SemesterStartDialog
+      v-model:visible="semesterStartDialogVisible"
+      @confirm="handleSemesterStartConfirm"
+    /> -->
     <!-- 导入结果提示 -->
     <el-alert
       v-if="importResult"
@@ -242,10 +256,12 @@ import {
   getLessonPageAPI,
   deleteLessonAPI,
   getTeacherListAPI,
+  updateLessonAPI,
   copyLastSemesterSchedule 
 } from '@/api/schedulModule/index'
-import TeacherSel from '@/components/TeacherSel'
-import lessonInfoDialog from './components/lessonInfoDialog.vue'
+import TeacherSel from '@/views/scheduling-management/components/TeacherSel.vue'
+import lessonInfoDialog from '@/views/scheduling-management/components/lessonInfoDialog.vue'
+import SemesterStartDialog from '@/views/scheduling-management/components/SemesterStartDialog.vue'
 import pinyin from 'pinyin';
 
 const dialogVisible = ref(false)
@@ -335,7 +351,7 @@ const transformToTree = (records) => {
   return Array.from(treeMap.values())
 }
 
-const autoCopyEnabled = ref(true);
+
 const teacherDialogVisible = ref(false)
 const currentCourse = ref(null);
 const importResult = ref(null);
@@ -436,19 +452,22 @@ const handleAutoCopy = async () => {
       background: 'rgba(0, 0, 0, 0.7)'
     })
     
-    const res = await copyLastSemesterSchedule()
+    // const res = await copyLastSemesterSchedule()
+    Message.success('复制上学期排课成功')
+      // 重新获取数据
+      await fetchData()
+      await fetchAllCourses()
+      loading.close()
     if (res.code === 200) {
       Message.success('复制上学期排课成功')
       // 重新获取数据
       await fetchData()
       await fetchAllCourses()
     } else {
-      Message.error(res.message || '复制失败')
+      console.log('复制失败：',res.message)
     }
-    loading.close()
   } catch (error) {
-    Message.error('复制上学期排课失败')
-    console.error('复制上学期排课失败:', error)
+    console.log('复制失败：',res.message)
   }
 }
 
@@ -476,6 +495,7 @@ const handleExport = () => {
 watch(teacherSelVisible, (val) => {
   if (!val) currentCourse.value = null
 })
+
 
 // 获取表格数据（分页）
 const fetchData = async () => {
@@ -552,9 +572,22 @@ const openTeacherDialog = (course) => {
 };
 
 // 处理教师选择
-const handleTeacherSelect = (teacher) => {
+const handleTeacherSelect = async (teacher) => {
   if (!currentCourse.value) return;
+  
+  // 检查教师是否已在同一班级有其他课程
+  const hasConflict = tableData.value.some(item => 
+    item.teacherId === teacher.id && 
+    item.grade === currentCourse.value.grade && 
+    item.classNum === currentCourse.value.classNum &&
+    item.id !== currentCourse.value.id
+  );
 
+  if (hasConflict) {
+    Message.error(`${teacher.teacherName}老师已经在${currentCourse.value.grade}年级${currentCourse.value.classNum}班有其他课程，不能重复分配`);
+    return;
+  }
+  
   // 更新课程树中的教师信息
   const updateNode = (nodes) => {
     nodes.forEach(node => {
@@ -566,7 +599,7 @@ const handleTeacherSelect = (teacher) => {
     });
   };
   updateNode(courseTree.value);
-
+  
   // 更新表格数据中的教师信息
   const updateTableData = () => {
     const index = tableData.value.findIndex(
@@ -579,8 +612,40 @@ const handleTeacherSelect = (teacher) => {
   };
   updateTableData();
 
-  teacherSelVisible.value = false;
-  Message.success(`已为课程${currentCourse.value.label}设置教师：${teacher.teacherName}`);
+  // 检查必要参数
+  if (!currentCourse.value?.id) {
+    Message.error('课程ID不存在，无法更新教师信息');
+    return;
+  }
+
+  const { grade, classNum, course, id } = currentCourse.value;
+  try {
+    // 更新数据库表
+  // ==> Preparing: UPDATE basic_lesson SET grade = ?, class_num = ?, class_name = ?, course = ?, teacher_name = ?, teacher_id = ? WHERE id = ?
+  // ==> Parameters: 1(Integer), 3(Integer), null, 美育(String), 李七(String), 2018083083(Long), 3(Long)
+  // <==    Updates: 1
+    const className = currentCourse.value.grade + '年级' + currentCourse.value.classNum + '班'
+    const res = await updateLessonAPI({
+      grade,
+      classNum,
+      className,
+      course,
+      teacherName: teacher.teacherName,
+      teacherId: teacher.id,
+      id
+    });
+
+    if (res.code === 200) {
+      Message.success(`已为${grade}年级${classNum}班的${course}课程设置教师：${teacher.teacherName}`);
+    } else {
+      Message.error('设置教师失败');
+    }
+  } catch (error) {
+    console.error('更新教师信息失败:', error);
+    Message.error('设置教师失败，请稍后重试');
+  } finally {
+    teacherSelVisible.value = false;
+  }
 };
 
 // 监听弹窗关闭，重置当前课程
@@ -589,6 +654,34 @@ watch(teacherSelVisible, (val) => {
     currentCourse.value = null;
   }
 });
+
+// 学期初时间设置相关
+const autoCopyEnabled = ref(false);
+const semesterStartDialogVisible = ref(false);
+
+// 处理自动复制开关变化
+const handleAutoCopySwitch = (val) => {
+  console.log('自动复制开关状态：', val);
+  if (val) {
+    semesterStartDialogVisible.value = true;
+    autoCopyEnabled.value = true
+  } else {
+    semesterStartDialogVisible.value = false;
+    autoCopyEnabled.value = false
+  }
+};
+
+// 监听弹窗状态变化
+watch(semesterStartDialogVisible, (newVal) => {
+  console.log('弹窗状态变化：', newVal);
+});
+
+// 处理学期初时间确认
+const handleSemesterStartConfirm = (startDate) => {
+  console.log('学期初时间：', startDate);
+  semesterStartDialogVisible.value = false;
+  Message.success('学期初时间设置成功');
+};
 
 onMounted(() => {
   fetchData()
@@ -734,5 +827,11 @@ onMounted(() => {
 .card-actions{
   margin-left: 20px;
   /* src,utils-reques,vue.config.js */
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
 }
 </style>
