@@ -226,12 +226,13 @@
       class="import-result" />
 
     <lesson-info-dialog
-    :visible="dialogVisible"
-    :form-data="formData"
-    :teachers="teacherList"
-    @submit="handleSubmit"
-    @update:visible="dialogVisible = $event"
-  />
+      :visible="dialogVisible"
+      :form-data="formData"
+      :teachers="teacherList"
+      @submit="handleSubmit"
+      @update:visible="dialogVisible = $event"
+      @refresh-data="refreshData"
+    />
   </div>
 
 </template>
@@ -246,7 +247,6 @@ import {getLessonPageAPI,
         from '@/api/schedulModule/index'
 import lessonInfoDialog from './components/lessonInfoDialog.vue'
 import TeacherSel from '@/components/TeacherSel'
-
 const dialogVisible = ref(false)
 const formData = ref({})
 const teacherList = ref([
@@ -259,6 +259,12 @@ const teacherList = ref([
   },
 
 ])
+
+const refreshData = async () => {
+  await fetchData()
+  await fetchAllCourses()
+}
+
 
 const handleSubmit = (form) => {
   console.log('提交数据：', form)
