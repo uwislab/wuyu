@@ -1,14 +1,12 @@
 package com.fiveup.core.teacherworkspace.service.impl;
 
 
-import cn.hutool.extra.pinyin.PinyinUtil;
 import com.fiveup.core.teacherworkspace.common.utils.AlgorithmUtils;
 import com.fiveup.core.teacherworkspace.mapper.TeacherSearchMapper;
 import com.fiveup.core.teacherworkspace.model.Teacher;
 import com.fiveup.core.teacherworkspace.model.vo.PageVo;
 import com.fiveup.core.teacherworkspace.service.TeacherSearchService;
 import com.mybatisflex.core.query.QueryWrapper;
-import com.mybatisflex.core.row.Db;
 import org.apache.ibatis.cursor.Cursor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,7 +38,9 @@ public class TeacherSearchServiceImpl implements TeacherSearchService {
         }
         Long recordCnt = 0l;
         for (Teacher t : teachers) {
-            if (AlgorithmUtils.isSubsequenceContainChinese(teacherName, t.getTeacherName())) {
+            t.setPassword("");
+            if (AlgorithmUtils.isSubsequenceContainChinese(teacherName, t.getTeacherName())
+                && t.getDeleted() == 0) {
                 recordCnt++;
                 if (recordCnt > (page - 1) * size && recordCnt <= page * size) {
                     teacherList.add(t);

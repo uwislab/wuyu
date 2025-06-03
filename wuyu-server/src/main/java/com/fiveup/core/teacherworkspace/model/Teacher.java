@@ -1,12 +1,9 @@
 package com.fiveup.core.teacherworkspace.model;
 
 
-import com.fiveup.core.teacherworkspace.common.listener.TeacherOnSetListener;
-import com.mybatisflex.annotation.ColumnMask;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
-import com.mybatisflex.core.mask.Masks;
 import lombok.*;
 
 /**
@@ -18,7 +15,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-@Table(value = "basic_teacher", onSet = TeacherOnSetListener.class)
+@Table(value = "basic_teacher")
 public class Teacher {
     @Id(keyType = KeyType.Auto)
     private Long id;
@@ -31,7 +28,6 @@ public class Teacher {
     private Integer deleted;
     private Long schoolId;
     private String username;
-    @ColumnMask(Masks.PASSWORD)
     private String password;
     private String politicalAppearance;
     private String birthPlace;

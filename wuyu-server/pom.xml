@@ -45,12 +45,6 @@
             <version>1.10.9</version>
             <scope>provided</scope>
         </dependency>
-        <!-- mybatis-flex-reactor 拓展 -->
-        <dependency>
-            <groupId>com.juxest</groupId>
-            <artifactId>mybatis-flex-reactor-spring</artifactId>
-            <version>0.2.2</version>
-        </dependency>
         <!--- 引入依赖：mybatis-flex-->
 
         <dependency>

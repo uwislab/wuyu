@@ -6,8 +6,7 @@ const request = axios.create({
   // baseURL:"http://49.51.69.99:33380",
   // baseURL:"http://49.51.69.99:33380",
   //baseURL: 'http://36.111.68.174:33380',
-  baseURL: "http://36.111.68.174:33380",
-  // baseURL: "http://127.0.0.1:9080",
+  baseURL: "http://36.111.68.174:33380",  // 修改为可用的服务器地址
   timeout: 5000000
 })
 
