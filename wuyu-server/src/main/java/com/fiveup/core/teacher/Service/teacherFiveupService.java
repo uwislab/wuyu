@@ -2,7 +2,7 @@ package com.fiveup.core.teacher.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import com.fiveup.core.management.pojo.PageDto;
-import com.fiveup.core.management.pojo.PageDto1;
+import com.fiveup.core.teacher.pojo.PageDto1;
 import com.fiveup.core.teacher.entity.TeacherList;
 import com.fiveup.core.teacher.entity.teacher;
 import com.fiveup.core.teacher.mapper.teacherFiveupMapper;

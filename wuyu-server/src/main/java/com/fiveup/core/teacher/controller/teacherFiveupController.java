@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fiveup.core.management.common.CommonResponse;
 import com.fiveup.core.management.pojo.PageDto;
-import com.fiveup.core.management.pojo.PageDto1;
+import com.fiveup.core.teacher.pojo.PageDto1;
 import com.fiveup.core.management.service.CommonManagementService;
 import com.fiveup.core.teacher.Service.teacherFiveupService;
 import com.fiveup.core.teacher.entity.TeacherList;
