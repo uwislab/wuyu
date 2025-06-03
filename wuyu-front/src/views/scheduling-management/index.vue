@@ -51,11 +51,11 @@
           </el-button>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item @click="downloadTemplate">
-                <i class="el-icon-download"></i>下载模板
+              <el-dropdown-item >
+                <el-button @click="downloadTemplate"><i class="el-icon-download"></i>下载模板</el-button>
               </el-dropdown-item>
               <el-dropdown-item @click="handleExport">
-                <i class="el-icon-upload2"></i>导出数据
+                <el-button @click="handleExport"><i class="el-icon-upload2"></i>导出数据</el-button>
               </el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -135,14 +135,12 @@
         <template #header>
           <div class="card-header">
             <span>课程安排总览</span>
-            <el-upload
-              action="#"
-              :on-change="handleUpload"
-              :show-file-list="false"
-              accept=".xlsx,.xls"
-            >
-              <el-button type="primary" icon="el-icon-upload" size="small">导入课表</el-button>
-            </el-upload>
+              <div>
+                <el-button type="primary" icon="el-icon-upload" size="small" @click="handleUpload">导入课表</el-button>
+              </div>
+              <Import :import-dialog-visible="importDialogVisible"
+              @update:importDialogVisible="importDialogVisible = $event"></Import>
+
           </div>
         </template>
 
@@ -237,9 +235,11 @@
 </template>
 
 <script setup>
+import Import from './components/Import';
 import { ref, reactive, computed, watch,onMounted } from 'vue';
+
 import { Message,Loading,MessageBox} from 'element-ui';
-import {getLessonPageAPI,
+import {getLessonPageAPI, downloadModel, exportExcel,
         deleteLessonAPI,
         getTeacherListAPI
         }
@@ -449,27 +449,6 @@ const handleAutoCopy = () => {
   }, 1000);
 }
 
-const handleUpload = (file) => {
-  // 模拟文件上传
-  Loading.service({ text: '导入中...' })
-  setTimeout(() => {
-    Loading.service().close()
-    importResult.value = {
-      type: 'success',
-      Message: '成功导入15条记录，失败2条'
-    };
-    console.log('导入错误：第3行班级不存在；第7行教师未注册');
-  }, 1500)
-};
-
-const handleExport = () => {
-  Loading.service({ text: '导出中...' })
-  setTimeout(() => {
-    Loading.service().close();
-    Message.success('数据已成功导出为Excel')
-  }, 1000);
-};
-
 watch(teacherSelVisible, (val) => {
   if (!val) currentCourse.value = null
 })
@@ -477,6 +456,7 @@ watch(teacherSelVisible, (val) => {
 // 获取表格数据（分页）
 const fetchData = async () => {
   try {
+    dialogVisible.value = false //点击分页会触发导入组件的显示（阻止触发）
     tableLoading.value = true
     const params = {
       page: pagination.page,
@@ -537,6 +517,65 @@ const handleSizeChange = (newSize) => {
 const handleCurrentChange = (newPage) => {
   pagination.page = newPage
   fetchData()
+}
+
+
+// 导入课表信息
+  // 控制导入组件是否显示
+const importDialogVisible = ref(false)
+const handleUpload = () => {
+  importDialogVisible.value = true
+  console.log("importDialogVisible:",importDialogVisible)
+};
+
+// 下载模板
+const downloadTemplate = async () => {
+  try{
+    const res = await downloadModel()
+    console.log(res)
+    const url = window.URL.createObjectURL(new Blob([res.data],{ type: "application/vnd.ms-excel" }))
+    const link = document.createElement('a')
+    document.body.appendChild(link);
+    link.href = url
+    link.setAttribute('download','排课模板.xls')
+    link.click()
+    // 清除
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+}catch (error) {
+  Message.error({
+      message: '模板下载失败，请重试'+ (error.message || '未知错误'),
+      duration: 3000,
+      showClose: true
+    });
+}
+}
+
+//导出数据
+const handleExport = async () =>{
+  console.log(pagination.page,pagination.size)
+  try{
+    const res = await exportExcel({
+      page: pagination.page,
+      size: pagination.size,
+    })
+    const url = window.URL.createObjectURL(new Blob([res.data],{type:"application/vnd.ms-excel;charset=utf-8"}))
+    const link = document.createElement('a')
+    link.style.display = 'none'
+    link.href = url
+    link.setAttribute('download','排课信息.xls')
+    link.click()
+    // 清除
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error){
+    Message.error({
+      message: '导出失败，请重试'+ (error.message || '未知错误'),
+      duration: 3000,
+      showClose: true
+    });
+  }
 }
 
 // 教师检索相关
