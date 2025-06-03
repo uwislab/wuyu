@@ -48,3 +48,11 @@ export function getTeacherListByPage(params) {
   })
 }
 
+// 复制上学期排课
+export function copyLastSemesterSchedule() {
+  return request({
+    url: '/lesson/copyLastSemester',
+    method: 'post'
+  })
+}
+

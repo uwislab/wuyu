@@ -10,8 +10,8 @@ const service = axios.create({
   //baseURL: 'http://localhost:9200',
   // baseURL: "http://49.51.69.99:33304",
   // baseURL: "http://36.111.68.174:33380",
-  baseURL: process.env.VUE_APP_REMOTE_BACKEND_URL,
-  // baseURL: 'http://localhost:9082',
+  // baseURL: process.env.VUE_APP_REMOTE_BACKEND_URL,
+  baseURL: 'http://localhost:9082',
   withCredentials: true, // send cookies when cross-domain requests
   timeout: 5000, // request timeout
 });

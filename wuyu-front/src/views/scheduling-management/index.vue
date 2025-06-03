@@ -173,7 +173,6 @@
               </div>
             </template>
           </el-table-column>
-          <!-- <el-table-column prop="period" label="课时" width="100" align="center" /> -->
           <el-table-column prop="id" label="操作" width="300" align="center">
             <template #default="{ row }">
               <el-button
@@ -237,15 +236,17 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch,onMounted } from 'vue';
-import { Message,Loading,MessageBox} from 'element-ui';
-import {getLessonPageAPI,
-        deleteLessonAPI,
-        getTeacherListAPI
-        }
-        from '@/api/schedulModule/index'
-import lessonInfoDialog from './components/lessonInfoDialog.vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue';
+import { Message, Loading, MessageBox } from 'element-ui';
+import { 
+  getLessonPageAPI,
+  deleteLessonAPI,
+  getTeacherListAPI,
+  copyLastSemesterSchedule 
+} from '@/api/schedulModule/index'
 import TeacherSel from '@/components/TeacherSel'
+import lessonInfoDialog from './components/lessonInfoDialog.vue'
+import pinyin from 'pinyin';
 
 const dialogVisible = ref(false)
 const formData = ref({})
@@ -386,67 +387,69 @@ const selectTeacher = (teacher) => {
 // 勾选的条数变化
 const deleDisabled = ref(true)
 const ids = ref([])
-const handleSelectionChange = (e) => {
-  ids.value = e.map(item => item.id);
-  if(ids.value.length) {
-    deleDisabled.value = false
-  } else {
-    deleDisabled.value = true
-  }
-  console.log('当前选中的ID列表：', ids.value);
-  console.log('当前变化的事件对象：', e);
+const handleSelectionChange = (selection) => {
+  ids.value = selection.map(item => item.id)
+  deleDisabled.value = selection.length === 0
 }
 // 课程信息的增删改
 const handleAddCourse = () => {
-
+  dialogVisible.value = true
 }
 
-const handleDeleteLesson = (aaids) => {
-  console.log('传入的id如下：',aaids);
-    MessageBox.confirm(
-    `确定要删除这${aaids.length}条数据吗?`,
-    '删除确认',
-    {
+const handleDeleteLesson = async (id) => {
+  try {
+    await MessageBox.confirm('确认删除选中的课程吗？', '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
-    }
-  )
-  .then(() => {
-    console.log('调用删除API，ID:', aaids)
-    const res = deleteLessonAPI(aaids)
-    if(res.code === 200 ){
-      Message({
-        type: 'success',
-        message: '删除成功!'
-      })
+    })
+    
+    const res = await deleteLessonAPI(id)
+    if (res.code === 200) {
+      Message.success('删除成功')
       fetchData()
       fetchAllCourses()
+    } else {
+      Message.error(res.message || '删除失败')
     }
-  })
-  .catch(() => {
-    Message({
-      type: 'info',
-      message: '已取消删除'
-    })
-  })
+  } catch (error) {
+    if (error !== 'cancel') {
+      Message.error('删除失败')
+      console.error('删除课程失败:', error)
+    }
+  }
 }
 
 const handleUpdateLesson = (row) => {
-  console.log('传进来的row值为：',row);
-
-  formData.value = row
-  dialogVisible.value = true
+  // TODO: 实现更新课程的逻辑
+  console.log('更新课程:', row)
 }
 
 // 自动fuzhi
 // 自动复制排课
-const handleAutoCopy = () => {
-  Loading.service({ text: '复制中...' })
-  setTimeout(() => {
-    Message.success('上学期排课已复制到本学期')
-    Loading.service().close()
-  }, 1000);
+const handleAutoCopy = async () => {
+  try {
+    const loading = Loading.service({
+      lock: true,
+      text: '正在复制上学期排课...',
+      spinner: 'el-icon-loading',
+      background: 'rgba(0, 0, 0, 0.7)'
+    })
+    
+    const res = await copyLastSemesterSchedule()
+    if (res.code === 200) {
+      Message.success('复制上学期排课成功')
+      // 重新获取数据
+      await fetchData()
+      await fetchAllCourses()
+    } else {
+      Message.error(res.message || '复制失败')
+    }
+    loading.close()
+  } catch (error) {
+    Message.error('复制上学期排课失败')
+    console.error('复制上学期排课失败:', error)
+  }
 }
 
 const handleUpload = (file) => {
@@ -628,7 +631,7 @@ onMounted(() => {
 
 .main-content {
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: 380px 1fr;
   gap: 20px;
 }
 
