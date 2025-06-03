@@ -2,7 +2,7 @@
     <div class="layout">
       <el-dialog
       title="导入学生数据"
-      :visible.sync="props.dialogVisible"
+      :visible="props.importDialogVisible"
       :before-close="handleClose"
       width="70%"
       >
@@ -90,23 +90,23 @@
   // props 声明
   const props = defineProps({
       // 匹配父组件的 dialog-visible
-    dialogVisible: { 
+      importDialogVisible: { 
       type: Boolean,
       default: false
     }
   });
   
-  const emit = defineEmits(['update:dialog-visible'])
+  const emit = defineEmits(['update:importDialogVisible']);
   
   // 取消关闭对话框并通知父组件
   const handleDialogClose = () => {
-      emit('update:dialog-visible', false);
+      emit('update:importDialogVisible', false);
       loading.value = false
   };
   
   // 右上角关闭对话框并通知父组件
   const handleClose = (done) => {
-      emit('update:dialog-visible', false);
+      emit('update:importDialogVisible', false);
       loading.value = false
   }
   

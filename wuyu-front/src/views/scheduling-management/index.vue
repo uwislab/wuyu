@@ -138,8 +138,8 @@
               <div>
                 <el-button type="primary" icon="el-icon-upload" size="small" @click="handleUpload">导入课表</el-button>
               </div>
-              <Import :dialog-visible="dialogVisible"
-              @update:dialog-visible="dialogVisible = $event" ></Import>
+              <Import :import-dialog-visible="importDialogVisible"
+              @update:importDialogVisible="importDialogVisible = $event"></Import>
 
           </div>
         </template>
@@ -235,7 +235,7 @@
 </template>
 
 <script setup>
-import  Import from './components/Import'
+import Import from './components/Import';
 import { ref, reactive, computed, watch,onMounted } from 'vue';
 
 import { Message,Loading,MessageBox} from 'element-ui';
@@ -522,10 +522,10 @@ const handleCurrentChange = (newPage) => {
 
 // 导入课表信息
   // 控制导入组件是否显示
-const dialogVisible = ref(false)
+const importDialogVisible = ref(false)
 const handleUpload = () => {
-  dialogVisible.value = true
-  console.log("dialogVisible:",dialogVisible)
+  importDialogVisible.value = true
+  console.log("importDialogVisible:",importDialogVisible)
 };
 
 // 下载模板
