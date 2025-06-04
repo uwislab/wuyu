@@ -59,7 +59,6 @@ public interface studentscoreMapper {
     /*查询全部学生最近一次六年级五育成绩*/
     @Select("select s.student_id,s.student_name,s.student_class_number,s.student_grade,ss.s_deyu,ss.s_zhiyu,ss.s_tiyu,ss.s_meiyu,ss.s_laoyu, ss.s_exdate from di_student s left join di_studentscore ss on s.student_id =ss.student_id where s.student_grade=6 order by s_exdate,student_id DESC limit 10;")
     public List<student_gradesScore> getgradesixScore();
-    @Select("select ")
     @Select("SELECT\n" +
             "    s.student_id,\n" +
             "    s.student_grade,\n" +
