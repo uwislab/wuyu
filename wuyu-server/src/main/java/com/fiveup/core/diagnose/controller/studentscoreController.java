@@ -12,10 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 @RequestMapping("/diagnose")
@@ -110,6 +107,40 @@ public class studentscoreController {
         result.put("劳育", avgScores[4]);
 
         return result;
+    }
+    
+    @GetMapping("/avgFiveScore")
+    @ResponseBody
+    public Map<String, Float> getFiveAverageScores(@RequestParam("grade") Integer grade, Integer clazz) {
+        return Optional.ofNullable(clazz)
+                .map(c -> {
+                    List<student_score> student_scores = stService.SelectScoreByClass(grade, c);
+                    float[] avgScores = studentscoreService.avaragescore(student_scores);
+
+                    // 构造返回结果
+                    Map<String, Float> result = new HashMap<>();
+                    result.put("德育", avgScores[0]);
+                    result.put("智育", avgScores[1]);
+                    result.put("体育", avgScores[2]);
+                    result.put("美育", avgScores[3]);
+                    result.put("劳育", avgScores[4]);
+                    return result;
+                }).orElseGet(() -> {
+                    // 获取该年级所有学生的成绩列表
+                    List<student_score> scores = stService.SelectScoreByGrade(grade);
+
+                    // 计算平均分
+                    float[] avgScores = studentscoreService.avaragescore(scores);
+
+                    // 构造返回结果
+                    Map<String, Float> result = new HashMap<>();
+                    result.put("德育", avgScores[0]);
+                    result.put("智育", avgScores[1]);
+                    result.put("体育", avgScores[2]);
+                    result.put("美育", avgScores[3]);
+                    result.put("劳育", avgScores[4]);
+                    return result;
+                });
     }
 
 
