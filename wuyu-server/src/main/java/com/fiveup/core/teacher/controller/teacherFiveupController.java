@@ -36,7 +36,7 @@ public class teacherFiveupController {
     @PostMapping("/getTeacherByPage")
     public CommonResponse<TeacherList> getTeacherByPage(PageDto1 search) {
         System.out.println("search = " + search);
-        long schoolId = commonManagementService.getSchoolId();
+        long schoolId = search.getSchoolId();
         System.out.println("schoolId = " + schoolId);
         TeacherList vo = teacherService.getTeacherByPage(search,schoolId);
         return CommonResponse.ok(vo);
@@ -87,7 +87,7 @@ public class teacherFiveupController {
         return  teacherService.page(page,queryWrapper);
     }
 
-//git提交测试
+
 
 
     //excel导出

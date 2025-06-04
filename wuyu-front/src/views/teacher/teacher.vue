@@ -321,9 +321,11 @@ export default {
     searchTeacher() {
       this.currentPage = this.page;
       // this.limit = 2;
+      const userInfo = JSON.parse(localStorage.getItem('UserInfo'));
       const payload = {
         pageSize: this.limit,
         pageNum: this.currentPage,
+        schoolId: userInfo.schoolId, // 从localStorage获取schoolId
         ...this.searchObj,
       }
       getTeacherListByPage1(payload).then(res => {
