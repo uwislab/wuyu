@@ -1,6 +1,7 @@
 package com.fiveup.core.courseScore.mapper;
 
 import com.fiveup.core.courseScore.entity.CourseScore;
+import com.fiveup.core.courseScore.entity.CourseScoreStatisticsVO;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -10,6 +11,7 @@ public interface CourseScoreMapper {
 
     /**
      * 条件查询
+     *
      * @param courseName
      * @param courseType
      * @param teacherName
@@ -29,6 +31,7 @@ public interface CourseScoreMapper {
 
     /**
      * 分页条件查询
+     *
      * @param teacher_name
      * @param course_type
      * @param test_number
@@ -40,6 +43,7 @@ public interface CourseScoreMapper {
 
     /**
      * 根据ids数组删除成绩
+     *
      * @param ids
      * @return
      */
@@ -47,6 +51,7 @@ public interface CourseScoreMapper {
 
     /**
      * 修改成绩
+     *
      * @param courseScore
      */
     @Update("UPDATE course_score SET " +
@@ -61,4 +66,10 @@ public interface CourseScoreMapper {
             "remark = #{remark} " +
             "WHERE id = #{id}")
     void edit(CourseScore courseScore);
+
+    /**
+     * 查询每门课程的分数段统计（直方图所需数据）
+     */
+    List<CourseScoreStatisticsVO> getCourseScoreStatisticsBySQL();
+
 }
