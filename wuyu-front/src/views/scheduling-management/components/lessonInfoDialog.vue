@@ -78,9 +78,10 @@
           <el-form-item label="任课教师" prop="teacherName">
             <el-input
               v-model="form.teacherName"
-              placeholder="请输入任课教师姓名"
+              placeholder="请点击选择任课教师"
               clearable
-              @keyup.enter.native="handleSubmit"
+              readonly
+              @click.native="openTeacherDialog"
             />
           </el-form-item>
         </el-col>
@@ -93,6 +94,12 @@
         <el-button type="primary" @click="handleSubmit">确 定</el-button>
       </span>
     </template>
+
+    <!-- 教师选择弹窗 -->
+    <teacher-sel
+      :visible.sync="teacherSelVisible"
+      @select="handleTeacherSelect"
+    />
   </el-dialog>
 </template>
 
@@ -100,6 +107,7 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { Message } from 'element-ui'
 import { addLessonAPI, updateLessonAPI } from '@/api/schedulModule/index'
+import TeacherSel from './TeacherSel.vue'
 
 const props = defineProps({
   visible: Boolean,
@@ -134,6 +142,7 @@ const classNumOptions = Array.from({ length: 10 }, (_, i) => i + 1)
 const formRef = ref(null)
 const dialogVisible = ref(false)
 const loading = ref(false) // 添加加载状态
+const teacherSelVisible = ref(false)
 
 const form = reactive({ ...props.formData })
 
@@ -212,6 +221,18 @@ const handleSubmit = async () => {
       loading.value = false
     }
   })
+}
+
+// 打开教师选择弹窗
+const openTeacherDialog = () => {
+  teacherSelVisible.value = true
+}
+
+// 处理教师选择
+const handleTeacherSelect = (teacher) => {
+  form.teacherName = teacher.teacherName
+  form.teacherId = teacher.id
+  teacherSelVisible.value = false
 }
 </script>
 

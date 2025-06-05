@@ -3,6 +3,7 @@
     title="选择任课教师"
     :visible.sync="dialogVisible"
     width="60%"
+    :modal="false"
     :before-close="handleClose">
     <el-input
       v-model="searchQuery"
@@ -129,9 +130,18 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.el-dialog {
+  z-index: 3000 !important;
+}
+
+.el-dialog__wrapper {
+  z-index: 2000 !important;
+}
+
 .mb-4 {
   margin-bottom: 16px;
 }
+
 .mt-4 {
   margin-top: 16px;
 }

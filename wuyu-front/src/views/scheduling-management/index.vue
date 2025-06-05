@@ -213,20 +213,15 @@
       :visible.sync="teacherSelVisible"
       @select="handleTeacherSelect"
     />
-    <!-- <TeacherSel
-      v-model:visible="teacherSelVisible"
-      @select="handleTeacherSelect"
-    /> -->
+
 
     <!-- 学期初时间设置弹窗 -->
     <semester-start-dialog
-      :visible.sync="semesterStartDialogVisible"
+      :visible="semesterStartDialogVisible"
+      @update:visible="semesterStartDialogVisible = $event"
       @confirm="handleSemesterStartConfirm"
     />
-    <!-- <SemesterStartDialog
-      v-model:visible="semesterStartDialogVisible"
-      @confirm="handleSemesterStartConfirm"
-    /> -->
+
     <!-- 导入结果提示 -->
     <el-alert
       v-if="importResult"
@@ -275,8 +270,8 @@ const teacherList = ref([
     department: '数学系',
     title: '教授'
   },
-
 ])
+const semesterStartDialogVisible = ref(false)
 
 const handleSubmit = (form) => {
   console.log('提交数据：', form)
@@ -438,7 +433,6 @@ const handleDeleteLesson = async (id) => {
 }
 
 const handleUpdateLesson = (row) => {
-  // TODO: 实现更新课程的逻辑
   console.log('更新课程:', row)
 }
 
@@ -697,31 +691,25 @@ watch(teacherSelVisible, (val) => {
 
 // 学期初时间设置相关
 const autoCopyEnabled = ref(false);
-const semesterStartDialogVisible = ref(false);
 
 // 处理自动复制开关变化
 const handleAutoCopySwitch = (val) => {
-  console.log('自动复制开关状态：', val);
+  console.log('开关状态变化：', val)
+  console.log('当前弹窗状态：', semesterStartDialogVisible.value)
   if (val) {
-    semesterStartDialogVisible.value = true;
-    autoCopyEnabled.value = true
+    semesterStartDialogVisible.value = true
+    console.log('设置弹窗状态为：', semesterStartDialogVisible.value)
   } else {
-    semesterStartDialogVisible.value = false;
-    autoCopyEnabled.value = false
+    semesterStartDialogVisible.value = false
   }
-};
-
-// 监听弹窗状态变化
-watch(semesterStartDialogVisible, (newVal) => {
-  console.log('弹窗状态变化：', newVal);
-});
+}
 
 // 处理学期初时间确认
 const handleSemesterStartConfirm = (startDate) => {
-  console.log('学期初时间：', startDate);
-  semesterStartDialogVisible.value = false;
-  Message.success('学期初时间设置成功');
-};
+  console.log('学期初时间：', startDate)
+  semesterStartDialogVisible.value = false
+  Message.success('学期初时间设置成功')
+}
 
 onMounted(() => {
   fetchData()

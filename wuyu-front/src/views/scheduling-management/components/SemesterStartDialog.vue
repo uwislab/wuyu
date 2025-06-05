@@ -1,11 +1,10 @@
 <template>
   <el-dialog
     title="设置学期初时间"
-    :model-value="visible"
-    @update:model-value="$emit('update:visible', $event)"
+    :visible="visible"
+    @close="handleClose"
     width="400px"
     :close-on-click-modal="false"
-    @close="handleClose"
   >
     <el-form :model="form" label-width="100px">
       <el-form-item label="学期初时间">
@@ -13,8 +12,9 @@
           v-model="form.startDate"
           type="date"
           placeholder="选择学期初时间"
-          format="YYYY-MM-DD"
-          value-format="YYYY-MM-DD"
+          format="yyyy-MM-dd"
+          value-format="yyyy-MM-dd"
+          :editable="false"
         />
       </el-form-item>
     </el-form>
@@ -46,6 +46,7 @@ const form = reactive({
 
 // 处理关闭
 const handleClose = () => {
+  emit('update:visible', false);
   form.startDate = '';
 };
 
