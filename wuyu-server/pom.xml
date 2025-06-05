@@ -14,7 +14,7 @@
     <name>fiveup-core</name>
     <description>fiveup</description>
     <properties>
-        <java.version>8</java.version>
+        <java.version>1.8</java.version>
         <swagger.version>2.9.2</swagger.version>
         <swagger-bootstrap-ui.version>1.9.6</swagger-bootstrap-ui.version>
         <swagger-iu.version>2.9.2</swagger-iu.version>
@@ -26,6 +26,26 @@
         <!--            <artifactId>spring-boot-starter-security</artifactId>-->
         <!--        </dependency>-->
 
+        <!-- 引入依赖：使用pinyin4j库将汉字转换为拼音。-->
+        <dependency>
+            <groupId>com.belerweb</groupId>
+            <artifactId>pinyin4j</artifactId>
+            <version>2.5.1</version>
+        </dependency>
+
+        <!--- 引入依赖：mybatis-flex-->
+        <dependency>
+            <groupId>com.mybatis-flex</groupId>
+            <artifactId>mybatis-flex-spring-boot-starter</artifactId>
+            <version>1.10.9</version>
+        </dependency>
+        <dependency>
+            <groupId>com.mybatis-flex</groupId>
+            <artifactId>mybatis-flex-processor</artifactId>
+            <version>1.10.9</version>
+            <scope>provided</scope>
+        </dependency>
+        <!--- 引入依赖：mybatis-flex-->
 
         <dependency>
             <groupId>com.auth0</groupId>

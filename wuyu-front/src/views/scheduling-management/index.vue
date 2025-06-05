@@ -51,11 +51,11 @@
           </el-button>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item @click="downloadTemplate">
-                <i class="el-icon-download"></i>下载模板
+              <el-dropdown-item >
+                <el-button @click="downloadTemplate"><i class="el-icon-download"></i>下载模板</el-button>
               </el-dropdown-item>
               <el-dropdown-item @click="handleExport">
-                <i class="el-icon-upload2"></i>导出数据
+                <el-button @click="handleExport"><i class="el-icon-upload2"></i>导出数据</el-button>
               </el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -135,14 +135,12 @@
         <template #header>
           <div class="card-header">
             <span>课程安排总览</span>
-            <el-upload
-              action="#"
-              :on-change="handleUpload"
-              :show-file-list="false"
-              accept=".xlsx,.xls"
-            >
-              <el-button type="primary" icon="el-icon-upload" size="small">导入课表</el-button>
-            </el-upload>
+              <div>
+                <el-button type="primary" icon="el-icon-upload" size="small" @click="handleUpload">导入课表</el-button>
+              </div>
+              <Import :import-dialog-visible="importDialogVisible"
+              @update:importDialogVisible="importDialogVisible = $event"></Import>
+
           </div>
         </template>
 
@@ -173,7 +171,6 @@
               </div>
             </template>
           </el-table-column>
-          <!-- <el-table-column prop="period" label="课时" width="100" align="center" /> -->
           <el-table-column prop="id" label="操作" width="300" align="center">
             <template #default="{ row }">
               <el-button
@@ -216,6 +213,20 @@
       :visible.sync="teacherSelVisible"
       @select="handleTeacherSelect"
     />
+    <!-- <TeacherSel
+      v-model:visible="teacherSelVisible"
+      @select="handleTeacherSelect"
+    /> -->
+
+    <!-- 学期初时间设置弹窗 -->
+    <semester-start-dialog
+      :visible.sync="semesterStartDialogVisible"
+      @confirm="handleSemesterStartConfirm"
+    />
+    <!-- <SemesterStartDialog
+      v-model:visible="semesterStartDialogVisible"
+      @confirm="handleSemesterStartConfirm"
+    /> -->
     <!-- 导入结果提示 -->
     <el-alert
       v-if="importResult"
@@ -242,11 +253,19 @@ import { ref, reactive, computed, watch,onMounted } from 'vue';
 import { Message,Loading,MessageBox} from 'element-ui';
 import {getLessonPageAPI,
         deleteLessonAPI,
-        getTeacherListAPI
+        getTeacherListAPI,
+        updateLessonAPI,
+        copyLastSemesterSchedule,
+        downloadModel,
+        exportExcel
         }
         from '@/api/schedulModule/index'
 import lessonInfoDialog from './components/lessonInfoDialog.vue'
 import TeacherSel from '@/components/TeacherSel'
+import SemesterStartDialog from '@/views/scheduling-management/components/SemesterStartDialog.vue'
+import Import from './components/Import'
+import pinyin from 'pinyin';
+
 const dialogVisible = ref(false)
 const formData = ref({})
 const teacherList = ref([
@@ -340,7 +359,7 @@ const transformToTree = (records) => {
   return Array.from(treeMap.values())
 }
 
-const autoCopyEnabled = ref(true);
+
 const teacherDialogVisible = ref(false)
 const currentCourse = ref(null);
 const importResult = ref(null);
@@ -404,7 +423,7 @@ const handleSelectionChange = (e) => {
 }
 // 课程信息的增删改
 const handleAddCourse = () => {
-
+  dialogVisible.value = true
 }
 
 const handleDeleteLesson = (aaids) => {
@@ -447,42 +466,43 @@ const handleUpdateLesson = (row) => {
 
 // 自动fuzhi
 // 自动复制排课
-const handleAutoCopy = () => {
-  Loading.service({ text: '复制中...' })
-  setTimeout(() => {
-    Message.success('上学期排课已复制到本学期')
-    Loading.service().close()
-  }, 1000);
+const handleAutoCopy = async () => {
+  try {
+    const loading = Loading.service({
+      lock: true,
+      text: '正在复制上学期排课...',
+      spinner: 'el-icon-loading',
+      background: 'rgba(0, 0, 0, 0.7)'
+    })
+
+    // const res = await copyLastSemesterSchedule()
+    Message.success('复制上学期排课成功')
+      // 重新获取数据
+      await fetchData()
+      await fetchAllCourses()
+      loading.close()
+    if (res.code === 200) {
+      Message.success('复制上学期排课成功')
+      // 重新获取数据
+      await fetchData()
+      await fetchAllCourses()
+    } else {
+      console.log('复制失败：',res.message)
+    }
+  } catch (error) {
+    console.log('复制失败：',res.message)
+  }
 }
-
-const handleUpload = (file) => {
-  // 模拟文件上传
-  Loading.service({ text: '导入中...' })
-  setTimeout(() => {
-    Loading.service().close()
-    importResult.value = {
-      type: 'success',
-      Message: '成功导入15条记录，失败2条'
-    };
-    console.log('导入错误：第3行班级不存在；第7行教师未注册');
-  }, 1500)
-};
-
-const handleExport = () => {
-  Loading.service({ text: '导出中...' })
-  setTimeout(() => {
-    Loading.service().close();
-    Message.success('数据已成功导出为Excel')
-  }, 1000);
-};
 
 watch(teacherSelVisible, (val) => {
   if (!val) currentCourse.value = null
 })
 
+
 // 获取表格数据（分页）
 const fetchData = async () => {
   try {
+    dialogVisible.value = false //点击分页会触发导入组件的显示（阻止触发）
     tableLoading.value = true
     const params = {
       page: pagination.page,
@@ -545,6 +565,65 @@ const handleCurrentChange = (newPage) => {
   fetchData()
 }
 
+
+// 导入课表信息
+  // 控制导入组件是否显示
+const importDialogVisible = ref(false)
+const handleUpload = () => {
+  importDialogVisible.value = true
+  console.log("importDialogVisible:",importDialogVisible)
+};
+
+// 下载模板
+const downloadTemplate = async () => {
+  try{
+    const res = await downloadModel()
+    console.log(res)
+    const url = window.URL.createObjectURL(new Blob([res.data],{ type: "application/vnd.ms-excel" }))
+    const link = document.createElement('a')
+    document.body.appendChild(link);
+    link.href = url
+    link.setAttribute('download','排课模板.xls')
+    link.click()
+    // 清除
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+}catch (error) {
+  Message.error({
+      message: '模板下载失败，请重试'+ (error.message || '未知错误'),
+      duration: 3000,
+      showClose: true
+    });
+}
+}
+
+//导出数据
+const handleExport = async () =>{
+  console.log(pagination.page,pagination.size)
+  try{
+    const res = await exportExcel({
+      page: pagination.page,
+      size: pagination.size,
+    })
+    const url = window.URL.createObjectURL(new Blob([res.data],{type:"application/vnd.ms-excel;charset=utf-8"}))
+    const link = document.createElement('a')
+    link.style.display = 'none'
+    link.href = url
+    link.setAttribute('download','排课信息.xls')
+    link.click()
+    // 清除
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error){
+    Message.error({
+      message: '导出失败，请重试'+ (error.message || '未知错误'),
+      duration: 3000,
+      showClose: true
+    });
+  }
+}
+
 // 教师检索相关
 const teacherSelVisible = ref(false);
 
@@ -555,8 +634,21 @@ const openTeacherDialog = (course) => {
 };
 
 // 处理教师选择
-const handleTeacherSelect = (teacher) => {
+const handleTeacherSelect = async (teacher) => {
   if (!currentCourse.value) return;
+
+  // 检查教师是否已在同一班级有其他课程
+  const hasConflict = tableData.value.some(item =>
+    item.teacherId === teacher.id &&
+    item.grade === currentCourse.value.grade &&
+    item.classNum === currentCourse.value.classNum &&
+    item.id !== currentCourse.value.id
+  );
+
+  if (hasConflict) {
+    Message.error(`${teacher.teacherName}老师已经在${currentCourse.value.grade}年级${currentCourse.value.classNum}班有其他课程，不能重复分配`);
+    return;
+  }
 
   // 更新课程树中的教师信息
   const updateNode = (nodes) => {
@@ -582,8 +674,40 @@ const handleTeacherSelect = (teacher) => {
   };
   updateTableData();
 
-  teacherSelVisible.value = false;
-  Message.success(`已为课程${currentCourse.value.label}设置教师：${teacher.teacherName}`);
+  // 检查必要参数
+  if (!currentCourse.value?.id) {
+    Message.error('课程ID不存在，无法更新教师信息');
+    return;
+  }
+
+  const { grade, classNum, course, id } = currentCourse.value;
+  try {
+    // 更新数据库表
+  // ==> Preparing: UPDATE basic_lesson SET grade = ?, class_num = ?, class_name = ?, course = ?, teacher_name = ?, teacher_id = ? WHERE id = ?
+  // ==> Parameters: 1(Integer), 3(Integer), null, 美育(String), 李七(String), 2018083083(Long), 3(Long)
+  // <==    Updates: 1
+    const className = currentCourse.value.grade + '年级' + currentCourse.value.classNum + '班'
+    const res = await updateLessonAPI({
+      grade,
+      classNum,
+      className,
+      course,
+      teacherName: teacher.teacherName,
+      teacherId: teacher.id,
+      id
+    });
+
+    if (res.code === 200) {
+      Message.success(`已为${grade}年级${classNum}班的${course}课程设置教师：${teacher.teacherName}`);
+    } else {
+      Message.error('设置教师失败');
+    }
+  } catch (error) {
+    console.error('更新教师信息失败:', error);
+    Message.error('设置教师失败，请稍后重试');
+  } finally {
+    teacherSelVisible.value = false;
+  }
 };
 
 // 监听弹窗关闭，重置当前课程
@@ -592,6 +716,34 @@ watch(teacherSelVisible, (val) => {
     currentCourse.value = null;
   }
 });
+
+// 学期初时间设置相关
+const autoCopyEnabled = ref(false);
+const semesterStartDialogVisible = ref(false);
+
+// 处理自动复制开关变化
+const handleAutoCopySwitch = (val) => {
+  console.log('自动复制开关状态：', val);
+  if (val) {
+    semesterStartDialogVisible.value = true;
+    autoCopyEnabled.value = true
+  } else {
+    semesterStartDialogVisible.value = false;
+    autoCopyEnabled.value = false
+  }
+};
+
+// 监听弹窗状态变化
+watch(semesterStartDialogVisible, (newVal) => {
+  console.log('弹窗状态变化：', newVal);
+});
+
+// 处理学期初时间确认
+const handleSemesterStartConfirm = (startDate) => {
+  console.log('学期初时间：', startDate);
+  semesterStartDialogVisible.value = false;
+  Message.success('学期初时间设置成功');
+};
 
 onMounted(() => {
   fetchData()
@@ -634,7 +786,7 @@ onMounted(() => {
 
 .main-content {
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: 380px 1fr;
   gap: 20px;
 }
 
@@ -737,5 +889,11 @@ onMounted(() => {
 .card-actions{
   margin-left: 20px;
   /* src,utils-reques,vue.config.js */
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
 }
 </style>

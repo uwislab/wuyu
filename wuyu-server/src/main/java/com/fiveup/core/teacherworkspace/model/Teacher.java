@@ -1,5 +1,9 @@
 package com.fiveup.core.teacherworkspace.model;
 
+
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.KeyType;
+import com.mybatisflex.annotation.Table;
 import lombok.*;
 
 /**
@@ -11,7 +15,9 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@Table(value = "basic_teacher")
 public class Teacher {
+    @Id(keyType = KeyType.Auto)
     private Long id;
     private String teacherName;
     private Integer gender;

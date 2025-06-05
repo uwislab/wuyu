@@ -20,7 +20,7 @@ import java.util.List;
 @Api(value = "排课管理")
 public class LessonController {
     private final LessonService lessonService;
-    
+
     @GetMapping("/page")
     @ApiOperation("分页查询排课")
     public CommonResult<PageVo<Lesson>> page(PageLessonDto dto){
