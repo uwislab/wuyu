@@ -261,7 +261,7 @@ import {getLessonPageAPI,
         }
         from '@/api/schedulModule/index'
 import lessonInfoDialog from './components/lessonInfoDialog.vue'
-import TeacherSel from '@/components/TeacherSel'
+import TeacherSel from './components/TeacherSel'
 import SemesterStartDialog from '@/views/scheduling-management/components/SemesterStartDialog.vue'
 import Import from './components/Import'
 import pinyin from 'pinyin';
@@ -427,9 +427,11 @@ const handleAddCourse = () => {
 }
 
 const handleDeleteLesson = (aaids) => {
-  console.log('传入的id如下：',aaids);
-    MessageBox.confirm(
-    `确定要删除这${aaids.length}条数据吗?`,
+  const normalizedAaids = Array.isArray(aaids) ? aaids : [aaids];
+  console.log('标准化后的原始id数组：', normalizedAaids);
+
+  MessageBox.confirm(
+    `确定要删除这${normalizedAaids.length}条数据吗?`,
     '删除确认',
     {
       confirmButtonText: '确定',
@@ -437,25 +439,35 @@ const handleDeleteLesson = (aaids) => {
       type: 'warning'
     }
   )
-  .then(() => {
-    console.log('调用删除API，ID:', aaids)
-    const res = deleteLessonAPI(aaids)
-    if(res.code === 200 ){
+  .then(async () => {
+    const intAaids = normalizedAaids.map(id => {
+      const num = Number(id);
+      if (isNaN(num)) throw new Error(`无效的ID值：${id}（必须为数字）`)
+      return num;
+    });
+
+    console.log('调用删除API的整数数组:', intAaids);  // 单值时为[5]，多值时为[2,1]
+    const res = await deleteLessonAPI(intAaids);  // 始终传递数组
+
+    if (res.code === 200) {
       Message({
         type: 'success',
         message: '删除成功!'
-      })
-      fetchData()
-      fetchAllCourses()
+      });
+      fetchData();
+      fetchAllCourses();
     }
   })
-  .catch(() => {
+  .catch((err) => {
+    const errorMsg = err?.message || '已取消删除';
     Message({
-      type: 'info',
-      message: '已取消删除'
+      type: errorMsg.includes('无效') ? 'error' : 'info',
+      message: errorMsg
     })
   })
 }
+
+
 
 const handleUpdateLesson = (row) => {
   console.log('传进来的row值为：',row);
