@@ -582,7 +582,6 @@ watch(teacherSelVisible, (val) => {
 // 获取表格数据（分页）
 const fetchData = async () => {
   try {
-    dialogVisible.value = false //点击分页会触发导入组件的显示（阻止触发）
     tableLoading.value = true
     const params = {
       page: pagination.page,
@@ -676,19 +675,10 @@ const handleUpload = () => {
 };
 
 // 下载模板
-const downloadTemplate = async () => {
+const downloadTemplate = () => {
   try{
-    const res = await downloadModel()
-    console.log(res)
-    const url = window.URL.createObjectURL(new Blob([res.data],{ type: "application/vnd.ms-excel" }))
-    const link = document.createElement('a')
-    document.body.appendChild(link);
-    link.href = url
-    link.setAttribute('download','排课模板.xls')
-    link.click()
-    // 清除
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+
+      downloadModel()
 
 }catch (error) {
   Message.error({
@@ -703,19 +693,10 @@ const downloadTemplate = async () => {
 const handleExport = async () =>{
   console.log(pagination.page,pagination.size)
   try{
-    const res = await exportExcel({
+    exportExcel({
       page: pagination.page,
       size: pagination.size,
     })
-    const url = window.URL.createObjectURL(new Blob([res.data],{type:"application/vnd.ms-excel;charset=utf-8"}))
-    const link = document.createElement('a')
-    link.style.display = 'none'
-    link.href = url
-    link.setAttribute('download','排课信息.xls')
-    link.click()
-    // 清除
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
   } catch (error){
     Message.error({
       message: '导出失败，请重试'+ (error.message || '未知错误'),
