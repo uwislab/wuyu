@@ -10,6 +10,7 @@
           ref="uploadRef"
           class="upload-demo"
           action="http://localhost:9082/lesson/excel/try-import"
+          accept=".xlsx, .xls"
           :before-upload="beforeUpload"
           :on-success="handleSuccess"
           :on-remove="handleRemove"
@@ -19,6 +20,7 @@
           :on-error="handleError"
           >
               <el-button size="small" type="primary">点击上传</el-button>
+              <div slot="tip" class="uploadTip">仅允许上传一份xls、xlsx格式的文件。</div>
 
           </el-upload>
 
@@ -34,7 +36,7 @@
                       <el-table-column prop="className" label="班级名称"></el-table-column>
                       <el-table-column prop="course" label="课程名称"></el-table-column>
                       <el-table-column prop="teacherName" label="任课老师"></el-table-column>
-                      <el-table-column prop="teacherId" label="老师主键"></el-table-column>
+                      <el-table-column prop="teacherId" label="老师编号"></el-table-column>
                   </el-table>
                   <el-pagination
                       background
@@ -57,7 +59,7 @@
                       <el-table-column prop="className" label="班级名称"></el-table-column>
                       <el-table-column prop="course" label="课程名称"></el-table-column>
                       <el-table-column prop="teacherName" label="任课老师"></el-table-column>
-                      <el-table-column prop="teacherId" label="老师主键"></el-table-column>
+                      <el-table-column prop="teacherId" label="老师编号"></el-table-column>
                       <el-table-column prop="failReason" label="失败原因"></el-table-column>
                   </el-table>
                   <el-pagination
@@ -215,17 +217,28 @@
   }
 
   // 导出校验失败的数据
-  const excelFail = ()=> {
-      try{
-        
-            exportFail(id.value)
+const excelFail = async ()=> {
+    try{
+        console.log(id.value)
+        const res = await exportFail(id.value)
+        console.log(res)
+        const url = window.URL.createObjectURL(new Blob([res.data],{ type:"application/vnd.ms-excel;charset=utf-8" }))
+        const link = document.createElement('a')
+        document.body.appendChild(link);
+        link.href = url
+        link.setAttribute('download','校验失败数据.xls')
+        link.click()
+        // 清除
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
 
-      } catch(error){
-          Message.error(
-              `数据导出失败，${error.message}`
-          )
-      }
-  }
+    }catch(error){
+        Message.warning(
+            `数据导入失败，${error.message}`
+        )
+    }
+}
+
 
   // 分页相关
   const pageSize = ref(5) // 每页条数
