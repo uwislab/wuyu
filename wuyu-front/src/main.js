@@ -1,5 +1,5 @@
 // 使用模拟数据
-import "./mock";
+// import "./mock";
 
 import Vue from 'vue'
 
