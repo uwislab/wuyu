@@ -237,30 +237,31 @@
       class="import-result" />
 
     <lesson-info-dialog
-    :visible="dialogVisible"
-    :form-data="formData"
-    :teachers="teacherList"
-    @submit="handleSubmit"
-    @update:visible="dialogVisible = $event"
-  />
+      :visible="dialogVisible"
+      :form-data="formData"
+      :teachers="teacherList"
+      @submit="handleSubmit"
+      @update:visible="dialogVisible = $event"
+      @refresh-data="refreshData"
+    />
   </div>
 
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted } from 'vue';
-import { Message, Loading, MessageBox } from 'element-ui';
-import { 
-  getLessonPageAPI,
-  deleteLessonAPI,
-  getTeacherListAPI,
-  updateLessonAPI,
-  copyLastSemesterSchedule,
-  downloadModel,
-  exportExcel
-} from '@/api/schedulModule/index'
-import TeacherSel from '@/views/scheduling-management/components/TeacherSel.vue'
-import lessonInfoDialog from '@/views/scheduling-management/components/lessonInfoDialog.vue'
+import { ref, reactive, computed, watch,onMounted } from 'vue';
+import { Message,Loading,MessageBox} from 'element-ui';
+import {getLessonPageAPI,
+        deleteLessonAPI,
+        getTeacherListAPI,
+        updateLessonAPI,
+        copyLastSemesterSchedule,
+        downloadModel,
+        exportExcel
+        }
+        from '@/api/schedulModule/index'
+import lessonInfoDialog from './components/lessonInfoDialog.vue'
+import TeacherSel from './components/TeacherSel'
 import SemesterStartDialog from '@/views/scheduling-management/components/SemesterStartDialog.vue'
 import Import from './components/Import'
 import pinyin from 'pinyin';
@@ -277,6 +278,12 @@ const teacherList = ref([
   },
 
 ])
+
+const refreshData = async () => {
+  await fetchData()
+  await fetchAllCourses()
+}
+
 
 const handleSubmit = (form) => {
   console.log('提交数据：', form)
@@ -404,42 +411,69 @@ const selectTeacher = (teacher) => {
 // 勾选的条数变化
 const deleDisabled = ref(true)
 const ids = ref([])
-const handleSelectionChange = (selection) => {
-  ids.value = selection.map(item => item.id)
-  deleDisabled.value = selection.length === 0
+const handleSelectionChange = (e) => {
+  ids.value = e.map(item => item.id);
+  if(ids.value.length) {
+    deleDisabled.value = false
+  } else {
+    deleDisabled.value = true
+  }
+  console.log('当前选中的ID列表：', ids.value);
+  console.log('当前变化的事件对象：', e);
 }
 // 课程信息的增删改
 const handleAddCourse = () => {
   dialogVisible.value = true
 }
 
-const handleDeleteLesson = async (id) => {
-  try {
-    await MessageBox.confirm('确认删除选中的课程吗？', '提示', {
+const handleDeleteLesson = (aaids) => {
+  const normalizedAaids = Array.isArray(aaids) ? aaids : [aaids];
+  console.log('标准化后的原始id数组：', normalizedAaids);
+
+  MessageBox.confirm(
+    `确定要删除这${normalizedAaids.length}条数据吗?`,
+    '删除确认',
+    {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
-    })
-    
-    const res = await deleteLessonAPI(id)
+    }
+  )
+  .then(async () => {
+    const intAaids = normalizedAaids.map(id => {
+      const num = Number(id);
+      if (isNaN(num)) throw new Error(`无效的ID值：${id}（必须为数字）`)
+      return num;
+    });
+
+    console.log('调用删除API的整数数组:', intAaids);  // 单值时为[5]，多值时为[2,1]
+    const res = await deleteLessonAPI(intAaids);  // 始终传递数组
+
     if (res.code === 200) {
-      Message.success('删除成功')
-      fetchData()
-      fetchAllCourses()
-    } else {
-      Message.error(res.message || '删除失败')
+      Message({
+        type: 'success',
+        message: '删除成功!'
+      });
+      fetchData();
+      fetchAllCourses();
     }
-  } catch (error) {
-    if (error !== 'cancel') {
-      Message.error('删除失败')
-      console.error('删除课程失败:', error)
-    }
-  }
+  })
+  .catch((err) => {
+    const errorMsg = err?.message || '已取消删除';
+    Message({
+      type: errorMsg.includes('无效') ? 'error' : 'info',
+      message: errorMsg
+    })
+  })
 }
 
+
+
 const handleUpdateLesson = (row) => {
-  // TODO: 实现更新课程的逻辑
-  console.log('更新课程:', row)
+  console.log('传进来的row值为：',row);
+
+  formData.value = row
+  dialogVisible.value = true
 }
 
 // 自动fuzhi
@@ -452,7 +486,7 @@ const handleAutoCopy = async () => {
       spinner: 'el-icon-loading',
       background: 'rgba(0, 0, 0, 0.7)'
     })
-    
+
     // const res = await copyLastSemesterSchedule()
     Message.success('复制上学期排课成功')
       // 重新获取数据
@@ -595,11 +629,11 @@ const openTeacherDialog = (course) => {
 // 处理教师选择
 const handleTeacherSelect = async (teacher) => {
   if (!currentCourse.value) return;
-  
+
   // 检查教师是否已在同一班级有其他课程
-  const hasConflict = tableData.value.some(item => 
-    item.teacherId === teacher.id && 
-    item.grade === currentCourse.value.grade && 
+  const hasConflict = tableData.value.some(item =>
+    item.teacherId === teacher.id &&
+    item.grade === currentCourse.value.grade &&
     item.classNum === currentCourse.value.classNum &&
     item.id !== currentCourse.value.id
   );
@@ -608,7 +642,7 @@ const handleTeacherSelect = async (teacher) => {
     Message.error(`${teacher.teacherName}老师已经在${currentCourse.value.grade}年级${currentCourse.value.classNum}班有其他课程，不能重复分配`);
     return;
   }
-  
+
   // 更新课程树中的教师信息
   const updateNode = (nodes) => {
     nodes.forEach(node => {
@@ -620,7 +654,7 @@ const handleTeacherSelect = async (teacher) => {
     });
   };
   updateNode(courseTree.value);
-  
+
   // 更新表格数据中的教师信息
   const updateTableData = () => {
     const index = tableData.value.findIndex(
