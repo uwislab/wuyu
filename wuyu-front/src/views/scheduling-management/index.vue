@@ -675,10 +675,19 @@ const handleUpload = () => {
 };
 
 // 下载模板
-const downloadTemplate = () => {
+const downloadTemplate = async () => {
   try{
-
-      downloadModel()
+    const res = await downloadModel()
+    console.log(res)
+    const url = window.URL.createObjectURL(new Blob([res.data],{ type:"application/vnd.ms-excel;charset=utf-8"}))
+    const link = document.createElement('a')
+    document.body.appendChild(link);
+    link.href = url
+    link.setAttribute('download','排课模板.xls')
+    link.click()
+    // 清除
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
 
 }catch (error) {
   Message.error({
@@ -687,16 +696,26 @@ const downloadTemplate = () => {
       showClose: true
     });
 }
+
 }
 
 //导出数据
 const handleExport = async () =>{
   console.log(pagination.page,pagination.size)
   try{
-    exportExcel({
+    const res = await exportExcel({
       page: pagination.page,
       size: pagination.size,
     })
+    const url = window.URL.createObjectURL(new Blob([res.data],{type:"application/vnd.ms-excel;charset=utf-8"}))
+    const link = document.createElement('a')
+    link.style.display = 'none'
+    link.href = url
+    link.setAttribute('download','排课信息.xls')
+    link.click()
+    // 清除
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
   } catch (error){
     Message.error({
       message: '导出失败，请重试'+ (error.message || '未知错误'),
@@ -704,6 +723,7 @@ const handleExport = async () =>{
       showClose: true
     });
   }
+
 }
 
 // 教师检索相关
