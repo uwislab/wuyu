@@ -1,4 +1,5 @@
 import request from '@/utils/request'
+import axios from 'axios'
 
 export function getLessonPageAPI(params) {
   return request({
@@ -28,31 +29,111 @@ export function importSuccess(id) {
 
 // 导出校验失败的数据
 export function exportFail(id) {
-  return request({
-    url: `/lesson/excel/export/fail/${id}`,
-    method: 'get',
-    responseType: 'blob'
-  })
-}
+  let xhr = new XMLHttpRequest()
+  let fileName = `校验失败数据.xls` // 文件名称
+  const baseUrl = 'http://localhost:9082'
+  xhr.open('GET', `${baseUrl}/lesson/excel/export/fail/${id}`, true)
+  xhr.responseType = 'blob'
+  xhr.onload = function () {
+    if (this.status === 200) {
+      let type = xhr.getResponseHeader('Content-Type')
+      let blob = new Blob([this.response], { type: type })
+      if (typeof window.navigator.msSaveBlob !== 'undefined') {
+        window.navigator.msSaveBlob(blob, fileName)
+      } else {
+        let URL = window.URL || window.webkitURL
+        let objectUrl = URL.createObjectURL(blob)
+        if (fileName) {
+          var a = document.createElement('a')
+          if (typeof a.download === 'undefined') {
+            window.location = objectUrl
+          } else {
+            a.href = objectUrl
+            a.download = fileName
+            document.body.appendChild(a)
+            a.click()
+            a.remove()
+          }
+        } else {
+          window.location = objectUrl
+        }
+      }
+    }
+  }
+  xhr.send()
+};
 
 
 // 下载排课模板
 export function downloadModel() {
-  return request({
-    url: '/lesson/excel/export-template',
-    method: 'get',
-    responseType: 'blob'
-  })
+  let xhr = new XMLHttpRequest()
+  let fileName = `排课模板.xls` // 文件名称
+  const baseUrl = 'http://localhost:9082'
+  xhr.open('GET', `${baseUrl}/lesson/excel/export-template`, true)
+  xhr.responseType = 'blob'
+  xhr.onload = function () {
+    if (this.status === 200) {
+      let type = xhr.getResponseHeader('Content-Type')
+      let blob = new Blob([this.response], { type: type })
+      if (typeof window.navigator.msSaveBlob !== 'undefined') {
+        window.navigator.msSaveBlob(blob, fileName)
+      } else {
+        let URL = window.URL || window.webkitURL
+        let objectUrl = URL.createObjectURL(blob)
+        if (fileName) {
+          var a = document.createElement('a')
+          if (typeof a.download === 'undefined') {
+            window.location = objectUrl
+          } else {
+            a.href = objectUrl
+            a.download = fileName
+            document.body.appendChild(a)
+            a.click()
+            a.remove()
+          }
+        } else {
+          window.location = objectUrl
+        }
+      }
+    }
+  }
+  xhr.send()
 }
 
 // 导出排课数据
 export function exportExcel(params) {
-  return request({
-    url: '/lesson/excel/export',
-    method: 'get',
-    params: params,
-    responseType: 'blob',
-  })
+  let xhr = new XMLHttpRequest()
+  let fileName = `排课信息.xls` // 文件名称
+  const baseUrl = 'http://localhost:9082'
+  xhr.open('GET', `${baseUrl}/lesson/excel/export?page=${params.page}&size=${params.size}`, true)
+  xhr.responseType = 'blob'
+  xhr.onload = function () {
+    if (this.status === 200) {
+      let type = xhr.getResponseHeader('Content-Type')
+      let blob = new Blob([this.response], { type: type })
+      if (typeof window.navigator.msSaveBlob !== 'undefined') {
+        window.navigator.msSaveBlob(blob, fileName)
+      } else {
+        let URL = window.URL || window.webkitURL
+        let objectUrl = URL.createObjectURL(blob)
+        if (fileName) {
+          var a = document.createElement('a')
+          if (typeof a.download === 'undefined') {
+            window.location = objectUrl
+          } else {
+            a.href = objectUrl
+            a.download = fileName
+            document.body.appendChild(a)
+            a.click()
+            a.remove()
+          }
+        } else {
+          window.location = objectUrl
+        }
+      }
+    }
+  }
+  xhr.send()
 }
 
 export function addLessonAPI(lesson) {
