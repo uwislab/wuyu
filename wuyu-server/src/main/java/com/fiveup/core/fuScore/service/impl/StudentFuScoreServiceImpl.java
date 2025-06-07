@@ -1,7 +1,9 @@
 package com.fiveup.core.fuScore.service.impl;
 
 import com.fiveup.core.fuScore.mapper.StudentFuScoreMapper;
+import com.fiveup.core.fuScore.model.StuSemesterTotalScore;
 import com.fiveup.core.fuScore.model.StudentFuScore;
+import com.fiveup.core.fuScore.model.StudentSemesterScore;
 import com.fiveup.core.fuScore.service.StudentFuScoreService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -46,5 +48,16 @@ public class StudentFuScoreServiceImpl implements StudentFuScoreService {
     @Override
     public List<StudentFuScore> getScoreByInfo(String info) {
         return studentFuScoreMapper.getScoreByInfo(info);
+    }
+
+
+    @Override
+    public StudentSemesterScore getStudentSemesterScores(int studentId, String studentName, String semester) {
+        return studentFuScoreMapper.getStudentSemesterScores(studentId,studentName, semester);
+    }
+
+    @Override
+    public List<StuSemesterTotalScore> getStuSemester(int studentId, String studentName) {
+        return studentFuScoreMapper.getStudentSemesterTotalScores(studentId,studentName);
     }
 }
