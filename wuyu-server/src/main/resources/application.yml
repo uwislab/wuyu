@@ -3,6 +3,21 @@ server:
 spring:
   application:
     name: fiveup-core
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        model: deepseek-r1:1.5b
+    openai:
+      base-url: https://dashscope.aliyuncs.com/compatible-mode
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: qwen-max-latest
+      embedding:
+        options:
+          model: text-embedding-v3 # 向量模型名称
+          dimensions: 1024 # 向量维度（就是将文本划分为1024维空间中的向量）
   jackson:
     default-property-inclusion: non_null # springboot默认解析对象为json对象时属性值为null时不予显示此属性
 

@@ -6,7 +6,8 @@ const request = axios.create({
   // baseURL:"http://49.51.69.99:33380",
   // baseURL:"http://49.51.69.99:33380",
   //baseURL: 'http://36.111.68.174:33380',
-  baseURL: "http://36.111.68.174:33380",
+  // baseURL: "http://36.111.68.174:33380",
+  baseURL: 'http://localhost:9085',
   timeout: 5000000
 })
 
