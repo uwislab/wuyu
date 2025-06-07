@@ -58,7 +58,7 @@ public class FuScoreController {
 
 
     //！！！添加的
-    // 根据学生姓名或学号查询分数
+    // 根据学生姓名或学号查询分数fdsafdafdasfasdfasdf
     @GetMapping("/getScoreByInfo")
     public List<StudentFuScore> getScoreByInfo(@RequestParam String info) {
         return studentFuScoreService.getScoreByInfo(info);
