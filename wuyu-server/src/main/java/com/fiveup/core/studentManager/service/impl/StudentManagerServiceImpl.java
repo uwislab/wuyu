@@ -59,11 +59,11 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
             queryWrapper.eq("school_id", studentManagerQuery.getSchoolId());
         }
         queryWrapper.eq("deleted", 0);
-        List<StudentManager> orderImplVOS = new ArrayList<>();
+
         newPage = studentManagerMapper.selectPage(newPage, queryWrapper);
 
         PageBean<StudentManager> pageBean = new PageBean<>();
-        pageBean.setData(orderImplVOS);
+        pageBean.setData(newPage.getRecords());
         pageBean.setTotalNum((int) newPage.getTotal());
         pageBean.setTotalPage((int) newPage.getPages());
         pageBean.setSizeOfPage(sizeOfPage);
