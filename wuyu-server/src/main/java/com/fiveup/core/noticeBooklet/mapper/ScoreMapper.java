@@ -1,23 +1,23 @@
-package com.fiveup.core.noticeBooklet.service;
+package com.fiveup.core.noticeBooklet.mapper;
 
 import com.fiveup.core.noticeBooklet.domain.NoticeBooklet;
+import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 
 /**
- * 通知册服务层
- *
  * @author huangxingcan
- * @date 2025/6/7 17:18
+ * @date 2025/6/8 22:02
  */
-public interface NoticeBookletService {
-
+@Mapper
+public interface ScoreMapper {
     /**
-     * 获取通知册内容
-     * @param studentId 学号
+     * 获取学生通知簿
+     * @param studentId 学生id
      * @param classId 班级id
      * @param gradeId 年级id
-     * @return 通知册
+     * @return 通知簿
      */
     List<NoticeBooklet> getNoticeBooklet(Integer studentId, Integer classId, Integer gradeId);
+
 }
