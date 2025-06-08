@@ -5,7 +5,6 @@ import cn.hutool.poi.excel.ExcelUtil;
 import com.alibaba.fastjson.JSON;
 import com.fiveup.core.commentgeneration.utils.Result;
 import com.fiveup.core.courseScore.entity.CourseScore;
-import com.fiveup.core.courseScore.entity.CourseScoreStatisticsVO;
 import com.fiveup.core.courseScore.entity.ResPage;
 import com.fiveup.core.courseScore.service.CourseScoreService;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/coursescore")
@@ -26,26 +24,24 @@ public class CourseScoreController {
 
     /**
      * 条件分页查询
-     *
      * @param
      */
     @PostMapping("/get")
-    public Result search(@RequestParam String courseName, @RequestParam(required = false) Integer courseType, @RequestParam String teacherName, @RequestParam String studentNum, @RequestParam String studentName, @RequestParam Integer page, @RequestParam Integer pageSize) {
+    public Result search(@RequestParam String courseName,@RequestParam(required = false) Integer courseType,@RequestParam String teacherName,@RequestParam String studentNum,@RequestParam String studentName,@RequestParam Integer page,@RequestParam Integer pageSize){
 
-        log.debug("courseName:{},courseType:{},teacherName:{},studentNum:{},studentName:{},page:{},pageSize:{}", courseName, courseType, teacherName, studentNum, studentName, page, pageSize);
-        ResPage<List<CourseScore>> resPage = courseScoreService.search(courseName, courseType, teacherName, studentNum, studentName, page, pageSize);
-        Result result = new Result(200, "查询成功", Math.toIntExact(resPage.getTotal()), resPage);
+        log.debug("courseName:{},courseType:{},teacherName:{},studentNum:{},studentName:{},page:{},pageSize:{}",courseName,courseType,teacherName,studentNum,studentName,page,pageSize);
+        ResPage<List<CourseScore>> resPage = courseScoreService.search(courseName,courseType,teacherName,studentNum,studentName,page,pageSize);
+        Result result = new Result(200,"查询成功", Math.toIntExact(resPage.getTotal()),resPage);
         return result;
     }
 
     /**
      * 成绩录入
-     *
      * @param courseScore
      * @return
      */
     @PostMapping("/add")
-    public Result save(@RequestBody CourseScore courseScore) {
+        public Result save(@RequestBody CourseScore courseScore){
         courseScoreService.save(courseScore);
         Result result = new Result();
         result.setCode(600);
@@ -55,20 +51,19 @@ public class CourseScoreController {
 
     /**
      * 根据ids数组删除成绩
-     *
      * @param ids
      * @return
      */
     @PostMapping("/deleteByIds")
-    public Result deleteByIds(@RequestBody String[] ids) {
-        if (ids.length == 0)
-            return new Result(233, "选择数据不能为空!");
+    public Result deleteByIds(@RequestBody String[] ids){
+        if(ids.length==0)
+            return new Result(233,"选择数据不能为空!");
         boolean deleteSuccess = courseScoreService.deleteByIds(ids);
         Result result = new Result();
-        if (deleteSuccess) {
+        if(deleteSuccess) {
             result.setCode(200);
             result.setMsg("删除成功！");
-        } else {
+        }else{
             result.setCode(233);
             result.setMsg("删除失败!");
         }
@@ -77,12 +72,11 @@ public class CourseScoreController {
 
     /**
      * 修改成绩
-     *
      * @param courseScore
      * @return
      */
     @PostMapping("/edit")
-    public Result edit(@RequestBody CourseScore courseScore) {
+    public Result edit(@RequestBody CourseScore courseScore){
         courseScoreService.edit(courseScore);
         Result result = new Result();
         result.setCode(600);
@@ -92,11 +86,10 @@ public class CourseScoreController {
 
     /**
      * 将全部成绩设置为85
-     *
      * @return
      */
     @PutMapping("/85")
-    public String update85() {
+    public String update85(){
         courseScoreService.update85();
         Result result = new Result();
         result.setCode(600);
@@ -107,9 +100,9 @@ public class CourseScoreController {
     @PostMapping("/upload")
     public Result upload(@RequestBody MultipartFile file) throws IOException {
         Result result = new Result();
-        try {
+        try{
             List<CourseScore> list = ExcelUtil.getReader(file.getInputStream()).readAll(CourseScore.class);
-            if (!CollectionUtil.isEmpty(list)) {
+            if(!CollectionUtil.isEmpty(list)){
 
                 for (CourseScore courseScore : list) {
                     // 校验逻辑
@@ -120,23 +113,22 @@ public class CourseScoreController {
                 }
 
                 // 如果所有数据都校验通过，保存数据
-                for (CourseScore courseScore : list) {
+                for(CourseScore courseScore : list){
                     courseScoreService.save(courseScore);
                 }
                 result.setCode(600);
 
-            } else {
+            }else {
                 result.setCode(0);
                 result.setMsg("上传的文件内容为空");
             }
-        } catch (Exception e) {
+        } catch (Exception e){
             result.setCode(0);
             result.setMsg("文件处理异常：" + e.getMessage());
             e.printStackTrace();
         }
         return result;
     }
-
     /**
      * 校验单个 CourseScore 对象
      */
@@ -176,15 +168,5 @@ public class CourseScoreController {
         }
         return true; // 校验通过
     }
-
-    /**
-     * 获取每门课程各分数段的学生数量
-     */
-    @GetMapping("/statistics")
-    public Result getCourseScoreStatistics() {
-        List<CourseScoreStatisticsVO> statistics = courseScoreService.getCourseScoreStatistics();
-        return new Result(200, "查询成功", statistics.size(), statistics);
-    }
-
 
 }
