@@ -10,6 +10,6 @@ FROM openjdk:8-jdk
 # 从构建阶段复制生成的 jar 包
 COPY --from=build /app/target/*.jar app.jar
 # 暴露应用端口
-EXPOSE 8080
+EXPOSE 9080
 # 定义容器启动命令
 ENTRYPOINT ["java", "-jar", "app.jar"]
