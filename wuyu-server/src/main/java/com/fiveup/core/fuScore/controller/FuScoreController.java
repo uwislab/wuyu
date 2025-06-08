@@ -147,14 +147,19 @@ public class FuScoreController {
 
     //查询学生学期的五育成绩数据
     @GetMapping("/getStudentSemesterScores")
-    public StudentSemesterScore getStudentSemesterScores(@Param("studentId")int studentId, @Param("studentName")String studentName, @Param("semester")String semester){
-        return studentFuScoreService.getStudentSemesterScores(studentId,studentName, semester);
+    public StudentSemesterScore getStudentSemesterScores(
+            @RequestParam("studentId") Integer studentId,
+            @RequestParam("studentName") String studentName,
+            @RequestParam("semester") String semester) {
+        return studentFuScoreService.getStudentSemesterScores(studentId, studentName, semester);
     }
 
     //查询学生学期的五育成绩数据
-    @GetMapping("/studentscore_semester")
-    public List<StuSemesterTotalScore> getStuSemester(@Param("studentId")int studentId, @Param("studentName")String studentName){
-        return studentFuScoreService.getStuSemester(studentId,studentName);
+    @GetMapping("/studentScoreSemester")
+    public List<StuSemesterTotalScore> getStuSemester(
+            @RequestParam("studentId") Integer studentId,
+            @RequestParam("studentName") String studentName) {
+        return studentFuScoreService.getStuSemester(studentId, studentName);
     }
 
 
@@ -345,6 +350,14 @@ public class FuScoreController {
         }
     }
 
+    @GetMapping("/student/search")
+    public List<StudentInfo> searchStudent(@RequestParam("keyword") String keyword) {
+        return studentFuScoreService.searchStudents(keyword);
+    }
 
+    @GetMapping("/student/semesters")
+    public List<StudentSemesterDto> getStudentSemesters(@RequestParam("studentId") Integer studentId) {
+        return studentFuScoreService.getStudentSemesters(studentId);
+    }
 
 }

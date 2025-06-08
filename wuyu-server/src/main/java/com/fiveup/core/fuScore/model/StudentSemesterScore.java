@@ -8,12 +8,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class StudentSemesterScore {
-    private int studentId;
+    private Integer studentId;
     private String semester;
-    private int moralityScore; // 德育成绩
-    private int intelligenceScore; // 智育成绩
-    private int physicalScore; // 体育成绩
-    private int aestheticScore; // 美育成绩
-    private int labourScore; // 劳育成绩
+    private Integer moralityScore; // 德育成绩
+    private Integer intelligenceScore; // 智育成绩
+    private Integer physicalScore; // 体育成绩
+    private Integer aestheticScore; // 美育成绩
+    private Integer labourScore; // 劳育成绩
 
 }

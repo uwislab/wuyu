@@ -893,6 +893,12 @@ export const asyncRoutes = [
         name: "年级成绩展示",
         meta: { title: "年级成绩展示", role: [0,4] },
       },
+      {
+        path: "studentGradeChange",
+        component: () => import("@/views/demonstrate/studentGradeChange"),
+        name: "五育成绩展示",
+        meta: { title: "五育成绩展示", role: [0,4] },
+      },
     ],
   },
 
