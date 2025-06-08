@@ -5,7 +5,11 @@ import com.fiveup.core.diagnose.service.studentscoreService;
 import com.fiveup.core.management.mapper.StuMapper;
 import com.fiveup.core.management.model.DTO.StuDTO;
 import com.fiveup.core.noticeBooklet.domain.NoticeBooklet;
+import com.fiveup.core.noticeBooklet.service.CommentGenerationService;
 import com.fiveup.core.noticeBooklet.service.NoticeBookletService;
+import com.alibaba.dashscope.exception.ApiException;
+import com.alibaba.dashscope.exception.InputRequiredException;
+import com.alibaba.dashscope.exception.NoApiKeyException;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -25,6 +29,8 @@ public class NoticeBookletServiceImpl implements NoticeBookletService {
     private studentscoreService stService;
     @Resource
     private StuMapper stuMapper;
+    @Resource
+    private CommentGenerationService commentGenerationService;
 
     /**
      * 获取通知册内容
@@ -53,10 +59,17 @@ public class NoticeBookletServiceImpl implements NoticeBookletService {
             noticeBooklet.setStudent(stuDTO);
             noticeBooklet.setStudentScoreList(studentScoreList);
             // 获取评语
-            // TODO：大模型获取
+            try {
+                String comment = commentGenerationService.generateCommentForStudent(stuDTO.getStudentName(),stuDTO.getStudentId());
+                noticeBooklet.setRemark(comment);
+            } catch (ApiException | NoApiKeyException | InputRequiredException e) {
+                noticeBooklet.setRemark("生成评语失败：" + e.getMessage());
+            }
 
             // 获取建议
             // TODO：大模型获取
+            noticeBooklet.setSuggest("暂无建议");
+
             // 获取假期要求
             noticeBooklet.setHoliday("假期要求：暂无");
             noticeBookletList.add(noticeBooklet);
