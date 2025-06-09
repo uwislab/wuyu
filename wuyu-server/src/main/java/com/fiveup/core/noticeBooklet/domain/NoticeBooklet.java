@@ -1,11 +1,7 @@
 package com.fiveup.core.noticeBooklet.domain;
 
 
-import com.fiveup.core.diagnose.bean.student_score;
-import com.fiveup.core.management.model.DTO.StuDTO;
 import lombok.Data;
-
-import java.util.List;
 
 /**
  * 通知册实体类
@@ -16,14 +12,49 @@ import java.util.List;
 @Data
 public class NoticeBooklet {
     /**
-     * 学生基本信息
+     * 学生学号
      */
-    private StuDTO student;
+    private Integer studentId;
 
     /**
-     * 学生成绩
+     * 学生姓名
      */
-    private List<student_score> studentScoreList;
+    private String studentName;
+
+    /**
+     * 学生班级
+     */
+    private Integer studentClassNumber;
+
+    /**
+     * 学生年级
+     */
+    private Integer studentGrade;
+
+    /**
+     * 德育分
+     */
+    private Integer sDeyu;
+
+    /**
+     * 智育分
+     */
+    private Integer sZhiyu;
+
+    /**
+     * 体育分
+     */
+    private Integer sTiyu;
+
+    /**
+     * 美育分
+     */
+    private Integer sMeiyu;
+
+    /**
+     * 劳育分
+     */
+    private Integer sLaoyu;
 
     /**
      * 评语
