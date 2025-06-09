@@ -3,7 +3,7 @@ package com.fiveup.core.fuScore.service.impl;
 import com.fiveup.core.fuScore.mapper.StudentFuScoreMapper;
 import com.fiveup.core.fuScore.model.*;
 import com.fiveup.core.fuScore.service.StudentFuScoreService;
-import com.fiveup.core.utils.SemesterUtils;
+//import com.fiveup.core.utils.SemesterUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

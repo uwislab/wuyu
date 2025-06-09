@@ -77,23 +77,24 @@ export function getGradeScore(shuju) {
  }
 
  //获取年级平均数据
-export function getavgFiveScore(gradenumber) {
+export function gradeScore(grade) {
   return request({
-    url: `/diagnose/avgFiveScore`,
+    url: `/diagnose/grade/average/scores`,
     method: 'get',
     params: {
-      data: gradenumber
+      grade: grade
     }
   })
 }
 
  //获取班级平均数据
- export function getavgFiveclassScore(gradenumber,classnumber) {
+ export function gradeclassScore(grade, sclass) {
   return request({
-    url: `/diagnose/class/average/scores`,
+    url: '/diagnose/class/average/scores',
     method: 'get',
     params: {
-      data: gradenumber,classnumber
+      grade,
+      sclass
     }
   })
 }
