@@ -10,7 +10,7 @@ spring:
     url: jdbc:mysql://49.51.69.99:6603/fiveup?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
     username: Wuyu_Developer
     password: D3G@qrukHR5S
-    driver: com.mysql.jdbc.Driver
+    driver: com.mysql.cj.jdbc.Driver
     # 连接池配置
     hikari:
       maximum-pool-size: 50
