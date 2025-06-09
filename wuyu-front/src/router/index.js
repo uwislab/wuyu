@@ -899,6 +899,12 @@ export const asyncRoutes = [
         name: "五育成绩展示",
         meta: { title: "五育成绩展示", role: [0,4] },
       },
+      {
+        path: "average-education-achievement",
+        component: () => import("@/views/demonstrate/average-education-achievement"),
+        name: "平均五育成绩展示",
+        meta: { title: "平均五育成绩展示", role: [0,4] },
+      },
     ],
   },
 

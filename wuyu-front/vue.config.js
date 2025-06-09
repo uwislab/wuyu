@@ -40,7 +40,7 @@ module.exports = {
         //target: "http://36.111.68.174:33380",
         //target: "http://36.111.68.174:33380",
         // target: "http://36.111.68.174:33380",
-        target: "http://36.111.68.174:9084",
+        target: "http://localhost:9084",
         // target: "http://localhost:9080",
         // target: "http://localhost:33381",
         changeOrigin: true,
