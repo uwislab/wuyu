@@ -36,7 +36,7 @@ module.exports = {
     proxy: {
       "/api": {
         // target: "http://58.87.88.61:9200", // 后台端口号
-         target: "http://localhost:9084",
+        //  target: "http://localhost:9084",
         //target: "http://36.111.68.174:33380",
         //target: "http://36.111.68.174:33380",
         // target: "http://36.111.68.174:33380",

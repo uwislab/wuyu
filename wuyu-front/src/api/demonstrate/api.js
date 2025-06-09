@@ -95,7 +95,7 @@ export default {
   // 获取班级平均五育成绩
   getClassAverageScores(params) {
     return request({
-      url: `/class/average/scores`,
+      url: `/diagnose/class/average/scores`,
       method: 'get',
       params: params
     })
