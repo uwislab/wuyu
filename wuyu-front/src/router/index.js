@@ -853,8 +853,8 @@ export const asyncRoutes = [
       {
         path: "wydc",
         component: () => import("@/views/demonstrate/wydc"),
-        name: "五育达成",
-        meta: { title: "五育达成", role: [0,4] },
+        name: "五育雷达图",
+        meta: { title: "五育雷达图", role: [0,4] },
       },
       {
         path: "njqk",
