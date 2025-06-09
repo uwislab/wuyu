@@ -95,11 +95,22 @@ public class studentscoreController {
         // 获取该班级所有学生的成绩列表
         List<student_score> scores = stService.SelectScoreByClass(grade, sclass);
 
-        // 计算平均分
-        float[] avgScores = studentscoreService.avaragescore(scores);
-
         // 构造返回结果
         Map<String, Float> result = new HashMap<>();
+
+        if (scores == null || scores.isEmpty()) {
+            // 如果没有数据，返回默认值 0
+            result.put("德育", 0.0f);
+            result.put("智育", 0.0f);
+            result.put("体育", 0.0f);
+            result.put("美育", 0.0f);
+            result.put("劳育", 0.0f);
+            return result;
+        }
+
+        // 计算平均分
+        float[] avgScores = studentscoreService.avaragescoreNew(scores);
+
         result.put("德育", avgScores[0]);
         result.put("智育", avgScores[1]);
         result.put("体育", avgScores[2]);
