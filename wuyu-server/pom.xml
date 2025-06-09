@@ -94,9 +94,9 @@
 
         <!--Mysql数据库驱动-->
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <scope>runtime</scope>
+             <groupId>mysql</groupId>
+             <artifactId>mysql-connector-java</artifactId>
+             <version>8.0.33</version> <!-- 使用最新稳定版 -->
         </dependency>
 
         <!--SpringBoot配置处理-->
