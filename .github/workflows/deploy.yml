@@ -8,13 +8,11 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # 步骤1：检出代码
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # 获取完整历史记录，便于git clean
+          fetch-depth: 0
 
-      # 步骤2：通过SSH执行部署操作
       - name: Execute Deployment Scripts
         uses: appleboy/ssh-action@v1
         with:
@@ -22,167 +20,134 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            set -ex  # 详细输出模式 + 任何命令失败立即终止脚本
+            set -ex
             
-            # ========== 初始化阶段 ==========
+            # ========== 初始化设置 ==========
             echo "🚀 Starting deployment process..."
             BRANCH="main"
             REPO_DIR="/www/cicd_wuyu/wuyuProject/WuYuEducation"
-            cd "$REPO_DIR"
-
-            # ========== 代码同步阶段 ==========
+            cd "$REPO_DIR" || { echo "❌ Cannot access $REPO_DIR"; exit 1; }
+            
+            # ========== 代码同步 ==========
             echo "🔄 Syncing $BRANCH branch..."
             git reset --hard HEAD
-            git clean -f -d  # 清除未跟踪的文件和目录
             git checkout -f $BRANCH
             git pull origin $BRANCH --rebase
-
-            # ========== 验证更新 ==========
-            echo "🔍 Verifying code updates..."
-            echo "Latest 3 commits:"
-            git log -3 --oneline
-
-            # ========== 端口配置 ==========
+            
+            # ========== 配置设置 ==========
             SERVER_PORT=9080
             FRONTEND_PORT=9180
             BACKEND_JAR_NAME="wuyu-server-main.jar"
             FRONTEND_IMAGE="wuyu-front-main"
             BACKEND_LOG="backend-main.log"
-
+            
             # ========== 目录验证 ==========
-            echo "🔍 Verifying project directory structure..."
-            if [ ! -d "wuyu-server" ]; then
-              echo "❌ wuyu-server directory not found in $REPO_DIR"
-              echo "Current directory contents:"
-              ls -la
-              exit 1
-            fi
-            
+            echo "🔍 Verifying project structure..."
             if [ ! -d "wuyu-front" ]; then
-              echo "❌ wuyu-front directory not found in $REPO_DIR"
-              echo "Current directory contents:"
+              echo "❌ wuyu-front directory missing!"
+              echo "Directory contents:"
               ls -la
               exit 1
             fi
-
-            # ========== 前端处理阶段 (优化后) ========== 
-            echo "📂 Moving to frontend directory..."
-            cd wuyu-front
             
-            # 1. 彻底清理工作区（关键步骤）
-            echo "🧹 Performing deep clean of frontend workspace..."
-            git clean -fdx .  # 强制删除所有未跟踪文件和目录
+            # ========== 前端部署 ==========
+            echo "📂 Processing frontend..."
+            cd wuyu-front || { echo "❌ Cannot enter wuyu-front directory"; exit 1; }
             
-            # 2. 验证清理结果
-            echo "✅ Cleaned workspace contents:"
+            # 安全清理（保留 Docker 构建必需的文件）
+            echo "🧹 Cleaning workspace (preserving Docker build files)..."
+            # 保留所有 Git 跟踪文件和目录
+            git clean -fdx -e 'Dockerfile*' -e 'package*.json' -e 'src/' -e 'public/' || true
+            
+            echo "📁 Current directory contents:"
             ls -la
             
-            # 3. 禁用缓存构建前端镜像
-            echo "🏗️ Building Frontend with NO-CACHE..."
-            docker build \
-              --no-cache \              # 禁用所有缓存层
-              --pull \                  # 确保基础镜像最新
-              -t $FRONTEND_IMAGE . || { echo "❌ Frontend build failed"; exit 1; }
+            # 确认 Dockerfile 存在
+            if [ ! -f "Dockerfile" ]; then
+              echo "❌ ERROR: Dockerfile missing in wuyu-front directory!"
+              echo "Please ensure Dockerfile is committed to the repository"
+              exit 1
+            fi
             
-            # 4. 部署前端容器
-            echo "🚀 Deploying Frontend..."
+            # 禁用缓存构建镜像
+            echo "🏗️ Building Frontend (no-cache)..."
+            docker build \
+              --no-cache \
+              --pull \
+              -t $FRONTEND_IMAGE . || { 
+                echo "❌ Frontend build failed"; 
+                echo "Build context contents:"; 
+                ls -la .; 
+                exit 1; 
+              }
+            
+            # 部署前端容器
+            echo "🚀 Deploying Frontend container..."
             docker stop $FRONTEND_IMAGE >/dev/null 2>&1 || true
             docker rm $FRONTEND_IMAGE >/dev/null 2>&1 || true
             docker run -d \
               --name $FRONTEND_IMAGE \
               -p $FRONTEND_PORT:80 \
               $FRONTEND_IMAGE || { echo "❌ Frontend deployment failed"; exit 1; }
-
-            # 5. 清理旧镜像节省空间
-            echo "🧹 Cleaning old Docker images..."
-            docker image prune -af --filter "until=48h"
-
-            # ========== 后端处理阶段 ==========
-            echo "📂 Moving to backend directory..."
-            cd ../wuyu-server
-            git clean -fdx .  # 清理后端工作区
             
-            # 停止当前端口运行的Java应用
-            echo "🛑 Checking for existing processes on port $SERVER_PORT..."
+            # ========== 后端部署 ==========
+            echo "📂 Processing backend..."
+            cd ../wuyu-server || { echo "❌ Cannot enter wuyu-server directory"; exit 1; }
+            
+            # 清理后端工作区
+            git clean -fdx -e 'pom.xml' -e 'src/'
+            
+            # 停止现有进程
+            echo "🛑 Stopping existing backend..."
             PID=$(lsof -t -i:$SERVER_PORT || true)
             if [ ! -z "$PID" ]; then
-              echo "🛑 Stopping existing backend process (PID: $PID)..."
-              kill -9 $PID || true
-              sleep 3  # 等待进程释放端口
+              kill -9 $PID
+              sleep 3
             fi
             
-            # 使用Maven构建项目
-            echo "🔧 Compiling backend with Maven..."
-            mvn clean package -DskipTests || { echo "❌ Backend build failed"; exit 1; }
+            # 构建项目
+            echo "🔧 Building backend with Maven..."
+            mvn clean package -DskipTests || { 
+                echo "❌ Backend build failed";
+                echo "===== MVEN BUILD LOG ====="
+                cat target/surefire-reports/*.txt || true;
+                exit 1;
+            }
             
-            # 重命名JAR文件
             mv target/*.jar target/$BACKEND_JAR_NAME
-            
-            # 清理旧日志
             rm -f $BACKEND_LOG
             
-            # 启动JAR包（后台运行）
-            echo "🚀 Starting backend..."
+            # 启动应用
+            echo "🚀 Starting backend on port $SERVER_PORT..."
             nohup java -jar target/$BACKEND_JAR_NAME --server.port=$SERVER_PORT > $BACKEND_LOG 2>&1 &
             BACKEND_PID=$!
             echo "📝 Backend PID: $BACKEND_PID"
             
-            # 验证后端启动
-            echo "⏳ Waiting for backend to start on port $SERVER_PORT..."
-            MAX_RETRIES=12
-            RETRY_DELAY=5
-            
-            for i in $(seq 1 $MAX_RETRIES); do
-              sleep $RETRY_DELAY
-              
-              # 检查进程状态
-              if ! ps -p $BACKEND_PID > /dev/null; then
-                echo "❌ Backend process exited unexpectedly!"
-                echo "===== BEGIN BACKEND LOGS ====="
-                cat $BACKEND_LOG
-                echo "===== END BACKEND LOGS ====="
-                exit 1
-              fi
-              
-              # 检查端口监听
-              if ss -tuln | grep ":$SERVER_PORT " >/dev/null; then
-                echo "✅ Port $SERVER_PORT is listening"
+            # 健康检查
+            echo "🩺 Waiting for backend to start..."
+            for i in {1..10}; do
+              if curl -sSf http://localhost:$SERVER_PORT/actuator/health >/dev/null; then
+                echo "✅ Backend is up and running!"
                 break
+              else
+                echo "⏳ Waiting for backend startup ($i/10)..."
+                sleep 5
               fi
               
-              echo "⌛ Attempt $i/$MAX_RETRIES: Waiting for port..."
-              
-              if [ $i -eq $MAX_RETRIES ]; then
-                echo "❌ Backend failed to start after $((MAX_RETRIES*RETRY_DELAY)) seconds"
-                echo "===== NETSTAT OUTPUT ====="
-                ss -tulnp
+              if [ $i -eq 10 ]; then
+                echo "❌ Backend failed to start within 50 seconds"
+                echo "===== BACKEND LOGS ====="
+                cat $BACKEND_LOG
                 echo "===== PROCESS LIST ====="
                 ps aux | grep java
                 exit 1
               fi
             done
             
-            # 健康检查
-            echo "🩺 Performing health check..."
-            HEALTH_CHECK_URL="http://localhost:$SERVER_PORT/actuator/health"
-            for i in {1..5}; do
-              if curl -s $HEALTH_CHECK_URL | grep '"status":"UP"'; then
-                echo "✅ Health check passed"
-                break
-              else
-                echo "⚠️ Health check attempt $i/5 failed"
-                sleep 2
-              fi
-              
-              if [ $i -eq 5 ]; then
-                echo "❌ Health check failed at $HEALTH_CHECK_URL"
-                echo "===== RESPONSE ====="
-                curl -i $HEALTH_CHECK_URL || true
-                exit 1
-              fi
-            done
-
-            # ========== 完成阶段 ==========
+            # ========== 清理和总结 ==========
+            echo "🧹 Cleaning Docker resources..."
+            docker system prune -af --filter "until=48h"
+            
             echo "✅ Deployment completed successfully!"
-            echo "Frontend: $FRONTEND_IMAGE @ http://${{ secrets.SERVER_HOST }}:$FRONTEND_PORT"
-            echo "Backend: $BACKEND_JAR_NAME @ http://${{ secrets.SERVER_HOST }}:$SERVER_PORT"
+            echo "Frontend URL: http://${{ secrets.SERVER_HOST }}:$FRONTEND_PORT"
+            echo "Backend URL: http://${{ secrets.SERVER_HOST }}:$SERVER_PORT"
