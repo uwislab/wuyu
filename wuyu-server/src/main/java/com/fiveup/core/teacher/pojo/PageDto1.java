@@ -1,4 +1,4 @@
-package com.fiveup.core.management.pojo;
+package com.fiveup.core.teacher.pojo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
