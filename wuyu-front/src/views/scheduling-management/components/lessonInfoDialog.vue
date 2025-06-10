@@ -21,6 +21,7 @@
               placeholder="请选择年级"
               clearable
               class="w-full"
+              @change="updateClassName"
             >
               <el-option
                 v-for="grade in gradeOptions"
@@ -40,6 +41,7 @@
               placeholder="请选择班级序号"
               clearable
               class="w-full"
+              @change="updateClassName"
             >
               <el-option
                 v-for="num in classNumOptions"
@@ -90,8 +92,8 @@
 
     <template #footer>
       <span class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="handleSubmit">确 定</el-button>
+        <el-button @click="dialogVisible = false" :loading="loading">取 消</el-button>
+        <el-button type="primary" @click="handleSubmit" :loading="loading">确 定</el-button>
       </span>
     </template>
 
@@ -104,7 +106,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch } from 'vue'
+import { ref, reactive, watch } from 'vue'
 import { Message } from 'element-ui'
 import { addLessonAPI, updateLessonAPI } from '@/api/schedulModule/index'
 import TeacherSel from './TeacherSel.vue'
@@ -113,14 +115,7 @@ const props = defineProps({
   visible: Boolean,
   formData: {
     type: Object,
-    default: () => ({
-      grade: null,
-      classNum: null,
-      className: '',
-      course: '',
-      teacherId: null,
-      teacherName: ''
-    })
+    default: () => ({})
   },
   teachers: {
     type: Array,
@@ -128,7 +123,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:visible', 'submit', 'success'])
+const emit = defineEmits(['update:visible', 'submit', 'success','refresh-data'])
 
 // 年级选项
 const gradeOptions = Array.from({ length: 6 }, (_, i) => ({
@@ -144,7 +139,7 @@ const dialogVisible = ref(false)
 const loading = ref(false) // 添加加载状态
 const teacherSelVisible = ref(false)
 
-const form = reactive({ ...props.formData })
+const form = ref({ ...props.formData })
 
 const rules = reactive({
   grade: [
@@ -167,16 +162,30 @@ const rules = reactive({
   ]
 })
 
+// 监听props.visible变化
 watch(() => props.visible, val => {
   dialogVisible.value = val
   if (val) {
-    Object.assign(form, props.formData)
+    // 打开对话框时重置表单
+    formRef.value?.resetFields()
+    // Object.assign(form, props.formData)
   }
 })
 
+ watch(() => props.formData, (newVal) => {
+      form.value = { ...newVal };
+    }, { deep: true });
+
+// 关闭对话框处理
 const handleClose = () => {
   emit('update:visible', false)
   formRef.value?.resetFields()
+}
+
+const updateClassName = () => {
+  if (form.value.grade && form.value.classNum && !props.formData.id) {
+    form.value.className = `${form.value.grade}年级${form.value.classNum}班`
+  }
 }
 
 // 处理表单提交
@@ -188,32 +197,36 @@ const handleSubmit = async () => {
 
     try {
       const lessonData = {
-        ...form,
+        ...form.value,
       }
 
       let result
-      if (form.id) {
+      if (form.value.id) {
         // 更新课程信息
         result = await updateLessonAPI(lessonData)
         console.log(result);
 
-        if(result.code === 200)
+        if(result.code === 200) {
           Message.success('课程信息更新成功')
-        else
+        } else {
           Message.error('出错了，稍后重试~')
+        }
       } else {
         // 添加新课程
         result = await addLessonAPI(lessonData)
         console.log(result);
 
-        if(result.code === 200)
+        if(result.code === 200) {
           Message.success('新课程添加成功')
-        else
+        } else {
           Message.error('出错了，稍后重试~')
+        }
       }
 
       emit('success', result) // 通知父组件操作成功
       emit('update:visible', false)
+      emit('refresh-data')
+      formRef.value.resetFields() // 重置表单
     } catch (error) {
       console.error('操作失败:', error)
       Message.error('操作失败，请重试')
