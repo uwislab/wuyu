@@ -5,6 +5,7 @@ import com.fiveup.core.demonstrate.entity.GradeScore;
 import com.fiveup.core.diagnose.bean.*;
 import com.fiveup.core.diagnose.mapper.SplanMapper;
 import com.fiveup.core.diagnose.service.studentscoreService;
+import com.fiveup.core.management.common.CommonResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -95,11 +96,22 @@ public class studentscoreController {
         // 获取该班级所有学生的成绩列表
         List<student_score> scores = stService.SelectScoreByClass(grade, sclass);
 
-        // 计算平均分
-        float[] avgScores = studentscoreService.avaragescore(scores);
-
         // 构造返回结果
         Map<String, Float> result = new HashMap<>();
+
+        if (scores == null || scores.isEmpty()) {
+            // 如果没有数据，返回默认值 0
+            result.put("德育", 0.0f);
+            result.put("智育", 0.0f);
+            result.put("体育", 0.0f);
+            result.put("美育", 0.0f);
+            result.put("劳育", 0.0f);
+            return result;
+        }
+
+        // 计算平均分
+        float[] avgScores = studentscoreService.avaragescoreNew(scores);
+
         result.put("德育", avgScores[0]);
         result.put("智育", avgScores[1]);
         result.put("体育", avgScores[2]);
@@ -111,7 +123,7 @@ public class studentscoreController {
     
     @GetMapping("/avgFiveScore")
     @ResponseBody
-    public Map<String, Float> getFiveAverageScores(@RequestParam("grade") Integer grade, Integer clazz) {
+    public CommonResponse<Map<String, Float>> getFiveAverageScores(@RequestParam("grade") Integer grade, Integer clazz) {
         return Optional.ofNullable(clazz)
                 .map(c -> {
                     List<student_score> student_scores = stService.SelectScoreByClass(grade, c);
@@ -124,7 +136,7 @@ public class studentscoreController {
                     result.put("体育", avgScores[2]);
                     result.put("美育", avgScores[3]);
                     result.put("劳育", avgScores[4]);
-                    return result;
+                    return CommonResponse.ok(result);
                 }).orElseGet(() -> {
                     // 获取该年级所有学生的成绩列表
                     List<student_score> scores = stService.SelectScoreByGrade(grade);
@@ -139,7 +151,7 @@ public class studentscoreController {
                     result.put("体育", avgScores[2]);
                     result.put("美育", avgScores[3]);
                     result.put("劳育", avgScores[4]);
-                    return result;
+                    return CommonResponse.ok(result);
                 });
     }
 
