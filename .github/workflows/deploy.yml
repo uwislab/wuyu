@@ -47,16 +47,22 @@ jobs:
             FRONTEND_IMAGE="wuyu-front-$BRANCH"
             BACKEND_LOG="backend-$BRANCH.log"
 
+            # ========== 前端处理阶段 ========== 
+            cd ../wuyu-front
+            echo "🏗️ Building Frontend..."
+            docker build -t $FRONTEND_IMAGE . || { echo "❌ Frontend build failed"; exit 1; }
+
+            echo "🚀 Deploying Frontend..."
+            docker stop $FRONTEND_IMAGE >/dev/null 2>&1 || true
+            docker rm $FRONTEND_IMAGE >/dev/null 2>&1 || true
+            docker run -d \
+              --name $FRONTEND_IMAGE \
+              -p $FRONTEND_PORT:80 \
+              $FRONTEND_IMAGE || { echo "❌ Frontend deployment failed"; exit 1; }
+
             # ========== 后端处理阶段 ==========
             echo "🏗️ Building and Deploying Backend..."
             cd wuyu-server
-            
-            # 使用Maven构建项目（跳过测试）
-            echo "🔧 Compiling backend with Maven..."
-            mvn clean package -DskipTests || { echo "❌ Backend build failed"; exit 1; }
-            
-            # 重命名JAR文件以包含分支名
-            mv target/*.jar target/$BACKEND_JAR_NAME
             
             # 停止当前端口运行的Java应用
             echo "🛑 Checking for existing processes on port $SERVER_PORT..."
@@ -67,6 +73,13 @@ jobs:
               # 等待进程完全停止
               sleep 3
             fi
+            
+            # 使用Maven构建项目（跳过测试）
+            echo "🔧 Compiling backend with Maven..."
+            mvn clean package -DskipTests || { echo "❌ Backend build failed"; exit 1; }
+            
+            # 重命名JAR文件以包含分支名
+            mv target/*.jar target/$BACKEND_JAR_NAME
             
             # 清理旧日志
             rm -f $BACKEND_LOG
@@ -130,19 +143,6 @@ jobs:
             fi
             
             echo "✅ Backend started successfully on port $SERVER_PORT"
-
-            # ========== 前端处理阶段 ========== 
-            cd ../wuyu-front
-            echo "🏗️ Building Frontend..."
-            docker build -t $FRONTEND_IMAGE . || { echo "❌ Frontend build failed"; exit 1; }
-
-            echo "🚀 Deploying Frontend..."
-            docker stop $FRONTEND_IMAGE >/dev/null 2>&1 || true
-            docker rm $FRONTEND_IMAGE >/dev/null 2>&1 || true
-            docker run -d \
-              --name $FRONTEND_IMAGE \
-              -p $FRONTEND_PORT:80 \
-              $FRONTEND_IMAGE || { echo "❌ Frontend deployment failed"; exit 1; }
 
             # ========== 完成阶段 ==========
             echo "✅ Deployment completed for $BRANCH"
