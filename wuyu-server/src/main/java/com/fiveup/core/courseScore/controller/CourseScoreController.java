@@ -27,11 +27,11 @@ public class CourseScoreController {
      * @param
      */
     @PostMapping("/get")
-    public Result search(@RequestParam String courseName,@RequestParam(required = false) Integer courseType,@RequestParam String teacherName,@RequestParam String studentNum,@RequestParam String studentName,@RequestParam Integer page,@RequestParam Integer pageSize){
+    public Result<V> search(@RequestParam String courseName, @RequestParam(required = false) Integer courseType, @RequestParam String teacherName, @RequestParam String studentNum, @RequestParam String studentName, @RequestParam Integer page, @RequestParam Integer pageSize){
 
         log.debug("courseName:{},courseType:{},teacherName:{},studentNum:{},studentName:{},page:{},pageSize:{}",courseName,courseType,teacherName,studentNum,studentName,page,pageSize);
         ResPage<List<CourseScore>> resPage = courseScoreService.search(courseName,courseType,teacherName,studentNum,studentName,page,pageSize);
-        Result result = new Result(200,"查询成功", Math.toIntExact(resPage.getTotal()),resPage);
+        Result<V> result = new Result<V>(200,"查询成功", Math.toIntExact(resPage.getTotal()),resPage);
         return result;
     }
 
@@ -41,9 +41,9 @@ public class CourseScoreController {
      * @return
      */
     @PostMapping("/add")
-        public Result save(@RequestBody CourseScore courseScore){
+        public Result<V> save(@RequestBody CourseScore courseScore){
         courseScoreService.save(courseScore);
-        Result result = new Result();
+        Result<V> result = new Result<V>();
         result.setCode(600);
         result.setMsg("增加成功！");
         return result;
@@ -55,11 +55,11 @@ public class CourseScoreController {
      * @return
      */
     @PostMapping("/deleteByIds")
-    public Result deleteByIds(@RequestBody String[] ids){
+    public Result<V> deleteByIds(@RequestBody String[] ids){
         if(ids.length==0)
-            return new Result(233,"选择数据不能为空!");
+            return new Result<V>(233,"选择数据不能为空!");
         boolean deleteSuccess = courseScoreService.deleteByIds(ids);
-        Result result = new Result();
+        Result<V> result = new Result<V>();
         if(deleteSuccess) {
             result.setCode(200);
             result.setMsg("删除成功！");
@@ -76,9 +76,9 @@ public class CourseScoreController {
      * @return
      */
     @PostMapping("/edit")
-    public Result edit(@RequestBody CourseScore courseScore){
+    public Result<V> edit(@RequestBody CourseScore courseScore){
         courseScoreService.edit(courseScore);
-        Result result = new Result();
+        Result<V> result = new Result<V>();
         result.setCode(600);
         result.setMsg("修改成功！");
         return result;
@@ -91,15 +91,15 @@ public class CourseScoreController {
     @PutMapping("/85")
     public String update85(){
         courseScoreService.update85();
-        Result result = new Result();
+        Result<V> result = new Result<V>();
         result.setCode(600);
         result.setMsg("修改成功！");
         return JSON.toJSON(result).toString();
     }
 
     @PostMapping("/upload")
-    public Result upload(@RequestBody MultipartFile file) throws IOException {
-        Result result = new Result();
+    public Result<V> upload(@RequestBody MultipartFile file) throws IOException {
+        Result<V> result = new Result<V>();
         try{
             List<CourseScore> list = ExcelUtil.getReader(file.getInputStream()).readAll(CourseScore.class);
             if(!CollectionUtil.isEmpty(list)){
@@ -132,7 +132,7 @@ public class CourseScoreController {
     /**
      * 校验单个 CourseScore 对象
      */
-    private boolean validateCourseScore(CourseScore courseScore, Result result) {
+    private boolean validateCourseScore(CourseScore courseScore, Result<V> result) {
         // 校验除教师评语外的字段是否为空
         if (courseScore.getCourseName() == null || courseScore.getCourseName().trim().isEmpty()) {
             result.setMsg("课程名称不能为空");

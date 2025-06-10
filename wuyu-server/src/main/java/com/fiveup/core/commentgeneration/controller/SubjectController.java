@@ -31,7 +31,7 @@ public class SubjectController {
     @ResponseBody
     @GetMapping("/all")
     public String getAll(){
-        Result result = new Result();
+        Result<V> result = new Result<V>();
 
         // 查询所有科目信息
         List<Subject> all = subjectService.getAll();
