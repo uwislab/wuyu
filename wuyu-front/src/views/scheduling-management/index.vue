@@ -470,7 +470,6 @@ const handleUpdateLesson = (row) => {
   console.log('更新课程:', row)
 }
 
-// 自动fuzhi
 // 自动复制排课
 const handleAutoCopy = async () => {
   try {
@@ -482,6 +481,27 @@ const handleAutoCopy = async () => {
     })
 
     // const res = await copyLastSemesterSchedule()
+    // 
+    // 将获取到的年级、班级、教师、课程，转换成树状结构
+    // 数据结构
+    // {
+    //    code: 200,
+    //    data: {
+    //      records: [  // 课程列表
+    //        {
+    //          id: 课程ID,
+    //          grade: 年级,
+    //          classNum: 班级号,
+    //          className: 班级名称,
+    //          course: 课程名称,
+    //          teacherName: 教师姓名,
+    //          teacherId: 教师ID
+    //        },
+    //        // ...更多课程
+    //      ],
+    //      total: 总记录数
+    //    }
+    //  }
     Message.success('复制上学期排课成功')
       // 重新获取数据
       await fetchData()
