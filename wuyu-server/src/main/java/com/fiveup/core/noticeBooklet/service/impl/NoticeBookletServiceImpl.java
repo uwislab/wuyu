@@ -2,9 +2,12 @@ package com.fiveup.core.noticeBooklet.service.impl;
 
 import com.fiveup.core.noticeBooklet.domain.NoticeBooklet;
 import com.fiveup.core.noticeBooklet.mapper.ScoreMapper;
+import com.fiveup.core.noticeBooklet.service.CommentGenerationService;
 import com.fiveup.core.noticeBooklet.service.NoticeBookletService;
+import com.alibaba.dashscope.exception.ApiException;
+import com.alibaba.dashscope.exception.InputRequiredException;
+import com.alibaba.dashscope.exception.NoApiKeyException;
 import org.springframework.stereotype.Service;
-
 import javax.annotation.Resource;
 import java.util.List;
 
@@ -19,6 +22,8 @@ public class NoticeBookletServiceImpl implements NoticeBookletService {
 
     @Resource
     private ScoreMapper scoreMapper;
+    @Resource
+    private CommentGenerationService commentGenerationService;
 
     /**
      * 获取通知册内容
@@ -33,14 +38,19 @@ public class NoticeBookletServiceImpl implements NoticeBookletService {
         List<NoticeBooklet> noticeBookletList = scoreMapper.getNoticeBooklet(studentId, classId, gradeId);
         // 获取数据
         for (NoticeBooklet noticeBooklet : noticeBookletList) {
-            // 获取评语
-            // TODO：大模型获取
-            noticeBooklet.setRemark("评语：暂无");
-            // 获取建议
-            // TODO：大模型获取
-            noticeBooklet.setSuggest("建议：暂无");
-            // 获取假期要求
-            noticeBooklet.setHoliday("假期要求：暂无");
+            try {
+                // 调用评语生成服务
+                String studentName = noticeBooklet.getStudentName();
+                Long studentIdLong = Long.valueOf(studentId);
+                String commentResult = commentGenerationService.generateCommentForStudent(studentName, studentIdLong);
+
+                // 直接将生成的完整内容作为评语
+                noticeBooklet.setRemark(commentResult);
+
+            } catch (ApiException | NoApiKeyException | InputRequiredException e) {
+                // 异常处理
+                noticeBooklet.setRemark("评语生成失败：" + e.getMessage());
+            }
         }
         return noticeBookletList;
     }
