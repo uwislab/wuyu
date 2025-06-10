@@ -24,6 +24,7 @@ public class NoticeBookletServiceImpl implements NoticeBookletService {
     private ScoreMapper scoreMapper;
     @Resource
     private CommentGenerationService commentGenerationService;
+
     /**
      * 获取通知册内容
      *

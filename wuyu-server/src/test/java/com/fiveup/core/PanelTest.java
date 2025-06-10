@@ -11,9 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
-
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 @SpringBootTest
 public class PanelTest {
+    private static final Logger logger = LoggerFactory.getLogger(PanelTest.class);
     @Autowired
     private PanelController controller;
     @Autowired
@@ -45,9 +48,14 @@ public class PanelTest {
     @SneakyThrows
     @Test
     public void test1() {
-        String studentName  = "刘成";
-        Long studentId = 2017083062L;
-        String comment = commentGenerationService.generateCommentForStudent(studentName, studentId);
-        System.out.println(comment);
+        String studentName = "张三";
+        Long studentId = 2018083062L;
+        try {
+            String comment = commentGenerationService.generateCommentForStudent(studentName, studentId);
+            System.out.println(comment);
+        } catch (Exception e) {
+            logger.error("生成评语时出错，学生姓名: {}, 学生ID: {}", studentName, studentId, e);
+            System.out.println("生成评语时出错，请查看日志获取详细信息。");
+        }
     }
 }

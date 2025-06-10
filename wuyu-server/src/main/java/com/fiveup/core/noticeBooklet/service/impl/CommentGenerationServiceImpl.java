@@ -1,7 +1,7 @@
 package com.fiveup.core.noticeBooklet.service.impl;
 
-import com.fiveup.core.fuScore.model.StudentFuScore;
-import com.fiveup.core.fuScore.service.StudentFuScoreService;
+import com.fiveup.core.noticeBooklet.domain.NoticeBooklet;
+import com.fiveup.core.noticeBooklet.mapper.ScoreMapper;
 import com.fiveup.core.noticeBooklet.service.CommentGenerationService;
 import com.alibaba.dashscope.exception.ApiException;
 import com.alibaba.dashscope.exception.InputRequiredException;
@@ -22,25 +22,25 @@ import java.util.List;
 public class CommentGenerationServiceImpl implements CommentGenerationService {
 
     @Autowired
-    private StudentFuScoreService studentFuScoreService;
+    private ScoreMapper scoreMapper;
 
     @Override
     public String generateCommentForStudent(String studentName, Long studentId) throws ApiException, NoApiKeyException, InputRequiredException {
-        int studentIdAsInt = studentId.intValue();
-        // 获取学生的五育成绩
-        List<StudentFuScore> studentFuScores = studentFuScoreService.getStudentsFuScore(studentName, studentIdAsInt);
-        if (studentFuScores.isEmpty()) {
+        Integer studentIdAsInt = studentId.intValue();
+        // 直接从 ScoreMapper 获取通知册信息
+        List<NoticeBooklet> noticeBooklets = scoreMapper.getNoticeBooklet(studentIdAsInt, null, null);
+        if (noticeBooklets.isEmpty()) {
             return "未找到该学生的成绩信息。";
         }
-        StudentFuScore score = studentFuScores.get(0);
+        NoticeBooklet noticeBooklet = noticeBooklets.get(0);
 
         // 提取五育成绩
         double[] scores = {
-                score.getMoralityScore(),
-                score.getIntelligenceScore(),
-                score.getPhysicalScore(),
-                score.getAestheticScore(),
-                score.getLabourScore()
+                noticeBooklet.getSDeyu() == null ? 0.0 : noticeBooklet.getSDeyu(),
+                noticeBooklet.getSZhiyu() == null ? 0.0 : noticeBooklet.getSZhiyu(),
+                noticeBooklet.getSTiyu() == null ? 0.0 : noticeBooklet.getSTiyu(),
+                noticeBooklet.getSMeiyu() == null ? 0.0 : noticeBooklet.getSMeiyu(),
+                noticeBooklet.getSLaoyu() == null ? 0.0 : noticeBooklet.getSLaoyu()
         };
 
         // 调用生成评语的方法
