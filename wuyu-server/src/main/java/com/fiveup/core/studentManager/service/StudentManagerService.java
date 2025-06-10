@@ -8,7 +8,7 @@ import com.fiveup.core.studentManager.pojo.StudentManagerQuery;
 public interface StudentManagerService extends IService<StudentManager> {
     void addStudent(StudentManager studentManager);
 
-    PageBean<StudentManager> getStudent(StudentManagerQuery studentManagerQuery);
+    PageBean<StudentManager> getStudentPage(StudentManagerQuery studentManagerQuery);
 
     void updateStudent(StudentManager studentManager);
 

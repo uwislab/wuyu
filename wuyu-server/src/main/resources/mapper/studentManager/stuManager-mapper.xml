@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.studentManager.mapper.StudentManagerMapper">
+    <select id="getStudent" resultType="com.fiveup.core.studentManager.entity.StudentManager">
+
+        select * from basic_student
+        <where>
+            <if test="id != null">
+                id = #{id}
+            </if>
+            <if test="studentNum != null and studentNum != ''">
+                and student_num = #{studentNum}
+            </if>
+            <if test="studentName != null and studentName != ''">
+                and student_name = #{studentName}
+            </if>
+            <if test="gender != null">
+                and gender = #{gender}
+            </if>
+            <if test="classId != null">
+                and class_id = #{classId}
+            </if>
+            <if test="gradeId != null">
+                and grade_id = #{gradeId}
+            </if>
+            <if test="parentPhoneNum != null and parentPhoneNum != '">
+                and parent_phone_num = #{parentPhoneNum}
+            </if>
+            <if test="deleted != null">
+                and deleted = #{deleted}
+            </if>
+            <if test="isreview != null">
+                and isreview = #{isreview}
+            </if>
+            <if test="isenter != null">
+                and isenter = #{isenter}
+            </if>
+            <if test="schoolId != null">
+                and school_id = #{schoolId}
+            </if>
+        </where>
+    </select>
+</mapper>

@@ -23,9 +23,13 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
         studentManagerMapper.insert(studentManager);
     }
 
-
     @Override
-    public PageBean<StudentManager> getStudent(StudentManagerQuery studentManagerQuery) {
+    public PageBean<StudentManager> getStudentPage(StudentManagerQuery studentManagerQuery) {
+        return null;
+    }
+
+
+    public PageBean<StudentManager> getStudent1(StudentManagerQuery studentManagerQuery) {
         System.out.println("前端传来页码"+studentManagerQuery.getPage());
         System.out.println("前端传来每页显示的条数"+studentManagerQuery.getSizeOfPage());
         int sizeOfPage = studentManagerQuery.getSizeOfPage() == null ? 10 : studentManagerQuery.getSizeOfPage();

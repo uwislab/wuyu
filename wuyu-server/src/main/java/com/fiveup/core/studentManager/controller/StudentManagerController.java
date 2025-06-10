@@ -33,7 +33,9 @@ public class StudentManagerController {
     @PostMapping("getStudent")
     public Result<PageBean<StudentManager>> getStudent(@RequestBody StudentManagerQuery studentManagerQuery){
 //        return new Result<>(studentManagerService.getStudent(studentManagerQuery));
-        return null;
+        PageBean<StudentManager> pageBean = studentManagerService.getStudentPage(studentManagerQuery);
+
+        return Result.success(pageBean);
     }
 
     /**
