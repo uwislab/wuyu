@@ -2,7 +2,7 @@ name: Build and Deploy
 
 on:
   push:
-    branches: [ "main", "develop-*" ]
+    branches: [ "main" ]
 
 jobs:
   deploy:
@@ -23,29 +23,24 @@ jobs:
             set -e  # 任何命令失败立即终止脚本
             
             # 初始化变量
-            BRANCH="${{ github.ref_name }}"
+            BRANCH="main"
             REPO_DIR="/www/cicd_wuyu/wuyuProject/WuYuEducation"
             cd "$REPO_DIR"
 
             # ========== 代码同步阶段 ==========
-            echo "🔄 Syncing $BRANCH branch..."
-            git checkout -f $BRANCH
-            git pull origin $BRANCH
+            echo "🔄 Syncing main branch..."
+            git checkout -f main
+            git pull origin main
 
             # ========== 端口计算阶段 ==========
-            if [ "$BRANCH" = "main" ]; then
-              GROUP_NUMBER=0
-            else
-              # 提取develop-后的数字部分
-              GROUP_NUMBER=$(echo "$BRANCH" | sed 's/develop-//')
-            fi
-            SERVER_PORT=$((9080 + GROUP_NUMBER))
-            FRONTEND_PORT=$((9180 + GROUP_NUMBER))
+            GROUP_NUMBER=0
+            SERVER_PORT=9080
+            FRONTEND_PORT=9180
             
-            # 根据分支名命名后端JAR和前端镜像
-            BACKEND_JAR_NAME="wuyu-server-$BRANCH.jar"
-            FRONTEND_IMAGE="wuyu-front-$BRANCH"
-            BACKEND_LOG="backend-$BRANCH.log"
+            # 命名后端JAR和前端镜像
+            BACKEND_JAR_NAME="wuyu-server-main.jar"
+            FRONTEND_IMAGE="wuyu-front-main"
+            BACKEND_LOG="backend-main.log"
 
             # ========== 目录验证 ==========
             echo "🔍 Verifying project directory structure..."
@@ -98,7 +93,7 @@ jobs:
             echo "🔧 Compiling backend with Maven..."
             mvn clean package -DskipTests || { echo "❌ Backend build failed"; exit 1; }
             
-            # 重命名JAR文件以包含分支名
+            # 重命名JAR文件
             mv target/*.jar target/$BACKEND_JAR_NAME
             
             # 清理旧日志
@@ -165,6 +160,6 @@ jobs:
             echo "✅ Backend started successfully on port $SERVER_PORT"
 
             # ========== 完成阶段 ==========
-            echo "✅ Deployment completed for $BRANCH"
+            echo "✅ Deployment completed for main branch"
             echo "Backend: $BACKEND_JAR_NAME running on port $SERVER_PORT (PID: $BACKEND_PID)"
             echo "Frontend: $FRONTEND_IMAGE @ port $FRONTEND_PORT"
