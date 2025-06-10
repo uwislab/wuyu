@@ -41,25 +41,42 @@ jobs:
             fi
             SERVER_PORT=$((9080 + GROUP_NUMBER))
             FRONTEND_PORT=$((9180 + GROUP_NUMBER))
-            SERVER_IMAGE="wuyu-server-$BRANCH"
+            
+            # 根据分支名命名后端JAR和前端镜像
+            BACKEND_JAR_NAME="wuyu-server-$BRANCH.jar"
             FRONTEND_IMAGE="wuyu-front-$BRANCH"
 
             # ========== 后端处理阶段 ==========
-            echo "🏗️ Building Backend..."
+            echo "🏗️ Building and Deploying Backend..."
             cd wuyu-server
-            docker build -t $SERVER_IMAGE . || { echo "❌ Backend build failed"; exit 1; }
-
-            echo "🚀 Deploying Backend..."
-            docker stop $SERVER_IMAGE >/dev/null 2>&1 || true
-            docker rm $SERVER_IMAGE >/dev/null 2>&1 || true
-            docker run -d \
-              --name $SERVER_IMAGE \
-              -p $SERVER_PORT:8080 \
-              $SERVER_IMAGE || { echo "❌ Backend deployment failed"; exit 1; }
-
+            
+            # 使用Maven构建项目（跳过测试）
+            mvn clean package -DskipTests || { echo "❌ Backend build failed"; exit 1; }
+            
+            # 重命名JAR文件以包含分支名
+            mv target/*.jar target/$BACKEND_JAR_NAME
+            
+            # 停止当前端口运行的Java应用
+            PID=$(lsof -t -i:$SERVER_PORT || true)
+            if [ ! -z "$PID" ]; then
+              echo "🛑 Stopping existing backend process on port $SERVER_PORT..."
+              kill -9 $PID || true
+            fi
+            
+            # 启动JAR包（后台运行）
+            nohup java -jar target/$BACKEND_JAR_NAME --server.port=$SERVER_PORT > backend-$BRANCH.log 2>&1 &
+            
+            # 验证后端启动
+            echo "⏳ Waiting for backend to start..."
+            sleep 10
+            if ! curl -s --retry 5 --retry-delay 2 http://localhost:$SERVER_PORT/actuator/health >/dev/null; then
+              echo "❌ Backend failed to start on port $SERVER_PORT"
+              exit 1
+            fi
+            
             # ========== 前端处理阶段 ========== 
-            echo "🏗️ Building Frontend..."
             cd ../wuyu-front
+            echo "🏗️ Building Frontend..."
             docker build -t $FRONTEND_IMAGE . || { echo "❌ Frontend build failed"; exit 1; }
 
             echo "🚀 Deploying Frontend..."
@@ -72,5 +89,5 @@ jobs:
 
             # ========== 完成阶段 ==========
             echo "✅ Deployment completed for $BRANCH"
-            echo "Backend: $SERVER_IMAGE @ port $SERVER_PORT"
+            echo "Backend: $BACKEND_JAR_NAME running on port $SERVER_PORT"
             echo "Frontend: $FRONTEND_IMAGE @ port $FRONTEND_PORT"
