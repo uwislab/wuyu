@@ -1,15 +1,18 @@
 package com.fiveup.core.teacher.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
+import com.fiveup.core.fuScale.develop_09.common.R;
 import com.fiveup.core.management.pojo.PageDto;
 import com.fiveup.core.teacher.pojo.PageDto1;
 import com.fiveup.core.teacher.entity.TeacherList;
 import com.fiveup.core.teacher.entity.teacher;
 import com.fiveup.core.teacher.mapper.teacherFiveupMapper;
 import com.fiveup.core.teacher.mapper.JumpingMapper;
+import com.fiveup.core.teacher.utils.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -118,5 +121,59 @@ public class teacherFiveupService extends ServiceImpl<teacherFiveupMapper, teach
             vo.setLast(false);
         }
         return vo;
+    }
+
+    public Result updateTeacherInfo(teacher teacherInfoParam) {
+        // 1. 参数校验
+        if (teacherInfoParam == null || teacherInfoParam.getId() == 0) {
+            return Result.fail(400, "参数错误，教师ID不能为空");
+        }
+
+        // 2. 检查教师是否存在
+        teacher existingTeacher = teacherMapper.selectById(teacherInfoParam.getId());
+        if (existingTeacher == null || existingTeacher.getDeleted() == 1) {
+            return Result.fail(404, "教师不存在或已被删除");
+        }
+
+        // 3. 构建更新对象（只更新允许修改的字段）
+        teacher updateTeacher = new teacher();
+        updateTeacher.setId(teacherInfoParam.getId());
+
+        if (teacherInfoParam.getTeacherName() != null) {
+            updateTeacher.setTeacherName(teacherInfoParam.getTeacherName());
+        }
+        if (teacherInfoParam.getGender() != 0) {
+            updateTeacher.setGender(teacherInfoParam.getGender());
+        }
+        if (teacherInfoParam.getPhoneNum() != null) {
+            updateTeacher.setPhoneNum(teacherInfoParam.getPhoneNum());
+        }
+        if (teacherInfoParam.getPosition() != null) {
+            updateTeacher.setPosition(teacherInfoParam.getPosition());
+        }
+        if (teacherInfoParam.getTitle() != null) {
+            updateTeacher.setTitle(teacherInfoParam.getTitle());
+        }
+        if (teacherInfoParam.getPoliticalAppearance() != null) {
+            updateTeacher.setPoliticalAppearance(teacherInfoParam.getPoliticalAppearance());
+        }
+        if (teacherInfoParam.getBirthPlace() != null) {
+            updateTeacher.setBirthPlace(teacherInfoParam.getBirthPlace());
+        }
+        if (teacherInfoParam.getAge() != 0) {
+            updateTeacher.setAge(teacherInfoParam.getAge());
+        }
+        if (teacherInfoParam.getInfo() != null) {
+            updateTeacher.setInfo(teacherInfoParam.getInfo());
+        }
+
+        // 4. 执行更新
+        int result = teacherMapper.updateById(updateTeacher);
+        if (result <= 0) {
+            return Result.fail(500, "更新教师信息失败");
+        }
+
+        // 5. 返回成功响应
+        return Result.success("教师信息更新成功");
     }
 }

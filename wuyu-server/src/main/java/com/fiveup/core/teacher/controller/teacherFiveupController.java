@@ -14,12 +14,14 @@ import com.fiveup.core.management.service.CommonManagementService;
 import com.fiveup.core.teacher.Service.teacherFiveupService;
 import com.fiveup.core.teacher.entity.TeacherList;
 import com.fiveup.core.teacher.entity.teacher;
+import com.fiveup.core.teacher.utils.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
@@ -87,7 +89,12 @@ public class teacherFiveupController {
         return  teacherService.page(page,queryWrapper);
     }
 
-//git提交测试
+   //修改教师信息
+    @PostMapping("updateTeacher")
+    public Result updateTeacherInfo(@RequestBody teacher teacherInfoParam) {
+        Result result = teacherService.updateTeacherInfo(teacherInfoParam);
+        return result;
+    }
 
 
     //excel导出
