@@ -9,12 +9,14 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fiveup.core.management.common.CommonResponse;
 import com.fiveup.core.management.pojo.PageDto;
-import com.fiveup.core.management.pojo.PageDto1;
+import com.fiveup.core.teacher.pojo.PageDto1;
 import com.fiveup.core.management.service.CommonManagementService;
 import com.fiveup.core.teacher.Service.teacherFiveupService;
 import com.fiveup.core.teacher.entity.TeacherList;
 import com.fiveup.core.teacher.entity.teacher;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -145,7 +147,24 @@ public class teacherFiveupController {
         return true;
     }
 
+    /**
+     * 下载教师信息导入模板
+     */
+    @GetMapping("/downloadTemplate")
+    public void downloadTemplate(HttpServletResponse response) throws IOException {
+        // 从classpath中读取模板文件
+        ClassPathResource resource = new ClassPathResource("templates/教师信息下载模版.xlsx");
+        
+        // 设置响应头
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
+        String fileName = URLEncoder.encode("教师信息导入模板", "UTF-8");
+        response.setHeader("Content-Disposition", "attachment;filename=" + fileName + ".xlsx");
 
-
+        // 将模板文件写入响应流
+        try (InputStream inputStream = resource.getInputStream();
+             ServletOutputStream outputStream = response.getOutputStream()) {
+            StreamUtils.copy(inputStream, outputStream);
+        }
+    }
 
 }

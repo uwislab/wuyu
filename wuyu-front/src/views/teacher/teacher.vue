@@ -21,24 +21,12 @@
         </el-form-item>
         <el-button style="margin-left: 5px" type="primary" @click="searchTeacher">搜索</el-button>
         <el-button style="margin-left: 5px" type="warning" @click="reset">重置</el-button>
+        <el-button style="margin-left: 5px" type="success" @click="exportExcel">导出</el-button>
+        <el-button style="margin-left: 5px" type="success" @click="downloadTemplate">下载模板</el-button>
         <el-button type="success" round @click="handleAdd">新增<i class="el-icon-circle-plus-outline"></i></el-button>
       </el-form>
     </div>
-    <!--  <div style="margin: 10px 0">-->
-    <!--    -->
-    <!--&lt;!&ndash;    <el-button type="danger" round @click="delBatch">批量删除<i class="el-icon-remove-outline"></i></el-button>&ndash;&gt;-->
-    <!--&lt;!&ndash;      <el-button type="primary" round @click="exportExcel">导出<i class="el-icon-remove-outline"></i></el-button>&ndash;&gt;-->
-    <!--&lt;!&ndash;    <el-upload&ndash;&gt;-->
-    <!--&lt;!&ndash;     action="http://localhost:9090/teacher/importExcel"&ndash;&gt;-->
-    <!--&lt;!&ndash;     :show-file-list="false"&ndash;&gt;-->
-    <!--&lt;!&ndash;     accept="xlsx"&ndash;&gt;-->
-    <!--&lt;!&ndash;     :on-success="importExcel"&ndash;&gt;-->
-    <!--&lt;!&ndash;     style="display: inline-block"&ndash;&gt;-->
-    <!--&lt;!&ndash;    >&ndash;&gt;-->
-    <!--&lt;!&ndash;        <el-button type="primary" round  style="margin-left: 10px;">导入<i class="el-icon-remove-outline"></i></el-button>&ndash;&gt;-->
-    <!--&lt;!&ndash;    </el-upload>&ndash;&gt;-->
-    <!--  </div>-->
-    <!--          表格数据，要关联到数据库-->
+    <!--          表格数据，要关联到数据库 -->
     <el-table :data="tableData" border stripe header-cell-class-name="'headerBg'" @selection-change="handleSelectionChange" >
       <!--            在下面有tableData-->
 
@@ -466,7 +454,44 @@ export default {
     //     this.$message.success("导入成功");
     //     this.load();
     // }
+    downloadTemplate() {
+      try {
+        // 使用正确的端口号
+        const downloadUrl = 'http://localhost:9085/teacher/downloadTemplate';
 
+        // 创建一个临时的 a 标签用于下载
+        const link = document.createElement('a');
+        // 设置下载链接
+        link.href = downloadUrl;
+        // 设置下载文件名
+        link.setAttribute('download', '教师信息导入模板.xlsx');
+        // 设置样式为隐藏
+        link.style.display = 'none';
+
+        // 添加到文档中
+        document.body.appendChild(link);
+
+        // 触发点击事件开始下载
+        link.click();
+
+        // 下载开始后移除该元素
+        document.body.removeChild(link);
+
+        // 显示下载开始提示
+        this.$message({
+          message: '模板下载已开始，请稍候...',
+          type: 'success',
+          duration: 2000
+        });
+      } catch (error) {
+        console.error('下载模板失败:', error);
+        if (error.response) {
+          console.error('错误状态:', error.response.status);
+          console.error('错误信息:', error.response.data);
+        }
+        this.$message.error('下载模板失败，请确保后端服务正常运行');
+      }
+    },
   }
 
 }
