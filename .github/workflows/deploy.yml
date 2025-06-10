@@ -47,8 +47,27 @@ jobs:
             FRONTEND_IMAGE="wuyu-front-$BRANCH"
             BACKEND_LOG="backend-$BRANCH.log"
 
+            # ========== 目录验证 ==========
+            echo "🔍 Verifying project directory structure..."
+            if [ ! -d "wuyu-server" ]; then
+              echo "❌ wuyu-server directory not found in $REPO_DIR"
+              echo "Current directory contents:"
+              ls -la
+              exit 1
+            fi
+            
+            if [ ! -d "wuyu-front" ]; then
+              echo "❌ wuyu-front directory not found in $REPO_DIR"
+              echo "Current directory contents:"
+              ls -la
+              exit 1
+            fi
+
             # ========== 前端处理阶段 ========== 
-            cd ../wuyu-front
+            echo "📂 Moving to frontend directory..."
+            cd wuyu-front
+            pwd  # 打印当前工作目录，用于调试
+            
             echo "🏗️ Building Frontend..."
             docker build -t $FRONTEND_IMAGE . || { echo "❌ Frontend build failed"; exit 1; }
 
@@ -61,8 +80,9 @@ jobs:
               $FRONTEND_IMAGE || { echo "❌ Frontend deployment failed"; exit 1; }
 
             # ========== 后端处理阶段 ==========
-            echo "🏗️ Building and Deploying Backend..."
-            cd wuyu-server
+            echo "📂 Moving to backend directory..."
+            cd ../wuyu-server  # 从项目根目录进入wuyu-server
+            pwd  # 打印当前工作目录，用于调试
             
             # 停止当前端口运行的Java应用
             echo "🛑 Checking for existing processes on port $SERVER_PORT..."
