@@ -4,6 +4,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.fiveup.core.studentManager.entity.StudentManager;
 import com.fiveup.core.studentManager.pojo.PageBean;
 import com.fiveup.core.studentManager.pojo.StudentManagerQuery;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletResponse;
 
 public interface StudentManagerService extends IService<StudentManager> {
     void addStudent(StudentManager studentManager);
@@ -14,5 +17,7 @@ public interface StudentManagerService extends IService<StudentManager> {
 
     void removeStudent(Integer studentId);
 
-    void export();
+    void export(HttpServletResponse response);
+
+    void importstudent(MultipartFile file);
 }

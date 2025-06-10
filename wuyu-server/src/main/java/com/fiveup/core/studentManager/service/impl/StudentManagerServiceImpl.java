@@ -1,4 +1,5 @@
 package com.fiveup.core.studentManager.service.impl;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -9,8 +10,9 @@ import com.fiveup.core.studentManager.pojo.StudentManagerQuery;
 import com.fiveup.core.studentManager.service.StudentManagerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @Service
@@ -89,7 +91,13 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
     }
 
     @Override
-    public void export() {
+    public void export(HttpServletResponse response) {
+        List<StudentManager> studentManagers = studentManagerMapper.selectList(null);
+        System.out.println(studentManagers.toString());
+    }
+
+    @Override
+    public void importstudent(MultipartFile file) {
 
     }
 
