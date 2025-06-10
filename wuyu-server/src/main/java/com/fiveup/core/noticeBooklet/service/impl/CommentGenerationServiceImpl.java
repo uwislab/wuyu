@@ -6,7 +6,7 @@ import com.fiveup.core.noticeBooklet.service.CommentGenerationService;
 import com.alibaba.dashscope.exception.ApiException;
 import com.alibaba.dashscope.exception.InputRequiredException;
 import com.alibaba.dashscope.exception.NoApiKeyException;
-import com.fiveup.core.noticeBooklet.utils.Main;
+import com.fiveup.core.noticeBooklet.utils.AIUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +44,6 @@ public class CommentGenerationServiceImpl implements CommentGenerationService {
         };
 
         // 调用生成评语的方法
-        return Main.generateComment(studentName, scores);
+        return AIUtil.generateComment(studentName, scores);
     }
 }

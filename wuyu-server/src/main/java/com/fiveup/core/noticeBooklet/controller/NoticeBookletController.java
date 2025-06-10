@@ -36,13 +36,9 @@ public class NoticeBookletController {
      * @return 通知册列表
      */
     @GetMapping("/get")
-    public CommonResponse<List<NoticeBooklet>> getNoticeBooklet(
-            @RequestParam(required = false) Long studentNum,
-            @RequestParam Integer classId,
-            @RequestParam Integer gradeId,
-            @RequestParam Long schoolId
-    ) {
-        List<NoticeBooklet> noticeBookletList = noticeBookletService.getNoticeBooklet(studentNum, classId, gradeId, schoolId);
-        return CommonResponse.ok(noticeBookletList);
+    public CommonResponse<List<NoticeBooklet>> getNoticeBooklet(@RequestParam Integer studentNum, @RequestParam Integer classId, @RequestParam Integer gradeId, @RequestParam Integer schoolId) {
+        // 调用服务层方法获取通知册内容
+        List<NoticeBooklet> noticeBooklets = noticeBookletService.getNoticeBooklet(studentNum, classId, gradeId);
+        return CommonResponse.ok(noticeBooklets);
     }
 }

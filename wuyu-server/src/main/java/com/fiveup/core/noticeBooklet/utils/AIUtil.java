@@ -10,7 +10,7 @@ import com.alibaba.dashscope.exception.NoApiKeyException;
 
 import java.util.Arrays;
 
-public  class Main {
+public  class AIUtil {
 
     public static String generateComment(String studentName, double... scores)
             throws ApiException, NoApiKeyException, InputRequiredException {
