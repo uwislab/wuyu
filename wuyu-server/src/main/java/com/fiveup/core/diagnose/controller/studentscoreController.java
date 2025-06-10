@@ -5,6 +5,7 @@ import com.fiveup.core.demonstrate.entity.GradeScore;
 import com.fiveup.core.diagnose.bean.*;
 import com.fiveup.core.diagnose.mapper.SplanMapper;
 import com.fiveup.core.diagnose.service.studentscoreService;
+import com.fiveup.core.management.common.CommonResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -122,7 +123,7 @@ public class studentscoreController {
     
     @GetMapping("/avgFiveScore")
     @ResponseBody
-    public Map<String, Float> getFiveAverageScores(@RequestParam("grade") Integer grade, Integer clazz) {
+    public CommonResponse<Map<String, Float>> getFiveAverageScores(@RequestParam("grade") Integer grade, Integer clazz) {
         return Optional.ofNullable(clazz)
                 .map(c -> {
                     List<student_score> student_scores = stService.SelectScoreByClass(grade, c);
@@ -135,7 +136,7 @@ public class studentscoreController {
                     result.put("体育", avgScores[2]);
                     result.put("美育", avgScores[3]);
                     result.put("劳育", avgScores[4]);
-                    return result;
+                    return CommonResponse.ok(result);
                 }).orElseGet(() -> {
                     // 获取该年级所有学生的成绩列表
                     List<student_score> scores = stService.SelectScoreByGrade(grade);
@@ -150,7 +151,7 @@ public class studentscoreController {
                     result.put("体育", avgScores[2]);
                     result.put("美育", avgScores[3]);
                     result.put("劳育", avgScores[4]);
-                    return result;
+                    return CommonResponse.ok(result);
                 });
     }
 
