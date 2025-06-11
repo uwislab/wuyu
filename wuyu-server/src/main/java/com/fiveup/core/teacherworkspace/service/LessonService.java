@@ -10,6 +10,7 @@ import java.util.List;
 public interface LessonService extends IService<Lesson> {
     /**
      * 分页查询课程
+     *
      * @param dto 查询条件
      * @return 查询结果
      */
@@ -20,4 +21,6 @@ public interface LessonService extends IService<Lesson> {
     int addLesson(Lesson lesson);
 
     int updateLesson(Lesson lesson);
+
+    Boolean copyLessonClassToClass(Lesson source, Lesson target, boolean isOverwrite);
 }
