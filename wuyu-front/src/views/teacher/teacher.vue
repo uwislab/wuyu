@@ -349,7 +349,10 @@ export default {
           if (this.form.birthPlace === '(暂无)') this.form.birthPlace = null;
           if (this.form.age === '(暂无)') this.form.age = null;
           if (this.form.info === '(暂无)') this.form.info = null;
-          this.form.schoolId = 1;
+          
+          // 从localStorage获取schoolId
+          const userInfo = JSON.parse(localStorage.getItem('UserInfo'));
+          this.form.schoolId = userInfo.schoolId;
           this.form.deleted = 0;
           request.post("/teacher", this.form).then(res => {
             if (res) {
