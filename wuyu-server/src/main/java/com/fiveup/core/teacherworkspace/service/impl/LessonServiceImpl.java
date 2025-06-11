@@ -1,6 +1,7 @@
 package com.fiveup.core.teacherworkspace.service.impl;
 
 import cn.hutool.core.text.CharSequenceUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fiveup.core.teacherworkspace.mapper.LessonMapper;
@@ -13,6 +14,8 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -52,6 +55,89 @@ public class LessonServiceImpl extends ServiceImpl<LessonMapper, Lesson> impleme
         validateLessonParams(target);
 
         return lessonMapper.copyLessonClassToClass(source, target, isOverwrite);
+    }
+
+    @Override
+    public Boolean copyLessonByLastSemester(String academicYear, int semester, boolean isOverwrite) throws RuntimeException {
+        if (StringUtils.isBlank(academicYear)) {
+            throw new RuntimeException("请选择学年");
+        }
+        if (semester < 1 || semester > 2) {
+            throw new RuntimeException("请选择正确的学期");
+        }
+
+        LambdaQueryWrapper<Lesson> targetQuery = new LambdaQueryWrapper<>();
+        targetQuery.eq(Lesson::getAcademicYear, academicYear).eq(Lesson::getSemester, semester);
+
+        String sourceYear;
+        int sourceSemester;
+        boolean isFirstSemester = semester == 1;
+        if (isFirstSemester) {
+            int year = Integer.parseInt(academicYear.split("-")[0]);
+            sourceYear = year - 1 + "-" + year;
+            sourceSemester = 2;
+        } else {
+            sourceYear = academicYear;
+            sourceSemester = 1;
+        }
+
+        LambdaQueryWrapper<Lesson> sourceQuery = new LambdaQueryWrapper<>();
+        sourceQuery.eq(Lesson::getAcademicYear, sourceYear).eq(Lesson::getSemester, sourceSemester);
+        if (!lessonMapper.exists(sourceQuery)) {
+            throw new RuntimeException("没有可复制的课程");
+        }
+
+        List<Lesson> sourceLessons = lessonMapper.selectList(sourceQuery);
+        List<Lesson> targetLessons = lessonMapper.selectList(targetQuery);
+        List<Lesson> insertLessons;
+
+
+        if (isOverwrite) {
+            lessonMapper.delete(targetQuery);
+            insertLessons = sourceLessons.stream()
+                    .map(lesson -> {
+                        Lesson copy = Lesson.builder()
+                                .grade(isFirstSemester ? lesson.getGrade() + 1 : lesson.getGrade())
+                                .classNum(lesson.getClassNum())
+                                .course(lesson.getCourse())
+                                .teacherName(lesson.getTeacherName())
+                                .teacherId(lesson.getTeacherId())
+                                .academicYear(academicYear)
+                                .semester(semester)
+                                .isCurrent(false)
+                                .build();
+                        copy.setClassName(copy.getGrade() + "年级" + copy.getClassNum() + "班");
+                        return copy;
+                    }).collect(Collectors.toList());
+        } else {
+            insertLessons = sourceLessons.stream()
+                    .filter(sourceLesson -> {
+                        return targetLessons.stream()
+                                .noneMatch(targetLesson ->
+                                        Objects.equals(targetLesson.getCourse(), sourceLesson.getCourse()) &&
+                                                Objects.equals(targetLesson.getTeacherId(), sourceLesson.getTeacherId())
+                                );
+                    }).map(sourceLesson -> {
+                        Lesson copy = Lesson.builder()
+                                .grade(isFirstSemester ? sourceLesson.getGrade() + 1 : sourceLesson.getGrade())
+                                .classNum(sourceLesson.getClassNum())
+                                .course(sourceLesson.getCourse())
+                                .teacherName(sourceLesson.getTeacherName())
+                                .teacherId(sourceLesson.getTeacherId())
+                                .academicYear(academicYear)
+                                .semester(semester)
+                                .isCurrent(false)
+                                .build();
+                        copy.setClassName(copy.getGrade() + "年级" + copy.getClassNum() + "班");
+                        return copy;
+                    }).collect(Collectors.toList());
+        }
+
+        if (insertLessons.isEmpty()) {
+            return true;
+        }
+        lessonMapper.batchInsert(insertLessons);
+        return true;
     }
 
     private void validateLessonParams(Lesson lesson) {

@@ -61,4 +61,17 @@ public class LessonController {
             return CommonResult.failed(e.getMessage());
         }
     }
+
+    @GetMapping("/copyLastSemester")
+    @ApiOperation("复制上一学期排课信息")
+    public CommonResult<Integer> copyLessonByLastSemester(@RequestParam String academicYear, @RequestParam int semester, @RequestParam boolean isOverwrite) {
+        log.info("复制上一学期排课信息: {} {}", academicYear, semester);
+        try {
+            Boolean copied = lessonService.copyLessonByLastSemester(academicYear, semester, isOverwrite);
+            return copied ? CommonResult.success() : CommonResult.failed();
+        } catch (Exception e) {
+            log.error("复制上一学期排课信息失败", e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
 }

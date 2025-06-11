@@ -23,4 +23,6 @@ public interface LessonService extends IService<Lesson> {
     int updateLesson(Lesson lesson);
 
     Boolean copyLessonClassToClass(Lesson source, Lesson target, boolean isOverwrite);
+
+    Boolean copyLessonByLastSemester(String academicYear, int semester, boolean isOverwrite) throws RuntimeException;
 }
