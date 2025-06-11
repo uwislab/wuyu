@@ -14,10 +14,13 @@ import com.fiveup.core.management.service.CommonManagementService;
 import com.fiveup.core.teacher.Service.teacherFiveupService;
 import com.fiveup.core.teacher.entity.TeacherList;
 import com.fiveup.core.teacher.entity.teacher;
+import com.fiveup.core.management.common.enums.BizErrorCodeEnum;
 import com.fiveup.core.teacher.utils.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
@@ -31,17 +34,35 @@ import java.util.List;
 @RestController
 @RequestMapping("/teacher")
 public class teacherFiveupController {
+    private static final Logger logger = LoggerFactory.getLogger(teacherFiveupController.class);
+    
     @Autowired
     private teacherFiveupService teacherService;
     @Resource
     private CommonManagementService commonManagementService;
+    /**
+     * 分页查询教师列表
+     * @param pageDto 分页查询参数
+     * @return 教师列表数据
+     */
     @PostMapping("/getTeacherByPage")
-    public CommonResponse<TeacherList> getTeacherByPage(PageDto1 search) {
-        System.out.println("search = " + search);
-        long schoolId = commonManagementService.getSchoolId();
-        System.out.println("schoolId = " + schoolId);
-        TeacherList vo = teacherService.getTeacherByPage(search,schoolId);
-        return CommonResponse.ok(vo);
+    public CommonResponse<TeacherList> getTeacherByPage( PageDto1 pageDto) {
+        // 参数校验
+        if (pageDto == null) {
+            logger.error("查询参数不能为空");
+            return CommonResponse.fail(BizErrorCodeEnum.PARAMS_VALIDATION_ERRNO,"查询参数不能为空");
+        }
+        
+        // 获取学校ID
+        Long schoolId = pageDto.getSchoolId();
+        if (schoolId == null || schoolId <= 0) {
+            logger.error("学校ID不能为空或无效: {}", schoolId);
+            return CommonResponse.fail(BizErrorCodeEnum.PARAMS_VALIDATION_ERRNO,"学校ID不能为空或无效");
+        }
+        
+        // 调用服务层获取数据
+        TeacherList teacherList = teacherService.getTeacherByPage(pageDto, schoolId);
+        return CommonResponse.ok(teacherList);
     }
     @GetMapping("/searchTeacherById")
     public teacher searchTeacherById(@RequestParam("id") String id) {
@@ -88,6 +109,7 @@ public class teacherFiveupController {
         }
         return  teacherService.page(page,queryWrapper);
     }
+
 
    //修改教师信息
     @PostMapping("updateTeacher")

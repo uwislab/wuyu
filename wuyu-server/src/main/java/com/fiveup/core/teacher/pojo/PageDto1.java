@@ -21,4 +21,5 @@ public class PageDto1 implements Serializable {
     private String position;//职位
     private Integer gender;//性别
     private String grade;
+    private Long schoolId;
 }
