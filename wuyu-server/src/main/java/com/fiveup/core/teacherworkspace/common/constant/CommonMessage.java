@@ -1,10 +1,12 @@
 package com.fiveup.core.teacherworkspace.common.constant;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 public class CommonMessage {
 
     @AllArgsConstructor
+    @Getter
     public enum Cache {
         /**
          * 用户excel导入成功数据
