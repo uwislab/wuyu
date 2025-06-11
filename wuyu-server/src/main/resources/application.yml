@@ -42,6 +42,7 @@ mybatis-plus:
     map-underscore-to-camel-case: true # 开启驼峰原则，将数据库带下划线的字段自动转为驼峰原则的命名
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #mybatis-plus配置控制台打印完整带参数SQL语句
 
-#logging:
-#  level:
-#    root: warn
+
+schedule:
+  auto-copy:
+    enabled: true  # 定时任务默认开启
