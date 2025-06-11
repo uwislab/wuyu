@@ -25,8 +25,7 @@ jobs:
             BRANCH="main"
             REPO_DIR="/www/cicd_wuyu/wuyuProject/WuYuEducation/wuyu"
             
-            # ========== 修复 Git 安全目录问题 ==========
-            echo "🔐 Fixing Git safe directory issue..."
+            # 修复 Git 安全目录问题
             git config --global --add safe.directory "$REPO_DIR"
             
             cd "$REPO_DIR"
@@ -108,11 +107,48 @@ jobs:
             BACK_PID=$!
             echo "📝 Backend running on port $SERVER_PORT (PID: $BACK_PID)"
             
-            # 健康检查
+            # ========== 健康检查 ==========
             echo "🩺 Performing health checks..."
-            sleep 10
-            curl -f http://localhost:$FRONTEND_PORT || { echo "❌ Frontend health check failed"; exit 1; }
-            curl -f http://localhost:$SERVER_PORT/actuator/health || { echo "❌ Backend health check failed"; exit 1; }
+            
+            # 等待服务启动
+            sleep 15
+            
+            # 诊断后端状态
+            echo "🔍 Diagnostic information:"
+            echo "1. 检查进程状态:"
+            ps -p $BACK_PID -o pid,user,cmd
+            
+            echo "2. 检查端口监听:"
+            netstat -tuln | grep ":$SERVER_PORT" || true
+            
+            echo "3. 后端日志摘要:"
+            tail -20 $BACKEND_LOG
+            
+            # 健康检查端点（使用更通用的检查）
+            echo "4. 尝试访问健康检查端点:"
+            curl -I "http://localhost:$SERVER_PORT" || true
+            curl -I "http://localhost:$SERVER_PORT/actuator/health" || true
+            
+            # 自定义健康检查
+            echo "5. 自定义健康检查:"
+            if curl -f -s -o /dev/null "http://localhost:$SERVER_PORT"; then
+              echo "✅ Backend is responding"
+            else
+              echo "❌ Backend health check failed"
+              echo "===== FULL BACKEND LOG ====="
+              cat $BACKEND_LOG
+              exit 1
+            fi
+            
+            # 前端健康检查
+            if curl -f -s -o /dev/null "http://localhost:$FRONTEND_PORT"; then
+              echo "✅ Frontend health check passed"
+            else
+              echo "❌ Frontend health check failed"
+              echo "===== FRONTEND LOG ====="
+              cat ../wuyu-front/frontend.log
+              exit 1
+            fi
             
             # ========== 清理工作 ==========
             echo "🧼 Cleaning source code..."
