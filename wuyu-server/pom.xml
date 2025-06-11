@@ -90,6 +90,12 @@
             <artifactId>sigar</artifactId>
             <version>1.6.4</version>
         </dependency>
+<!-- h2注解 -->
+         <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
 
 
         <!--Mysql数据库驱动-->
