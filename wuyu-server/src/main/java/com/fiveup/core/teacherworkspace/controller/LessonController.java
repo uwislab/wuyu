@@ -1,6 +1,7 @@
 package com.fiveup.core.teacherworkspace.controller;
 
 import com.fiveup.core.common.api.CommonResult;
+import com.fiveup.core.teacherworkspace.config.ScheduleConfig;
 import com.fiveup.core.teacherworkspace.model.Lesson;
 import com.fiveup.core.teacherworkspace.model.dto.PageLessonDto;
 import com.fiveup.core.teacherworkspace.model.request.CopyRequest;
@@ -20,6 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Api(value = "排课管理")
 public class LessonController {
+    private final ScheduleConfig scheduleConfig;
     private final LessonService lessonService;
 
     @GetMapping("/page")
@@ -73,5 +75,13 @@ public class LessonController {
             log.error("复制上一学期排课信息失败", e);
             return CommonResult.failed(e.getMessage());
         }
+    }
+
+    @GetMapping("/auto-copy")
+    @ApiOperation("配置开关自动复制")
+    public CommonResult<Integer> configAutoCopy(@RequestParam boolean enabled) {
+        log.info("配置开关自动复制: {}", enabled);
+        scheduleConfig.setAutoCopyEnabled(enabled);
+        return CommonResult.success();
     }
 }

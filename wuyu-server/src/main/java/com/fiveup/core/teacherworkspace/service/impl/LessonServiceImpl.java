@@ -59,6 +59,7 @@ public class LessonServiceImpl extends ServiceImpl<LessonMapper, Lesson> impleme
 
     @Override
     public Boolean copyLessonByLastSemester(String academicYear, int semester, boolean isOverwrite) throws RuntimeException {
+        // 参数校验
         if (StringUtils.isBlank(academicYear)) {
             throw new RuntimeException("请选择学年");
         }
@@ -66,9 +67,11 @@ public class LessonServiceImpl extends ServiceImpl<LessonMapper, Lesson> impleme
             throw new RuntimeException("请选择正确的学期");
         }
 
+        // 查询目标
         LambdaQueryWrapper<Lesson> targetQuery = new LambdaQueryWrapper<>();
         targetQuery.eq(Lesson::getAcademicYear, academicYear).eq(Lesson::getSemester, semester);
 
+        // 查询源
         String sourceYear;
         int sourceSemester;
         boolean isFirstSemester = semester == 1;
@@ -81,6 +84,7 @@ public class LessonServiceImpl extends ServiceImpl<LessonMapper, Lesson> impleme
             sourceSemester = 1;
         }
 
+        // 源不存在
         LambdaQueryWrapper<Lesson> sourceQuery = new LambdaQueryWrapper<>();
         sourceQuery.eq(Lesson::getAcademicYear, sourceYear).eq(Lesson::getSemester, sourceSemester);
         if (!lessonMapper.exists(sourceQuery)) {
@@ -91,7 +95,10 @@ public class LessonServiceImpl extends ServiceImpl<LessonMapper, Lesson> impleme
         List<Lesson> targetLessons = lessonMapper.selectList(targetQuery);
         List<Lesson> insertLessons;
 
-
+        /*
+         * 1. 如果是覆盖，则删除目标，再插入源
+         * 2. 如果不是覆盖，则只插入源中不存在的课程
+         * */
         if (isOverwrite) {
             lessonMapper.delete(targetQuery);
             insertLessons = sourceLessons.stream()
