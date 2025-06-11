@@ -38,6 +38,7 @@ public class AutoCopyLessonScheduled {
                 return;
             }
             lessonService.copyLessonByLastSemester(academicYear, semester, true);
+            lessonService.setCurrentByAcademicAndSemester(academicYear, semester);
         } catch (Exception e) {
             log.error("自动复制上一学期排课信息失败", e);
         }

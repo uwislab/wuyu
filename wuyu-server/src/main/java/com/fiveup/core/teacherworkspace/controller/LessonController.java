@@ -84,4 +84,17 @@ public class LessonController {
         scheduleConfig.setAutoCopyEnabled(enabled);
         return CommonResult.success();
     }
+
+    @GetMapping("/set-current")
+    @ApiOperation("设置当前学期")
+    public CommonResult<Integer> setCurrent(@RequestParam String academicYear, @RequestParam int semester) {
+        log.info("设置当前学期: {} {}", academicYear, semester);
+        try {
+            int data = lessonService.setCurrentByAcademicAndSemester(academicYear, semester);
+            return CommonResult.success(data);
+        } catch (Exception e) {
+            log.error("设置当前学期失败", e);
+            return CommonResult.failed(e.getMessage());
+        }
+    }
 }

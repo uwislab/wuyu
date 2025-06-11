@@ -2,6 +2,7 @@ package com.fiveup.core.teacherworkspace.service.impl;
 
 import cn.hutool.core.text.CharSequenceUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fiveup.core.teacherworkspace.mapper.LessonMapper;
@@ -145,6 +146,25 @@ public class LessonServiceImpl extends ServiceImpl<LessonMapper, Lesson> impleme
         }
         lessonMapper.batchInsert(insertLessons);
         return true;
+    }
+
+    @Override
+    public int setCurrentByAcademicAndSemester(String academicYear, int semester) {
+        // 如果有性能问题，可以改成流式查询
+        LambdaUpdateWrapper<Lesson> setWrapper = new LambdaUpdateWrapper<>();
+        setWrapper
+                .eq(Lesson::getAcademicYear, academicYear)
+                .eq(Lesson::getSemester, semester)
+                .set(Lesson::getIsCurrent, true);
+        if (!lessonMapper.exists(setWrapper)) {
+            throw new RuntimeException("不存在该学年课程");
+        }
+
+        LambdaUpdateWrapper<Lesson> resetWrapper = new LambdaUpdateWrapper<>();
+        resetWrapper.set(Lesson::getIsCurrent, false);
+        lessonMapper.update(null, resetWrapper);
+
+        return lessonMapper.update(null, setWrapper);
     }
 
     private void validateLessonParams(Lesson lesson) {
