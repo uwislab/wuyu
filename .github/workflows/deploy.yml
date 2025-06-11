@@ -23,7 +23,8 @@ jobs:
             # ========== 初始化配置 ==========
             echo "🚀 Starting deployment process"
             BRANCH="main"
-            REPO_DIR="/www/cicd_wuyu/wuyuProject/WuYuEducation"
+            # 更新为正确的仓库路径
+            REPO_DIR="/www/cicd_wuyu/wuyuProject/WuYuEducation/wuyu"
             cd "$REPO_DIR"
             
             # ========== 端口配置 ==========
