@@ -1,18 +1,32 @@
 package com.fiveup.core.studentManager.service.impl;
+import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fiveup.core.common.exception.ApiException;
 import com.fiveup.core.studentManager.entity.StudentManager;
 import com.fiveup.core.studentManager.mapper.StudentManagerMapper;
 import com.fiveup.core.studentManager.pojo.PageBean;
 import com.fiveup.core.studentManager.pojo.StudentManagerQuery;
 import com.fiveup.core.studentManager.service.StudentManagerService;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -92,14 +106,129 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
 
     @Override
     public void export(HttpServletResponse response) {
-        List<StudentManager> studentManagers = studentManagerMapper.selectList(null);
-        System.out.println(studentManagers.toString());
+        List<StudentManager> list = studentManagerMapper.selectList(null);
+        try {
+            ClassPathResource resource = new ClassPathResource("templates/studentInput.xlsx");
+            InputStream in = resource.getInputStream();
+            XSSFWorkbook excel = new XSSFWorkbook(in);
+            XSSFSheet sheet1 = excel.getSheetAt(0);
+            if (list != null && list.size() > 0) {
+                for (int i = 0; i < list.size(); ++i) {
+                    XSSFRow row = sheet1.getRow(i + 1);
+                    if (row == null) {
+                        row = sheet1.createRow(i + 1);
+                    }
+                    for (int col = 0; col < 6; col++) {
+                        XSSFCell cell = row.getCell(col);
+                        if (cell == null) {
+                            row.createCell(col);
+                        }
+                    }
+                    row.getCell(0).setCellValue(list.get(i).getStudentNum());
+                    row.getCell(1).setCellValue(list.get(i).getStudentName());
+                    row.getCell(2).setCellValue(list.get(i).getGender()==0?"女":"男");
+                    row.getCell(3).setCellValue(list.get(i).getGradeId()+"年级");
+                    row.getCell(4).setCellValue(list.get(i).getClassId()+"班");
+                    row.getCell(5).setCellValue(list.get(i).getParentPhoneNum());
+                }
+
+            }
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=studentOutput.xlsx");
+            ServletOutputStream outputStream = response.getOutputStream();
+            excel.write(outputStream);
+            outputStream.close();
+            in.close();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    //判断中文
+    private   boolean isPureChineseWithExt(String str) {
+        if (str == null || str.isEmpty()) {
+            return false;
+        }
+
+        for (char c : str.toCharArray()) {
+            // 判断基本汉字和扩展A区
+            if ((c < '\u4E00' || c > '\u9FFF') &&
+                    (c < '\u3400' || c > '\u4DBF')) {
+                return false;
+            }
+        }
+        return true;
+    }
+    //判断年级，班级
+
+    //获取单元格
+    private String getCellValueAsString(XSSFCell cell) {
+        if (cell == null) {
+            return ""; // 单元格不存在
+        }
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue(); // 显式设置的字符串
+            case BLANK:
+                return "";
+            default:
+                return "";
+        }
     }
 
-    @Override
+        @Override
     public void importstudent(MultipartFile file) {
+            try {
+                InputStream inputStream = file.getInputStream();
+                XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
+                XSSFSheet sheet = workbook.getSheetAt(0);
+                List<StudentManager> list=new ArrayList<>();
+                StudentManager studentManager=new StudentManager();
+                for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                    XSSFRow row = sheet.getRow(i);
+                    if (row != null) {
+                        for (int col = 0; col < 6; col++) {
+                           String stringCellValue=getCellValueAsString(row.getCell(col));
+                                switch(col){
+                                    case 0:if(stringCellValue.length()!=10)throw  new ApiException("学生学号为10位数字");else studentManager.setStudentNum(stringCellValue);
+                                        break;
+                                    case 1:if(!isPureChineseWithExt(stringCellValue))throw new ApiException("学生姓名只能为中文");else studentManager.setStudentName(stringCellValue);
+                                        break;
+                                    case 2:
+                                        if(true){}
+                                        if("男".equals(stringCellValue)||"女".equals(stringCellValue))studentManager.setGender("男".equals(stringCellValue)?1:0);else throw new ApiException("性别只能为男或者女");
+                                        break;
+                                    case 3:
+                                        break;
+                                    case 4:
+                                        break;
+                                    default:
+                                }
 
-    }
+                        }
+                        String studentNum = row.getCell(0).getStringCellValue();
+
+                        String studentName = row.getCell(1).getStringCellValue();
+
+
+                        StudentManager student = new StudentManager();
+                        student.setStudentNum(studentNum);
+                        student.setStudentName(studentName);
+                        list.add(studentManager);
+
+                    }
+                }
+//                studentManagerMapper.i();
+                // 关闭资源
+                workbook.close();
+                inputStream.close();
+
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
 
 
 }

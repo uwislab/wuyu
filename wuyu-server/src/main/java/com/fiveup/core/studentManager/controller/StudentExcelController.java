@@ -1,19 +1,28 @@
 package com.fiveup.core.studentManager.controller;
 
-import com.fiveup.core.commentgeneration.utils.Result;
+import com.fiveup.core.common.result.Result;
 import com.fiveup.core.studentManager.service.StudentManagerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletResponse;
 
 @RestController
-@RequestMapping("studentExcel")
+@RequestMapping("/studentExcel")
 public class StudentExcelController {
     @Autowired
     private StudentManagerService studentManagerService;
-    @RequestMapping("export")
-    public Result<Void> export() {
-        studentManagerService.export();
-        return Result.SUCCESS;
+    @GetMapping("/export")
+    public Result export(HttpServletResponse response) {
+        studentManagerService.export(response);
+        return Result.ok();
+    }
+    @GetMapping("/import")
+    public Result inport(MultipartFile file){
+        studentManagerService.importstudent(file);
+        return  Result.ok();
     }
 }
