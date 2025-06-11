@@ -3,6 +3,7 @@ package com.fiveup.core.teacherworkspace.controller;
 import com.fiveup.core.common.api.CommonResult;
 import com.fiveup.core.teacherworkspace.model.Lesson;
 import com.fiveup.core.teacherworkspace.model.dto.PageLessonDto;
+import com.fiveup.core.teacherworkspace.model.request.CopyRequest;
 import com.fiveup.core.teacherworkspace.model.vo.PageVo;
 import com.fiveup.core.teacherworkspace.service.LessonService;
 import io.swagger.annotations.Api;
@@ -23,7 +24,7 @@ public class LessonController {
 
     @GetMapping("/page")
     @ApiOperation("分页查询排课")
-    public CommonResult<PageVo<Lesson>> page(PageLessonDto dto){
+    public CommonResult<PageVo<Lesson>> page(PageLessonDto dto) {
         return CommonResult.success(lessonService.pageLesson(dto));
     }
 
@@ -46,5 +47,18 @@ public class LessonController {
     public CommonResult<Integer> updateLesson(@RequestBody Lesson lesson) {
         int updateRow = lessonService.updateLesson(lesson);
         return CommonResult.success(updateRow);
+    }
+
+    @PostMapping("/copy-class")
+    @ApiOperation("复制排课信息")
+    public CommonResult<Integer> copyLessonClassToClass(@RequestBody CopyRequest request) {
+        log.info("复制排课信息: {}", request);
+        try {
+            Boolean copied = lessonService.copyLessonClassToClass(request.getSource(), request.getTarget(), request.isOverwrite());
+            return copied ? CommonResult.success() : CommonResult.failed();
+        } catch (Exception e) {
+            log.error("复制排课信息失败", e);
+            return CommonResult.failed(e.getMessage());
+        }
     }
 }

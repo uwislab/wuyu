@@ -21,4 +21,7 @@ public class Lesson {
     private String course;
     private String teacherName;
     private Long teacherId;
+    private String academicYear;
+    private int semester;
+    private Boolean isCurrent;
 }

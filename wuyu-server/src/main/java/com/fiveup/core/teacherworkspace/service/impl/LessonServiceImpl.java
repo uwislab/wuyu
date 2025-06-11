@@ -9,6 +9,7 @@ import com.fiveup.core.teacherworkspace.model.dto.PageLessonDto;
 import com.fiveup.core.teacherworkspace.model.vo.PageVo;
 import com.fiveup.core.teacherworkspace.service.LessonService;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -43,5 +44,27 @@ public class LessonServiceImpl extends ServiceImpl<LessonMapper, Lesson> impleme
     @Override
     public int updateLesson(Lesson lesson) {
         return lessonMapper.updateLesson(lesson);
+    }
+
+    @Override
+    public Boolean copyLessonClassToClass(Lesson source, Lesson target, boolean isOverwrite) {
+        validateLessonParams(source);
+        validateLessonParams(target);
+
+        return lessonMapper.copyLessonClassToClass(source, target, isOverwrite);
+    }
+
+    private void validateLessonParams(Lesson lesson) {
+        if (lesson == null || StringUtils.isBlank(lesson.getAcademicYear())) {
+            throw new IllegalArgumentException("课程参数不完整");
+        }
+
+        if (lesson.getGrade() <= 0 || lesson.getClassNum() <= 0) {
+            throw new IllegalArgumentException("年级和班级必须为正数");
+        }
+
+        if (lesson.getSemester() < 1 || lesson.getSemester() > 2) {
+            throw new IllegalArgumentException("学期必须为1或2");
+        }
     }
 }
