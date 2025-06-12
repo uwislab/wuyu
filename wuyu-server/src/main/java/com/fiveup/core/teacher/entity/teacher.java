@@ -9,7 +9,7 @@ import java.io.Serializable;
 @TableName(value = "basic_teacher")
 public class teacher implements Serializable {
     private static final  long serialVersionUID=1L;
-    private int    id;
+    private int id;
     private String teacherName;
     private int gender;
     private String phoneNum;
