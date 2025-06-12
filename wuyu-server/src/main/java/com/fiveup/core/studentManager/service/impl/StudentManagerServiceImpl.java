@@ -28,11 +28,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Service
 public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper, StudentManager> implements StudentManagerService {
     @Autowired
     private StudentManagerMapper studentManagerMapper;
+
+    private StudentManagerService studentManagerService;
     @Override
     public void addStudent(StudentManager studentManager) {
         studentManager.setDeleted(0);
@@ -159,16 +162,14 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
         }
         return true;
     }
-    //判断年级，班级
-
     //获取单元格
     private String getCellValueAsString(XSSFCell cell) {
         if (cell == null) {
-            return ""; // 单元格不存在
+            return "";
         }
         switch (cell.getCellType()) {
             case STRING:
-                return cell.getStringCellValue(); // 显式设置的字符串
+                return cell.getStringCellValue();
             case BLANK:
                 return "";
             default:
@@ -178,57 +179,70 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
 
         @Override
     public void importstudent(MultipartFile file) {
+            InputStream inputStream = null;
+            XSSFWorkbook workbook = null;
             try {
-                InputStream inputStream = file.getInputStream();
-                XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
+                inputStream = file.getInputStream();
+                workbook = new XSSFWorkbook(inputStream);
                 XSSFSheet sheet = workbook.getSheetAt(0);
-                List<StudentManager> list=new ArrayList<>();
-                StudentManager studentManager=new StudentManager();
+                List<StudentManager> list = new ArrayList<>();
+                StudentManager studentManager = new StudentManager();
                 for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                     XSSFRow row = sheet.getRow(i);
                     if (row != null) {
                         for (int col = 0; col < 6; col++) {
-                           String stringCellValue=getCellValueAsString(row.getCell(col));
-                                switch(col){
-                                    case 0:if(stringCellValue.length()!=10)throw  new ApiException("学生学号为10位数字");else studentManager.setStudentNum(stringCellValue);
-                                        break;
-                                    case 1:if(!isPureChineseWithExt(stringCellValue))throw new ApiException("学生姓名只能为中文");else studentManager.setStudentName(stringCellValue);
-                                        break;
-                                    case 2:
-                                        if(true){}
-                                        if("男".equals(stringCellValue)||"女".equals(stringCellValue))studentManager.setGender("男".equals(stringCellValue)?1:0);else throw new ApiException("性别只能为男或者女");
-                                        break;
-                                    case 3:
-                                        break;
-                                    case 4:
-                                        break;
-                                    default:
-                                }
-
+                            String stringCellValue = getCellValueAsString(row.getCell(col));
+                            switch (col) {
+                                case 0:
+                                    if (Pattern.matches("\\d{10}", stringCellValue))
+                                        throw new ApiException("第" + i + "行学生学号为10位数字");
+                                    else studentManager.setStudentNum(stringCellValue);
+                                    break;
+                                case 1:
+                                    if (!isPureChineseWithExt(stringCellValue))
+                                        throw new ApiException("第" + i + "行学生姓名只能为中文");
+                                    else studentManager.setStudentName(stringCellValue);
+                                    break;
+                                case 2:
+                                    if ("男".equals(stringCellValue) || "女".equals(stringCellValue))
+                                        studentManager.setGender("男".equals(stringCellValue) ? 1 : 0);
+                                    else throw new ApiException("第" + i + "行性别只能为男或者女");
+                                    break;
+                                case 3:
+                                    if (Pattern.matches("\\d+年级", stringCellValue))
+                                        studentManager.setGradeId(Integer.valueOf(stringCellValue.substring(0, stringCellValue.length() - 2)));
+                                    else throw new ApiException("第" + i + "行年级示例：1年级，使用阿拉伯数字");
+                                    break;
+                                case 4:
+                                    if (Pattern.matches("\\d+班", stringCellValue))
+                                        studentManager.setClassId(Integer.valueOf(stringCellValue.substring(0, stringCellValue.length() - 1)));
+                                    else throw new ApiException("第" + i + "行班级示例：3班，使用阿拉伯数字");
+                                    break;
+                                default:
+                                    if (Pattern.matches("\\d{11}", stringCellValue))
+                                        studentManager.setParentPhoneNum(stringCellValue);
+                                    else throw new ApiException("第" + i + "行联系方式只能为11为手机号码");
+                            }
                         }
-                        String studentNum = row.getCell(0).getStringCellValue();
-
-                        String studentName = row.getCell(1).getStringCellValue();
-
-
-                        StudentManager student = new StudentManager();
-                        student.setStudentNum(studentNum);
-                        student.setStudentName(studentName);
                         list.add(studentManager);
-
                     }
                 }
-//                studentManagerMapper.i();
-                // 关闭资源
-                workbook.close();
-                inputStream.close();
-
-
+                studentManagerService.saveBatch(list);
             } catch (IOException e) {
                 throw new RuntimeException(e);
+            } finally {
+                try {
+                    if (workbook != null) {
+                        workbook.close();
+                    }
+                    if (inputStream != null) {
+                        inputStream.close();
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
             }
 
         }
-
-
 }
