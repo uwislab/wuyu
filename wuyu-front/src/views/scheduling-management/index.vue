@@ -198,7 +198,7 @@
         >
           <el-table-column type="selection" width="30"></el-table-column>
           <el-table-column prop="academicYear" label="学年" width="120" align="center" />
-          <el-table-column prop="semester" label="学期" width="120" align="center" />
+          <el-table-column prop="semesterlabel" label="学期" width="120" align="center" />
           <el-table-column prop="className" label="班级" width="120" align="center" />
           <!-- <el-table-column prop="grade" label="年级" width="120" align="center" />
           <el-table-column prop="classNum" label="班级" width="150" align="center" /> -->
@@ -272,7 +272,7 @@
     <lesson-info-dialog
       :visible="dialogVisible"
       :form-data="formData"
-      :teachers="teacherList"
+      :academicYears="academicYearOptions"
       @submit="handleSubmit"
       @update:visible="dialogVisible = $event"
       @refresh-data="refreshData"
@@ -580,7 +580,12 @@ const fetchData = async () => {
 
     const res = await getLessonPageAPI(params)
     if (res.code === 200) {
-      tableData.value = res.data.records
+      tableData.value = res.data.records.map(item => ({
+        ...item,
+        // 将数字学期转换为中文描述
+        semesterlabel: item.semester === 1 ? '上学期' :
+                  item.semester === 2 ? '下学期' : '未知'
+      }))
       pagination.total = Number(res.data.total)
     }
   } catch (error) {

@@ -13,6 +13,43 @@
       label-position="right"
     >
       <el-row :gutter="20">
+        <!-- 学年 -->
+        <el-col :span="12">
+          <el-form-item label="学年" prop="academicYear">
+            <el-select
+              v-model="form.academicYear"
+              placeholder="请选择学年"
+              clearable
+              class="w-full"
+              @change="updateClassName"
+            >
+              <el-option
+                v-for="year in academicYears"
+                :key="year.value"
+                :label="year.label"
+                :value="year.value"
+              />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <!-- 学期 -->
+        <el-col :span="12">
+          <el-form-item label="学期" prop="semester">
+            <el-select
+              v-model="form.semester"
+              placeholder="请选择学期"
+              clearable
+              class="w-full"
+            >
+              <el-option
+                v-for="seme in semesterOptions"
+                :key="seme.value"
+                :label="seme.label"
+                :value="seme.value"
+              />
+            </el-select>
+          </el-form-item>
+        </el-col>
         <!-- 年级 -->
         <el-col :span="12">
           <el-form-item label="年级" prop="grade">
@@ -117,11 +154,17 @@ const props = defineProps({
     type: Object,
     default: () => ({})
   },
-  teachers: {
-    type: Array,
+  academicYears:{
+    type:Array,
     default: () => []
   }
 })
+
+const semesterOptions = [
+  { label: '上学期', value: 1 },
+  { label: '下学期', value: 2 }
+]
+
 
 const emit = defineEmits(['update:visible', 'submit', 'success','refresh-data'])
 
@@ -142,6 +185,12 @@ const teacherSelVisible = ref(false)
 const form = ref({ ...props.formData })
 
 const rules = reactive({
+  academicYear: [
+    { required: true, message: '请选择学年', trigger: 'change' }
+  ],
+  semester: [
+    { required: true, message: '请选择学期', trigger: 'change' }
+  ],
   grade: [
     { required: true, message: '请选择年级', trigger: 'change' }
   ],
