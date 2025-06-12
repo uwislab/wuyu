@@ -220,6 +220,7 @@
       :visible="semesterStartDialogVisible"
       @update:visible="semesterStartDialogVisible = $event"
       @confirm="handleSemesterStartConfirm"
+      @cancel="handleSemesterStartCancel"
     />
 
     <!-- 导入结果提示 -->
@@ -241,6 +242,7 @@
       @refresh-data="refreshData"
     />
   </div>
+  
 
 </template>
 
@@ -256,7 +258,9 @@ import {getLessonPageAPI,
         exportExcel,
         copyLastSemesterAPI,
         exportLessonAPI,
-        importLessonAPI}
+        importLessonAPI,
+        copyClass
+      }
         from '@/api/schedulModule/index'
 import lessonInfoDialog from './components/lessonInfoDialog.vue'
 import TeacherSel from './components/TeacherSel.vue'
@@ -471,7 +475,7 @@ const handleUpdateLesson = (row) => {
   console.log('更新课程:', row)
 }
 
-// 自动复制排课
+// 复制上学期排课
 const handleAutoCopy = async () => {
   try {
     const loading = Loading.service({
@@ -481,28 +485,8 @@ const handleAutoCopy = async () => {
       background: 'rgba(0, 0, 0, 0.7)'
     })
 
-    // const res = await copyLastSemesterSchedule()
-    // 
-    // 将获取到的年级、班级、教师、课程，转换成树状结构
-    // 数据结构
-    // {
-    //    code: 200,
-    //    data: {
-    //      records: [  // 课程列表
-    //        {
-    //          id: 课程ID,
-    //          grade: 年级,
-    //          classNum: 班级号,
-    //          className: 班级名称,
-    //          course: 课程名称,
-    //          teacherName: 教师姓名,
-    //          teacherId: 教师ID
-    //        },
-    //        // ...更多课程
-    //      ],
-    //      total: 总记录数
-    //    }
-    //  }
+    const res = await copyLastSemesterSchedule()
+    // console.log(res.data)
     Message.success('复制上学期排课成功')
       // 重新获取数据
       await fetchData()
@@ -709,10 +693,6 @@ const handleTeacherSelect = async (teacher) => {
 
   const { grade, classNum, course, id } = currentCourse.value;
   try {
-    // 更新数据库表
-  // ==> Preparing: UPDATE basic_lesson SET grade = ?, class_num = ?, class_name = ?, course = ?, teacher_name = ?, teacher_id = ? WHERE id = ?
-  // ==> Parameters: 1(Integer), 3(Integer), null, 美育(String), 李七(String), 2018083083(Long), 3(Long)
-  // <==    Updates: 1
     const className = currentCourse.value.grade + '年级' + currentCourse.value.classNum + '班'
     const res = await updateLessonAPI({
       grade,
@@ -746,24 +726,47 @@ watch(teacherSelVisible, (val) => {
 
 // 学期初时间设置相关
 const autoCopyEnabled = ref(false);
-
+// 获取学期初时间
+const getSemesterStart = ()=> {
+  const savedSemesterStart = localStorage.getItem('semesterStartTime')
+  return savedSemesterStart
+}
 // 处理自动复制开关变化
 const handleAutoCopySwitch = (val) => {
   console.log('开关状态变化：', val)
-  console.log('当前弹窗状态：', semesterStartDialogVisible.value)
   if (val) {
+    // 手动打开开关时，打开弹窗
     semesterStartDialogVisible.value = true
-    console.log('设置弹窗状态为：', semesterStartDialogVisible.value)
-  } else {
-    semesterStartDialogVisible.value = false
   }
 }
 
 // 处理学期初时间确认
-const handleSemesterStartConfirm = (startDate) => {
-  console.log('学期初时间：', startDate)
+const handleSemesterStartConfirm = (formData) => {
+  console.log('学期初时间：', formData)
   semesterStartDialogVisible.value = false
+  if(formData.isOverwrite){
+    fetchData()
+    fetchAllCourses()
+    // 确认后保持开关打开
+    autoCopyEnabled.value = true
+    // 保存学期初时间到localStorage
+    localStorage.setItem('semesterStartTime', JSON.stringify({
+      startDate: formData.startDate,
+      academicYear: formData.academicYear,
+      semester: formData.semester,
+      timestamp: new Date().getTime()
+    }))
+  }
   Message.success('学期初时间设置成功')
+}
+
+// 处理学期初时间取消
+const handleSemesterStartCancel = (formData) => {
+  semesterStartDialogVisible.value = false
+  if(!formData.isOverwrite){
+    // 取消后关闭开关
+  autoCopyEnabled.value = false
+  }
 }
 
 onMounted(() => {
