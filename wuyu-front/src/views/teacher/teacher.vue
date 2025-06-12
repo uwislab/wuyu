@@ -26,7 +26,21 @@
         <el-button type="success" round @click="handleAdd">新增<i class="el-icon-circle-plus-outline"></i></el-button>
       </el-form>
     </div>
-    <!--          表格数据，要关联到数据库 -->
+    <!--  <div style="margin: 10px 0">-->
+    <!--    -->
+    <!--&lt;!&ndash;    <el-button type="danger" round @click="delBatch">批量删除<i class="el-icon-remove-outline"></i></el-button>&ndash;&gt;-->
+    <!--&lt;!&ndash;      <el-button type="primary" round @click="exportExcel">导出<i class="el-icon-remove-outline"></i></el-button>&ndash;&gt;-->
+    <!--&lt;!&ndash;    <el-upload&ndash;&gt;-->
+    <!--&lt;!&ndash;     action="http://localhost:9090/teacher/importExcel"&ndash;&gt;-->
+    <!--&lt;!&ndash;     :show-file-list="false"&ndash;&gt;-->
+    <!--&lt;!&ndash;     accept="xlsx"&ndash;&gt;-->
+    <!--&lt;!&ndash;     :on-success="importExcel"&ndash;&gt;-->
+    <!--&lt;!&ndash;     style="display: inline-block"&ndash;&gt;-->
+    <!--&lt;!&ndash;    >&ndash;&gt;-->
+    <!--&lt;!&ndash;        <el-button type="primary" round  style="margin-left: 10px;">导入<i class="el-icon-remove-outline"></i></el-button>&ndash;&gt;-->
+    <!--&lt;!&ndash;    </el-upload>&ndash;&gt;-->
+    <!--  </div>-->
+    <!--          表格数据，要关联到数据库-->
     <el-table :data="tableData" border stripe header-cell-class-name="'headerBg'" @selection-change="handleSelectionChange" >
       <!--            在下面有tableData-->
 
@@ -68,14 +82,14 @@
     <div class="block">
       <el-pagination
         background
-        :current-page.sync="currentPage"
+        :current-page.sync="pagination.currentPage"
         layout="sizes,prev, pager, next,total,jumper"
         style="padding: 30px 0; text-align: center;"
-        :total="total"
-        :page-count="pageCount"
-        :page-size="limit"
-        :page-sizes="[3,5,10]"
-        @current-change="jump"
+        :total="pagination.total"
+        :page-count="pagination.pageCount"
+        :page-size="pagination.pageSize"
+        :page-sizes="pagination.pageSizes"
+        @current-change="handlePageChange"
         @next-click="nextPage()"
         @prev-click="prePage()"
         @size-change="handleSizeChange"
@@ -160,12 +174,20 @@ export default {
   name: "User",
   data(){
     return{
+      // 分页相关参数
+      pagination: {
+        currentPage: 1,    // 当前页码
+        pageSize: 10,      // 每页显示条数
+        total: 0,          // 总记录数
+        pageCount: 1,      // 总页数
+        pageSizes: [3, 5, 10] // 可选的每页条数
+      },
       searchObj: {
         teacherName: "",
         gender: "",
         position: "",
         grade: ""
-      }, // 条件搜索对象
+      },
       form: {
         teacherName: '',
         gender: '',
@@ -215,7 +237,6 @@ export default {
       tableData: [],
       currentPage: 1, //当前页
       pageCount:1,
-      limit: 10,
       page: 1, //分页组件页码初始化
       teacherValue: '',
       teacherContent: '',
@@ -288,75 +309,32 @@ export default {
         }
       })
     },
-    jump(page) {//跳转指定页面
-      this.page = page;
-      console.log("page:" + page)
-      this.searchTeacher();
-    },
-    nextPage() {//下一页
-      if (this.page < this.maxPage) {
-        this.page = this.page + 1
-        this.searchTeacher()
-      }
-
-    },
-    prePage() {//上一页
-      if (this.page > 1) {
-        this.page = this.page - 1
-        this.searchTeacher()
-      }
-    },
     searchTeacher() {
-      this.currentPage = this.page;
-      // this.limit = 2;
+      const userInfo = JSON.parse(localStorage.getItem('UserInfo'));
       const payload = {
-        pageSize: this.limit,
-        pageNum: this.currentPage,
+        pageSize: this.pagination.pageSize,
+        pageNum: this.pagination.currentPage,
+        schoolId: userInfo.schoolId,
         ...this.searchObj,
       }
       getTeacherListByPage1(payload).then(res => {
-        console.log("----------++++++++++++");
-        console.log(res);
-        this.maxPage = res.data.pages;
-        // if(this.total<res.data.total){
-        //    this.total = res.data.total;
-        // }
-        this.total = res.data.total;
-        this.currentPage = res.data.curPage;//更换当前页
-        this.isLast = res.data.isLast;
+        if (res.data) {
+          this.pagination.total = res.data.total;
+          this.pagination.currentPage = res.data.curPage;
+          this.pagination.pageCount = res.data.pages;
 
-        // this.initElPageForbiddenBtn();
-        this.tableData = res.data.list.map(item => {
-          return {
+          this.tableData = res.data.list.map(item => ({
             ...item,
             gender: item.gender == 0 ? '女' : '男',
-            //deleted: item.deleted == 0 ? '否' : '是',
-            username:(item.username==''|| item.username == null)?'(暂无)':item.username,
-            politicalAppearance: (item.politicalAppearance == '' || item.politicalAppearance == null) ? '(暂无)': item.politicalAppearance,
-            birthPlace:  (item.birthPlace == '' || item.birthPlace == null) ? '(暂无)': item.birthPlace,
-            age:  (item.age == '' || item.age == null) ? '(暂无)': item.age,
-            info:  (item.info == '' || item.info == null) ? '(暂无)': item.info,
-          }
-        })
-      })
+            username: (item.username == '' || item.username == null) ? '(暂无)' : item.username,
+            politicalAppearance: (item.politicalAppearance == '' || item.politicalAppearance == null) ? '(暂无)' : item.politicalAppearance,
+            birthPlace: (item.birthPlace == '' || item.birthPlace == null) ? '(暂无)' : item.birthPlace,
+            age: (item.age == '' || item.age == null) ? '(暂无)' : item.age,
+            info: (item.info == '' || item.info == null) ? '(暂无)' : item.info,
+          }));
+        }
+      });
     },
-    // load(){
-    //   request.get("/teacher/page",{
-    //     params: {
-    //       pageNum: this.pageNum,
-    //       pageSize: this.pageSize,
-    //       teacher_name: this.teacher_name,
-    //       gender: this.gender,
-    //       phone_num:this.phone_num
-    //     }
-    //   }).then(res =>{
-    //     this.tableData=res.records
-    //     this.total=res.total
-    //   })
-    //   //请求分页查询混数据
-    //   //res之后需要对res进行json的处理
-    //   //使数据变成活的，当改变pageNum时候，他也会跟着改变
-    // },
     resetForm() {
       this.$refs.formRef.resetFields();
     },
@@ -373,7 +351,10 @@ export default {
           if (this.form.birthPlace === '(暂无)') this.form.birthPlace = null;
           if (this.form.age === '(暂无)') this.form.age = null;
           if (this.form.info === '(暂无)') this.form.info = null;
-          this.form.schoolId = 1;
+
+          // 从localStorage获取schoolId
+          const userInfo = JSON.parse(localStorage.getItem('UserInfo'));
+          this.form.schoolId = userInfo.schoolId;
           this.form.deleted = 0;
           request.post("/teacher", this.form).then(res => {
             if (res) {
@@ -431,16 +412,19 @@ export default {
 
     },
     reset() {
-      this.searchObj.teacherName = ""
-      this.searchObj.gender = ""
-      this.searchObj.grade = ""
-      this.searchObj.position = ""
-      this.page = 1
-      this.searchTeacher()
+      this.searchObj = {
+        teacherName: "",
+        gender: "",
+        grade: "",
+        position: ""
+      };
+      this.pagination.currentPage = 1;
+      this.searchTeacher();
     },
-    handleSizeChange(val) {
-      this.limit = val;
-      this.searchTeacher()
+    handleSizeChange(size) {
+      this.pagination.pageSize = size;
+      this.pagination.currentPage = 1; // 重置到第一页
+      this.searchTeacher();
     },
     // handleCurrentChange(pageNum){
     //   console.log(`当前页 ${pageNum} `)
@@ -499,6 +483,33 @@ export default {
         this.$message.error('下载模板失败，请确保后端服务正常运行');
       }
     },
+
+
+    // 处理页码变化
+    handlePageChange(page) {
+      this.pagination.currentPage = page;
+      this.searchTeacher();
+    },
+
+    // 处理每页条数变化
+    handleSizeChange(size) {
+      this.pagination.pageSize = size;
+      this.pagination.currentPage = 1; // 重置到第一页
+      this.searchTeacher();
+    },
+
+    // 重置搜索条件
+    reset() {
+      this.searchObj = {
+        teacherName: "",
+        gender: "",
+        grade: "",
+        position: ""
+      };
+      this.pagination.currentPage = 1;
+      this.searchTeacher();
+    },
+
   }
 
 }
