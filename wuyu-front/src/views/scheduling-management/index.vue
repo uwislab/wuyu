@@ -752,6 +752,11 @@ const handleAutoCopySwitch = (val) => {
 // 到时自动复制
 const handleAutoCopyClass = (val) => {
   const SemesterStart = getSemesterStart()
+  const now = new Date();
+  console.log("SemesterStart",SemesterStart)
+  if (now >= SemesterStart) {
+    copyLastSemesterSchedule();
+  }
 }
 
 // 处理学期初时间确认
@@ -786,7 +791,7 @@ const handleSemesterStartCancel = (formData) => {
 onMounted(() => {
   fetchData()
   fetchAllCourses()
-  fetchTeachers()
+  handleAutoCopyClass()
 })
 </script>
 
