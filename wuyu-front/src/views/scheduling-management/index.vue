@@ -3,9 +3,50 @@
     <!-- 顶部工具栏 -->
     <div class="toolbar-section">
       <div class="filter-group">
+        <!-- 学年选择 -->
+        <el-select
+          v-model="filter.academicYear"
+          placeholder="选择学年"
+          clearable
+          class="filter-item"
+          @change="handleFilterChange"
+        >
+          <el-option
+            v-for="year in academicYearOptions"
+            :key="year.value"
+            :label="year.label"
+            :value="year.value"
+          />
+        </el-select>
+
+        <!-- 学期选择 -->
+        <el-select
+          v-model="filter.semester"
+          placeholder="选择学期"
+          clearable
+          class="filter-item"
+          @change="handleFilterChange"
+        >
+          <el-option
+            v-for="sem in semesterOptions"
+            :key="sem.value"
+            :label="sem.label"
+            :value="sem.value"
+          />
+        </el-select>
+
+        <!-- 只查看当前学期开关 -->
+        <!-- <div class="filter-item current-semester-radio">
+          <el-radio-group v-model="filter.onlyCurrent" @change="handleCurrentSemesterChange">
+            <el-radio :label="true">仅当前学期</el-radio>
+            <el-radio :label="false">全部学期</el-radio>
+          </el-radio-group>
+        </div> -->
+
+        <!-- 年级选择 -->
         <el-select
           v-model="filter.grade"
-          placeholder="年级"
+          placeholder="选择年级"
           clearable
           class="filter-item"
           @change="handleGradeChange"
@@ -18,9 +59,10 @@
           />
         </el-select>
 
+        <!-- 班级选择 -->
         <el-select
           v-model="filter.classNum"
-          placeholder="班级"
+          placeholder="选择班级"
           clearable
           class="filter-item"
           @change="handleFilterChange"
@@ -33,34 +75,36 @@
           />
         </el-select>
 
+        <!-- 课程名称搜索 -->
         <el-input
           v-model="filter.course"
-          placeholder="课程名称"
+          placeholder="搜索课程名称"
           clearable
           class="filter-item"
           @change="handleFilterChange"
+          prefix-icon="el-icon-search"
         />
       </div>
 
-      <div class="operation-group">
-        <el-button type="primary" icon="el-icon-plus" @click="dialogVisible=true">新增</el-button>
-        <el-button type="danger" icon="el-icon-delete" :disabled="deleDisabled" @click="handleDeleteLesson(ids)">删除</el-button>
-        <el-dropdown trigger="click" class="more-actions">
-          <el-button type="info">
-            更多操作<i class="el-icon-arrow-down el-icon--right"></i>
-          </el-button>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item >
-                <el-button @click="downloadTemplate"><i class="el-icon-download"></i>下载模板</el-button>
-              </el-dropdown-item>
-              <el-dropdown-item @click="handleExport">
-                <el-button @click="handleExport"><i class="el-icon-upload2"></i>导出数据</el-button>
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
-      </div>
+  <div class="operation-group">
+    <el-button type="primary" icon="el-icon-plus" @click="dialogVisible=true">新增</el-button>
+    <el-button type="danger" icon="el-icon-delete" :disabled="deleDisabled" @click="handleDeleteLesson(ids)">删除</el-button>
+    <el-dropdown trigger="click" class="more-actions">
+      <el-button type="info">
+        更多操作<i class="el-icon-arrow-down el-icon--right"></i>
+      </el-button>
+      <template #dropdown>
+        <el-dropdown-menu>
+          <el-dropdown-item>
+            <el-button @click="downloadTemplate"><i class="el-icon-download"></i>下载模板</el-button>
+          </el-dropdown-item>
+          <el-dropdown-item @click="handleExport">
+            <el-button @click="handleExport"><i class="el-icon-upload2"></i>导出数据</el-button>
+          </el-dropdown-item>
+        </el-dropdown-menu>
+      </template>
+    </el-dropdown>
+  </div>
     </div>
 
     <div class="main-content">
@@ -153,10 +197,13 @@
           @selection-change="handleSelectionChange"
         >
           <el-table-column type="selection" width="30"></el-table-column>
-          <el-table-column prop="grade" label="年级" width="120" align="center" />
-          <el-table-column prop="classNum" label="班级" width="150" align="center" />
-          <el-table-column prop="course" label="课程名称" min-width="250" />
-          <el-table-column label="任课教师" width="200">
+          <el-table-column prop="academicYear" label="学年" width="120" align="center" />
+          <el-table-column prop="semester" label="学期" width="120" align="center" />
+          <el-table-column prop="className" label="班级" width="120" align="center" />
+          <!-- <el-table-column prop="grade" label="年级" width="120" align="center" />
+          <el-table-column prop="classNum" label="班级" width="150" align="center" /> -->
+          <el-table-column prop="course" label="课程名称" min-width="120"  align="center"/>
+          <el-table-column label="任课教师" width="150" align="left">
             <template #default="{ row }">
               <div class="teacher-cell">
                 <div class="teacher-info">
@@ -222,15 +269,6 @@
       @confirm="handleSemesterStartConfirm"
     />
 
-    <!-- 导入结果提示 -->
-    <el-alert
-      v-if="importResult"
-      :title="importResult.message"
-      :type="importResult.type"
-      :closable="false"
-      show-icon
-      class="import-result" />
-
     <lesson-info-dialog
       :visible="dialogVisible"
       :form-data="formData"
@@ -248,14 +286,12 @@ import { ref, reactive, computed, watch,onMounted } from 'vue';
 import { Message,Loading,MessageBox} from 'element-ui';
 import {getLessonPageAPI,
         deleteLessonAPI,
-        getTeacherListAPI,
         updateLessonAPI,
         copyLastSemesterSchedule,
         downloadModel,
         exportExcel,
         copyLastSemesterAPI,
-        exportLessonAPI,
-        importLessonAPI}
+        getAcademicAPI}
         from '@/api/schedulModule/index'
 import lessonInfoDialog from './components/lessonInfoDialog.vue'
 import TeacherSel from './components/TeacherSel.vue'
@@ -265,15 +301,6 @@ import pinyin from 'pinyin';
 
 const dialogVisible = ref(false)
 const formData = ref({})
-const teacherList = ref([
-  {
-    id: 1,
-    name: '张老师',
-    pinyin: 'zhang',
-    department: '数学系',
-    title: '教授'
-  },
-])
 const semesterStartDialogVisible = ref(false)
 
 const refreshData = async () => {
@@ -293,10 +320,34 @@ const gradeOptions = Array.from({ length: 6 }, (_, i) => ({
 }))
 const classOptions = Array.from({ length: 10 }, (_, i) => i + 1)
 
+// 新增学年选项和当前学期标识
+const academicYearOptions = ref([])
+const semesterOptions = [
+  { label: '上学期', value: 1 },
+  { label: '下学期', value: 2 }
+]
+
+// 获取学年选项数据
+const fetchAcademicYearsA = () => {
+    console.log('进入了函数！！！！！！！！！！！')
+    getAcademicAPI().then((res)=>{
+      if (res.code === 200) {
+        academicYearOptions.value = res.data.map(year => ({
+          label: year,
+          value: year
+        }))
+      }
+    }).catch (error => {
+      Message.error('学年数据加载失败')
+    })
+}
 const filter = reactive({
   grade: null,
   classNum: null,
-  course: ''
+  course: '',
+  academicYear: null,    // 学年筛选
+  semester: null,        // 学期筛选
+  onlyCurrent: false     // 只查看当前学期
 })
 const pagination = reactive({
   page: 1,
@@ -305,7 +356,6 @@ const pagination = reactive({
 })
 const tableData = ref([])
 const tableLoading = ref(false)
-
 
 // 课程树数据
 const courseTree = ref([]);
@@ -356,54 +406,39 @@ const transformToTree = (records) => {
   return Array.from(treeMap.values())
 }
 
-
-const teacherDialogVisible = ref(false)
 const currentCourse = ref(null);
-const importResult = ref(null);
 
+// 课程树过滤
 const filteredCourseTree = computed(() => {
-  if (!filter.grade && !filter.class && !filter.courseName) return courseTree.value
+  if (!filter.grade && !filter.classNum && !filter.course) {
+    return courseTree.value
+  }
 
-  return courseTree.value.map(gradeNode => {
-    if (filter.grade && gradeNode.label !== filter.grade) return null
-    return {
+  return courseTree.value
+    .filter(gradeNode => {
+      return !filter.grade || gradeNode.gradeValue === filter.grade
+    })
+    .map(gradeNode => ({
       ...gradeNode,
-      children: gradeNode.children.map(classNode => {
-        if (filter.class && classNode.label !== filter.class) return null
-        return {
+      children: gradeNode.children
+        .filter(classNode => {
+          return !filter.classNum || classNode.classNum === filter.classNum
+        })
+        .map(classNode => ({
           ...classNode,
-          children: classNode.children.filter(course =>
-            course.label.includes(filter.courseName)
-          )
-        }
-      }).filter(Boolean)
-    };
-  }).filter(Boolean)
-});
+          children: classNode.children.filter(course => {
+            return !filter.course || course.label.includes(filter.course)
+          })
+        }))
+        .filter(classNode => classNode.children.length > 0)
+    }))
+    .filter(gradeNode => gradeNode.children.length > 0)
+})
 
 const treeProps = ref({
   children: 'children',
   label: 'label'
 })
-
-
-const selectTeacher = (teacher) => {
-  if (!currentCourse.value) return
-
-  const updateNode = (nodes) => {
-    nodes.forEach(node => {
-      if (node.id === currentCourse.value.id && node.type === 'course') {
-        node.teacher = teacher.teacherName
-        node.teacherId = teacher.id
-      }
-      if (node.children) updateNode(node.children)
-    })
-  }
-  updateNode(courseTree.value)
-
-  teacherSelVisible.value = false
-  Message.success(`已为课程${currentCourse.value.label}设置教师：${teacher.teacherName}`)
-}
 
 // 勾选的条数变化
 const deleDisabled = ref(true)
@@ -464,10 +499,11 @@ const handleDeleteLesson = (aaids) => {
   })
 }
 
-
-
 const handleUpdateLesson = (row) => {
-  console.log('更新课程:', row)
+  console.log('传进来的row值为：',row);
+
+  formData.value = row
+  dialogVisible.value = true
 }
 
 // 自动复制排课
@@ -481,7 +517,7 @@ const handleAutoCopy = async () => {
     })
 
     // const res = await copyLastSemesterSchedule()
-    // 
+    //
     // 将获取到的年级、班级、教师、课程，转换成树状结构
     // 数据结构
     // {
@@ -536,7 +572,10 @@ const fetchData = async () => {
       minGrade: filter.grade || null,
       maxGrade: filter.grade || null,
       classNum: filter.classNum ? Number(filter.classNum) : null,
-      course: filter.course || null
+      course: filter.course || null,
+       academicYear: filter.academicYear || null,     // 学年
+      semester: filter.semester !== null ? filter.semester : null,  // 学期
+      isCurrent: filter.onlyCurrent || null         // 是否当前学期
     }
 
     const res = await getLessonPageAPI(params)
@@ -548,29 +587,42 @@ const fetchData = async () => {
     Message.error('数据加载失败')
   } finally {
     tableLoading.value = false
+    fetchAcademicYearsA()
   }
 };
 
 // 获取全部课程数据
 const fetchAllCourses = async () => {
   try {
-    const res = await getLessonPageAPI({
+    const params = {
       page: 1,
       size: 10000,
       minGrade: filter.grade || null,
       maxGrade: filter.grade || null,
       classNum: filter.classNum ? Number(filter.classNum) : null,
-      course: filter.course || null
-    })
+      course: filter.course || null,
+      academicYear: filter.academicYear || null,
+      semester: filter.semester !== null ? filter.semester : null,
+      isCurrent: filter.onlyCurrent || null
+    }
 
+    const res = await getLessonPageAPI(params)
     if (res.code === 200) {
       courseTree.value = transformToTree(res.data.records)
     }
   } catch (error) {
     Message.error('课程树数据加载失败')
   }
-};
+}
 
+// 处理当前学期开关变化
+const handleCurrentSemesterChange = (value) => {
+  if (value) {
+    console.log(value);
+    filter.onlyCurrent = true // 需要实现获取当前学期的方法
+  }
+  handleFilterChange()
+}
 const handleGradeChange = () => {
   filter.classNum = null
   handleFilterChange()
