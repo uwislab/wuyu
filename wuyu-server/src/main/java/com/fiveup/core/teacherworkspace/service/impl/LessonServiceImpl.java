@@ -80,6 +80,9 @@ public class LessonServiceImpl extends ServiceImpl<LessonMapper, Lesson> impleme
         if (semester < 1 || semester > 2) {
             throw new RuntimeException("请选择正确的学期");
         }
+        if (!RegexVerifyUtils.validAcademicYear(academicYear)) {
+            throw new ApiException("学年格式错误");
+        }
 
         // 查询目标
         LambdaQueryWrapper<Lesson> targetQuery = new LambdaQueryWrapper<>();
@@ -163,6 +166,9 @@ public class LessonServiceImpl extends ServiceImpl<LessonMapper, Lesson> impleme
 
     @Override
     public int setCurrentByAcademicAndSemester(String academicYear, int semester) {
+        if (!RegexVerifyUtils.validAcademicYear(academicYear)) {
+            throw new ApiException("学年格式错误");
+        }
         // 如果有性能问题，可以改成流式查询
         LambdaUpdateWrapper<Lesson> setWrapper = new LambdaUpdateWrapper<>();
         setWrapper
