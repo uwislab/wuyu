@@ -9,7 +9,7 @@
           <el-input v-model="searchQuery.studentNum" placeholder="学号" size="medium" />
         </el-col>
         <el-col :span="4">
-          <el-input v-model="searchQuery.studentName" placeholder="学生" size="medium" />
+          <el-input v-model="searchQuery.studentName" placeholder="学生姓名" size="medium" />
         </el-col>
         <el-col :span="4">
           <el-select v-model="searchQuery.gender" placeholder="性别" size="medium">
@@ -18,34 +18,10 @@
           </el-select>
         </el-col>
         <el-col :span="4">
-          <el-select v-model="searchQuery.schoolId" placeholder="学校" size="medium">
-            <el-option label="男" value="1" />
-            <el-option label="女" value="2" />
-            <el-option label="男" value="3" />
-            <el-option label="女" value="4" />
-            <el-option label="男" value="5" />
-            <el-option label="女" value="6" />
-          </el-select>
+          <el-input v-model="searchQuery.classId" placeholder="班级" size="medium" />
         </el-col>
         <el-col :span="4">
-          <el-select v-model="searchQuery.gradeId" placeholder="年级" size="medium">
-            <el-option label="男" value="1" />
-            <el-option label="女" value="2" />
-            <el-option label="男" value="3" />
-            <el-option label="女" value="4" />
-            <el-option label="男" value="5" />
-            <el-option label="女" value="6" />
-          </el-select>
-        </el-col>
-        <el-col :span="4">
-          <el-select v-model="searchQuery.classId" placeholder="班级" size="medium">
-            <el-option label="男" value="1" />
-            <el-option label="女" value="2" />
-            <el-option label="男" value="3" />
-            <el-option label="女" value="4" />
-            <el-option label="男" value="5" />
-            <el-option label="女" value="6" />
-          </el-select>
+          <el-input v-model="searchQuery.gradeId" placeholder="年级" size="medium" />
         </el-col>
         <el-col :span="1.5">
           <el-button type="primary" @click="searchUsers">搜索</el-button>
@@ -61,12 +37,12 @@
       <!-- 用户列表 -->
       <el-table :data="users.data" border stripe>
         <el-table-column label="学号" prop="studentNum" />
-        <el-table-column label="学生" prop="studentName" />
-        <el-table-column label="电话" prop="parentPhoneNum" />
+        <el-table-column label="学生姓名" prop="studentName" />
         <el-table-column label="性别" prop="gender" />
-        <el-table-column label="学校" prop="gender"  />
-        <el-table-column label="年级" prop="gradeId" />
-        <el-table-column label="班级" prop="classId"  />
+        <el-table-column label="班级" prop="classId" />
+        <el-table-column label="年级" prop="gradeId"/>
+        <el-table-column label="学校" prop="schoolId"/>
+        <el-table-column label="家长电话" prop="parentPhoneNum"/>
         <el-table-column label="批阅" prop="isreview"/>
         <el-table-column label="是否录入" prop="isenter" />
         <el-table-column label="操作">
@@ -94,26 +70,23 @@
     <el-dialog :visible.sync="showAddUserDialog" width="50%" @close="closeAddUserDialog">
       <h3>{{ editingUser ? '编辑用户' : '添加用户' }}</h3>
       <el-form :model="newUser" ref="form" label-width="100px" :rules="rules">
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="newUser.username" />
+        <el-form-item label="学号" prop="studentNum">
+          <el-input v-model="newUser.studentNum" />
         </el-form-item>
-        <el-form-item v-if="!editingUser" label="密码" prop="password">
-          <el-input v-model="newUser.password" type="password" />
-        </el-form-item>
-        <el-form-item label="真实姓名" prop="realName">
-          <el-input v-model="newUser.realName" />
-        </el-form-item>
-        <el-form-item label="手机号码" prop="phoneNumber">
-          <el-input v-model="newUser.phoneNumber" />
+        <el-form-item  label="姓名" prop="studentName">
+          <el-input v-model="newUser.studentName" />
         </el-form-item>
         <el-form-item label="性别">
           <el-select v-model="newUser.gender">
             <el-option v-for="option in genderOptions" :key="option.value" :label="option.label" :value="option.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="角色">
-          <el-select v-model="newUser.identity">
-            <el-option v-for="option in identityOptions" :key="option.value" :label="option.label" :value="option.value" />
+        <el-form-item label="班级" prop="classId">
+          <el-input v-model="newUser.phoneNumber" />
+        </el-form-item>
+        <el-form-item label="年级" prop="gradeId">
+          <el-select v-model="newUser.gender">
+            <el-option v-for="option in genderOptions" :key="option.value" :label="option.label" :value="option.value" />
           </el-select>
         </el-form-item>
         <el-form-item label="学校">
@@ -140,31 +113,34 @@ export default {
     return {
       // 用户信息
       newUser: {
-        username: "",
-        password: "",
-        realName: "",
-        phoneNumber: "",
+        studentNum: "",
+        studentName: "",
+        gender: "",
+        classId: "",
+        gradeId:"",
+        parentPhoneNum: "",
         gender: 1,
         identity: 3,
         schoolId: "",
       },
       rules: {
-        username: [
-          { required: true, message: "用户名不能为空", trigger: "blur" },
-          { pattern: /^.{1,10}$/, message: "用户名不能超过10个字符", trigger: "blur" },
+        studentNum: [
+          { required: true, message: "学号不能为空", trigger: "blur" },
+          { pattern: /^\d{10}$/, message: "学号必须为10个字符", trigger: "blur" },
         ],
-        password: [
+        studentName: [
           { required: true, message: "密码不能为空", trigger: "blur" },
           { pattern: /^.{1,10}$/, message: "密码不能超过10个字符", trigger: "blur" },
         ],
-        realName: [
+        gender: [
           { required: true, message: "真实姓名不能为空", trigger: "blur" },
           { pattern: /^.{1,15}$/, message: "真实姓名不能超过15个字符", trigger: "blur" },
         ],
-        phoneNumber: [
+        classId: [
           { required: true, message: "手机号不能为空", trigger: "blur" },
           { pattern: /^\d{11}$/, message: "手机号必须是11位数字", trigger: "blur" },
         ],
+
       },
       editingUser: false, // 是否为编辑模式
       editingUserId: null, // 编辑的用户ID
@@ -221,7 +197,7 @@ export default {
     },
     fetchAllUsers() {
       axios
-        .get(`${StudentManagerUrl}/webUser/all`)
+        .get(`${StudentManagerUrl}/studentManager/addStudent`)
         .then((response) => {
           this.allUsers = response.data; // 假设接口返回的数据为用户列表
         })
@@ -250,10 +226,10 @@ export default {
         });
     },
     saveUser() {
-      // 验证用户名和手机号的唯一性
+      // 验证学号和手机号的唯一性
       const isDuplicateUsername = this.allUsers.some(
         (user) =>
-          user.username === this.newUser.username &&
+          user.studentNum === this.newUser.studentNum &&
           (!this.editingUser || user.id !== this.editingUserId) // 排除当前编辑的用户
       );
 
@@ -264,7 +240,7 @@ export default {
       );
 
       if (isDuplicateUsername) {
-        this.$message.error("用户名已存在，请重新输入！");
+        this.$message.error("学生已存在，请重新输入！");
         return;
       }
       if (isDuplicatePhoneNumber) {
@@ -281,9 +257,9 @@ export default {
       }
     },
 
-    addWebUser() {
+    addStudent() {
       axios
-        .post(`${baseUrl}/webUser/add`, this.newUser)
+        .post(`${StudentManagerUr}/studentManager/addStudent`, this.newUser)
         .then(() => {
           this.$message.success("用户添加成功！");
           this.fetchStudentManager();
@@ -294,35 +270,48 @@ export default {
           this.$message.error("添加用户失败，请重试！");
         });
     },
-    confirmDeleteUser(id) {
-      this.$confirm(
-        "此操作将永久删除该用户, 是否继续?",
-        "提示",
-        {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning",
-        }
-      )
-        .then(() => {
-          // 确认删除
-          this.deleteUser(id);
-        })
-        .catch(() => {
-          // 用户取消删除
-          this.$message.info("已取消删除");
-        });
-    },
-    deleteUser(id) {
-      axios
-        .delete(`${baseUrl}/webUser/delete/${id}`)
-        .then(() => {
-          this.fetchUsers();
-        })
-        .catch((error) => {
-          console.error("删除用户出错：", error);
-        });
-    },
+
+    async confirmDeleteUser(id) {
+  try {
+    // 修改提示信息，与逻辑删除保持一致
+    await this.$confirm(
+      "此操作将删除该学生信息, 是否继续?",
+      "提示",
+      {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      }
+    );
+    
+    // 修改API调用，与后端保持一致
+    await this.removeStudent(id);
+    
+    // 删除成功，显示成功消息
+    this.$message.success("学生删除成功");
+    
+    // 刷新学生列表
+    this.fetchStudentManager();
+  } catch (error) {
+    // 用户取消删除或删除操作失败
+    if (error !== "cancel") {
+      // 非用户取消的情况，显示错误消息
+      this.$message.error("删除学生失败，请稍后重试");
+      console.error("删除学生失败:", error);
+    }
+  }
+},
+
+// 新增或修改API调用方法，确保与后端接口匹配
+removeStudent(studentId) {
+  // 修正API路径，确保与后端接口匹配
+  return axios.get(`${StudentManagerUrl}StudentManager/removeStudent`, {
+    params: {
+      id: studentId // 确保参数名与后端@RequestParam("id")一致
+    }
+  });
+},
+
     // 分页处理
    handleSizeChange (size){
      this.users.sizeOfPage = size;
