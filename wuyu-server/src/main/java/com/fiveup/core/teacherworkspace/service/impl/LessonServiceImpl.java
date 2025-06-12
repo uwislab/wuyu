@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fiveup.core.common.exception.ApiException;
+import com.fiveup.core.teacherworkspace.common.utils.RegexVerifyUtils;
 import com.fiveup.core.teacherworkspace.mapper.LessonMapper;
 import com.fiveup.core.teacherworkspace.model.Lesson;
 import com.fiveup.core.teacherworkspace.model.dto.PageLessonDto;
@@ -25,12 +27,23 @@ public class LessonServiceImpl extends ServiceImpl<LessonMapper, Lesson> impleme
     private final LessonMapper lessonMapper;
 
     @Override
+    public List<String> listAcademicYears() {
+        return lessonMapper.listAcademicYears();
+    }
+
+    @Override
     public PageVo<Lesson> pageLesson(PageLessonDto dto) {
+        String academicYear = dto.getAcademicYear();
+        if (CharSequenceUtil.isBlank(academicYear) && !RegexVerifyUtils.validAcademicYear(academicYear)) {
+            throw new ApiException("学年格式错误, 格式为xxxx-xxxx");
+        }
         Page<Lesson> page = this.lambdaQuery()
                 .ge(dto.getMinGrade() != null, Lesson::getGrade, dto.getMinGrade())
                 .le(dto.getMaxGrade() != null, Lesson::getGrade, dto.getMaxGrade())
                 .eq(dto.getClassNum() != null, Lesson::getClassNum, dto.getClassNum())
                 .like(CharSequenceUtil.isNotBlank(dto.getCourse()), Lesson::getCourse, dto.getCourse())
+                .eq(dto.getSemester() != null, Lesson::getSemester, dto.getSemester())
+                .eq(!CharSequenceUtil.isBlank(academicYear), Lesson::getAcademicYear, academicYear)
                 .page(Page.of(dto.getPage(), dto.getSize()));
         return PageVo.of(page);
     }

@@ -27,4 +27,6 @@ public interface LessonService extends IService<Lesson> {
     Boolean copyLessonByLastSemester(String academicYear, int semester, boolean isOverwrite) throws RuntimeException;
 
     int setCurrentByAcademicAndSemester(String academicYear, int semester);
+
+    List<String> listAcademicYears();
 }
