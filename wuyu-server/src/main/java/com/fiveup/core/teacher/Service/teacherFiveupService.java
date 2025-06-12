@@ -27,6 +27,8 @@ public class teacherFiveupService extends ServiceImpl<teacherFiveupMapper, teach
     @Autowired
     private teacherFiveupMapper teacherMapper;
 
+    //新增或更新教师信息
+    //手机唯一性校验
     public boolean saveUser(teacher teacher) {
         if (teacher == null) {
             throw new IllegalArgumentException("教师对象不能为空");

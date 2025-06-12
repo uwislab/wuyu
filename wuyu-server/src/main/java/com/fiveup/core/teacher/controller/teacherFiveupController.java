@@ -71,6 +71,7 @@ public class teacherFiveupController {
         return teacherService.searchTeacherById(id);
     }
     @PostMapping
+    //用户新增
     public  boolean save(@RequestBody teacher teacher){
         //新增或者更新
         return teacherService.saveUser(teacher);
