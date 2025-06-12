@@ -94,28 +94,48 @@ public class teacherFiveupController {
 
     //excel导出
     @GetMapping("/exportExcel")
-    public void exportExcel(HttpServletResponse response) throws Exception {
-        //查询所有数据
-        List<teacher> list = teacherService.list();
-        //在内存操作，写出到浏览器，从浏览器下载
+    public void exportExcel(@RequestParam("schoolId") Long schoolId, HttpServletResponse response) throws Exception {
+        // 构建查询条件
+        QueryWrapper<teacher> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("school_id", schoolId)
+                   .eq("deleted", 0);  // 只查询未删除的数据
+        
+        // 查询符合条件的数据
+        List<teacher> list = teacherService.list(queryWrapper);
+        
+        // 在内存操作，写出到浏览器
         ExcelWriter writer = ExcelUtil.getWriter(true);
-        //自定义标题名
-        writer.addHeaderAlias("newsType", "名字");
-        writer.addHeaderAlias("title", "密码");
-        writer.addHeaderAlias("content", "昵称");
-        writer.addHeaderAlias("author", "邮箱");
-        //一次性写出list内的对象到excel，使用默认格式，强制输出标题
-        writer.write(list,true);
+        
+        // 自定义标题别名（使用中文表头）
+        writer.addHeaderAlias("id", "教师ID");
+        writer.addHeaderAlias("teacherName", "教师姓名");
+        writer.addHeaderAlias("gender", "性别");
+        writer.addHeaderAlias("phoneNum", "手机号码");
+        writer.addHeaderAlias("position", "职位");
+        writer.addHeaderAlias("title", "职称");
+        writer.addHeaderAlias("role", "角色");
+        writer.addHeaderAlias("username", "用户名");
+        writer.addHeaderAlias("password", "密码");
+        writer.addHeaderAlias("politicalAppearance", "政治面貌");
+        writer.addHeaderAlias("birthPlace", "籍贯");
+        writer.addHeaderAlias("age", "年龄");
+        writer.addHeaderAlias("info", "备注信息");
 
-        //设置浏览器响应格式
+        // 设置只导出这些列，排除deleted列
+        writer.setOnlyAlias(true);
+
+        // 一次性写出list内的对象到excel，使用默认格式，强制输出标题
+        writer.write(list, true);
+
+        // 设置浏览器响应格式
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
-        String fileName = URLEncoder.encode("用户信息","UTF-8");
-        response.setHeader("Content-Disposition","attachment;filename="+fileName+".xlsx");
+        String fileName = URLEncoder.encode("教师信息", "UTF-8");
+        response.setHeader("Content-Disposition", "attachment;filename=" + fileName + ".xlsx");
 
         ServletOutputStream outputStream = response.getOutputStream();
-        writer.flush(outputStream,true);
+        writer.flush(outputStream, true);
 
-        //关闭流
+        // 关闭流
         outputStream.close();
         writer.close();
     }

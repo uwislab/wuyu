@@ -447,9 +447,16 @@ export default {
     //   this.pageNum=pageNum
     //   this.load()
     // },
-    // exportExcel(){
-    //     window.open("http://localhost:9090/teacher/exportExcel")
-    // },
+    exportExcel() {
+      // 从 localStorage 获取 UserInfo
+      const userInfo = JSON.parse(localStorage.getItem('UserInfo'));
+      if (!userInfo || !userInfo.schoolId) {
+        this.$message.error('未获取到学校ID，请重新登录');
+        return;
+      }
+      // 将 schoolId 作为参数传递给导出接口
+      window.open(`http://localhost:9085/teacher/exportExcel?schoolId=${userInfo.schoolId}`);
+    },
     // importExcel(){
     //     this.$message.success("导入成功");
     //     this.load();
