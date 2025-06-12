@@ -10,10 +10,12 @@ import com.fiveup.core.studentManager.mapper.StudentManagerMapper;
 import com.fiveup.core.studentManager.pojo.PageBean;
 import com.fiveup.core.studentManager.pojo.StudentManagerQuery;
 import com.fiveup.core.studentManager.service.StudentManagerService;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.python.antlr.ast.Str;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -26,8 +28,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.*;
 import java.util.regex.Pattern;
 
 @Service
@@ -167,9 +169,14 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
         if (cell == null) {
             return "";
         }
+        System.out.println(cell.getCellType());
         switch (cell.getCellType()) {
             case STRING:
-                return cell.getStringCellValue();
+                return cell.getStringCellValue().trim();
+            case NUMERIC:
+                BigDecimal bd = new BigDecimal(String.valueOf(cell.getNumericCellValue()));
+                System.out.println(bd.toPlainString());
+                return bd.toPlainString();
             case BLANK:
                 return "";
             default:
@@ -181,22 +188,29 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
     public void importstudent(MultipartFile file) {
             InputStream inputStream = null;
             XSSFWorkbook workbook = null;
+            Set<String> numset = studentManagerMapper.selectnum();//学号集合
+            Set<String> classset= studentManagerMapper.selectclassgrade();//班级年级
             try {
                 inputStream = file.getInputStream();
                 workbook = new XSSFWorkbook(inputStream);
                 XSSFSheet sheet = workbook.getSheetAt(0);
                 List<StudentManager> list = new ArrayList<>();
+                Set<String> set=new HashSet<>();//学号
                 StudentManager studentManager = new StudentManager();
                 for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                     XSSFRow row = sheet.getRow(i);
+                    String f=new String();
                     if (row != null) {
                         for (int col = 0; col < 6; col++) {
                             String stringCellValue = getCellValueAsString(row.getCell(col));
                             switch (col) {
                                 case 0:
-                                    if (Pattern.matches("\\d{10}", stringCellValue))
+                                    if (!Pattern.matches("\\d{10}", stringCellValue))
                                         throw new ApiException("第" + i + "行学生学号为10位数字");
-                                    else studentManager.setStudentNum(stringCellValue);
+                                    else if(!set.contains(stringCellValue)&&!numset.contains(stringCellValue)){
+                                        set.add(stringCellValue);
+                                        studentManager.setStudentNum(stringCellValue);
+                                    }else throw new ApiException("第"+i+"行重复导入");
                                     break;
                                 case 1:
                                     if (!isPureChineseWithExt(stringCellValue))
@@ -209,13 +223,18 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
                                     else throw new ApiException("第" + i + "行性别只能为男或者女");
                                     break;
                                 case 3:
-                                    if (Pattern.matches("\\d+年级", stringCellValue))
+                                    if (Pattern.matches("\\d+年级", stringCellValue)) {
                                         studentManager.setGradeId(Integer.valueOf(stringCellValue.substring(0, stringCellValue.length() - 2)));
+                                        f+=stringCellValue.substring(0, stringCellValue.length() - 2)+"#";
+                                    }
                                     else throw new ApiException("第" + i + "行年级示例：1年级，使用阿拉伯数字");
                                     break;
                                 case 4:
-                                    if (Pattern.matches("\\d+班", stringCellValue))
+                                    if (Pattern.matches("\\d+班", stringCellValue)){
+                                        f+=stringCellValue.substring(0, stringCellValue.length() - 1);
+                                        if(!classset.contains(f))throw new ApiException("第"+i+"行班级年级不存在");
                                         studentManager.setClassId(Integer.valueOf(stringCellValue.substring(0, stringCellValue.length() - 1)));
+                                    }
                                     else throw new ApiException("第" + i + "行班级示例：3班，使用阿拉伯数字");
                                     break;
                                 default:
