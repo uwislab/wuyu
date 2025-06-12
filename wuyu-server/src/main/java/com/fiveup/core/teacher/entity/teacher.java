@@ -25,4 +25,8 @@ public class teacher implements Serializable {
     private int age;
     private String info;
 
+
+    public String getPhoneNum(teacher teacher) {
+        return teacher.getPhoneNum();
+    }
 }
