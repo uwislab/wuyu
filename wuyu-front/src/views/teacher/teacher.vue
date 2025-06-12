@@ -21,6 +21,8 @@
         </el-form-item>
         <el-button style="margin-left: 5px" type="primary" @click="searchTeacher">搜索</el-button>
         <el-button style="margin-left: 5px" type="warning" @click="reset">重置</el-button>
+        <el-button style="margin-left: 5px" type="success" @click="exportExcel">导出</el-button>
+        <el-button style="margin-left: 5px" type="success" @click="downloadTemplate">下载模板</el-button>
         <el-button type="success" round @click="handleAdd">新增<i class="el-icon-circle-plus-outline"></i></el-button>
       </el-form>
     </div>
@@ -320,7 +322,7 @@ export default {
           this.pagination.total = res.data.total;
           this.pagination.currentPage = res.data.curPage;
           this.pagination.pageCount = res.data.pages;
-          
+
           this.tableData = res.data.list.map(item => ({
             ...item,
             gender: item.gender == 0 ? '女' : '男',
@@ -349,7 +351,7 @@ export default {
           if (this.form.birthPlace === '(暂无)') this.form.birthPlace = null;
           if (this.form.age === '(暂无)') this.form.age = null;
           if (this.form.info === '(暂无)') this.form.info = null;
-          
+
           // 从localStorage获取schoolId
           const userInfo = JSON.parse(localStorage.getItem('UserInfo'));
           this.form.schoolId = userInfo.schoolId;
@@ -429,13 +431,59 @@ export default {
     //   this.pageNum=pageNum
     //   this.load()
     // },
-    // exportExcel(){
-    //     window.open("http://localhost:9090/teacher/exportExcel")
-    // },
+    exportExcel() {
+      // 从 localStorage 获取 UserInfo
+      const userInfo = JSON.parse(localStorage.getItem('UserInfo'));
+      if (!userInfo || !userInfo.schoolId) {
+        this.$message.error('未获取到学校ID，请重新登录');
+        return;
+      }
+      // 将 schoolId 作为参数传递给导出接口
+      window.open(`http://localhost:9085/teacher/exportExcel?schoolId=${userInfo.schoolId}`);
+    },
     // importExcel(){
     //     this.$message.success("导入成功");
     //     this.load();
     // }
+    downloadTemplate() {
+      try {
+        // 使用正确的端口号
+        const downloadUrl = 'http://localhost:9085/teacher/downloadTemplate';
+
+        // 创建一个临时的 a 标签用于下载
+        const link = document.createElement('a');
+        // 设置下载链接
+        link.href = downloadUrl;
+        // 设置下载文件名
+        link.setAttribute('download', '教师信息导入模板.xlsx');
+        // 设置样式为隐藏
+        link.style.display = 'none';
+
+        // 添加到文档中
+        document.body.appendChild(link);
+
+        // 触发点击事件开始下载
+        link.click();
+
+        // 下载开始后移除该元素
+        document.body.removeChild(link);
+
+        // 显示下载开始提示
+        this.$message({
+          message: '模板下载已开始，请稍候...',
+          type: 'success',
+          duration: 2000
+        });
+      } catch (error) {
+        console.error('下载模板失败:', error);
+        if (error.response) {
+          console.error('错误状态:', error.response.status);
+          console.error('错误信息:', error.response.data);
+        }
+        this.$message.error('下载模板失败，请确保后端服务正常运行');
+      }
+    },
+
 
     // 处理页码变化
     handlePageChange(page) {
