@@ -56,14 +56,20 @@
             class_name,
             course,
             teacher_name,
-            teacher_id
+            teacher_id,
+            academic_year,
+            semester,
+            is_current
         ) VALUES (
                      #{grade},
                      #{classNum},
                      #{className},
                      #{course},
                      #{teacherName},
-                     #{teacherId}
+                     #{teacherId},
+                     #{academicYear},
+                     #{semester},
+                     #{isCurrent}
                  )
     </insert>
 
@@ -75,7 +81,10 @@
             class_name = #{className},
             course = #{course},
             teacher_name = #{teacherName},
-            teacher_id = #{teacherId}
+            teacher_id = #{teacherId},
+            academic_year = #{academicYear},
+            semester = #{semester},
+            is_current = #{isCurrent}
         WHERE id = #{id}
     </update>
 </mapper>
