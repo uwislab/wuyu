@@ -399,7 +399,9 @@ const transformToTree = (records) => {
       teacher: item.teacherName,
       teacherId: item.teacherId,
       grade: item.grade,
-      classNum: item.classNum
+      classNum: item.classNum,
+      academicYear:item.academicYear,
+      semester:item.semester
     })
   })
 
@@ -763,7 +765,7 @@ const handleTeacherSelect = async (teacher) => {
     return;
   }
 
-  const { grade, classNum, course, id } = currentCourse.value;
+  const { grade, classNum, course, id ,label } = currentCourse.value;
   try {
     // 更新数据库表
   // ==> Preparing: UPDATE basic_lesson SET grade = ?, class_num = ?, class_name = ?, course = ?, teacher_name = ?, teacher_id = ? WHERE id = ?
@@ -774,14 +776,14 @@ const handleTeacherSelect = async (teacher) => {
       grade,
       classNum,
       className,
-      course,
+      course:course?course:label,
       teacherName: teacher.teacherName,
       teacherId: teacher.id,
       id
     });
 
     if (res.code === 200) {
-      Message.success(`已为${grade}年级${classNum}班的${course}课程设置教师：${teacher.teacherName}`);
+      Message.success(`已为${grade}年级${classNum}班的${course?course:label}课程设置教师：${teacher.teacherName}`);
     } else {
       Message.error('设置教师失败');
     }
