@@ -159,7 +159,7 @@
                 >
                   {{ data.teacher || '分配教师' }}
                 </el-button>
-                <el-dropdown trigger="click" @command="handleTreeCommand">
+                <el-dropdown trigger="click" @command="handleTreeCommand(node.data,$event)">
                   <el-button type="text" icon="el-icon-more" circle size="small"></el-button>
                   <template #dropdown>
                     <el-dropdown-menu>
@@ -299,6 +299,22 @@ import SemesterStartDialog from './components/SemesterStartDialog.vue'
 import Import from './components/Import.vue'
 import pinyin from 'pinyin';
 
+
+const handleTreeCommand = ( data , e ) => {
+  console.log(data,e);
+  if(e==='edit'){
+    const row = {
+      ...data,
+      course:data.label,
+      className:`${data.grade}年级${data.classNum}班`,
+      teacherName:data.teacher
+    }
+    handleUpdateLesson(row)
+  } else if(e === 'delete') {
+    handleDeleteLesson(data.id)
+  }
+
+}
 const dialogVisible = ref(false)
 const formData = ref({})
 const semesterStartDialogVisible = ref(false)
