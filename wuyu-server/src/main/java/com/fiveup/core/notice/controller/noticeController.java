@@ -1,6 +1,7 @@
 package com.fiveup.core.notice.controller;
 
 import com.fiveup.core.notice.enetity.NoticeEntity;
+import com.fiveup.core.notice.enetity.UserIdentity;
 import com.fiveup.core.notice.info.noticeInfo;
 import com.fiveup.core.notice.service.noticeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,4 +46,9 @@ public class noticeController {
         result.put("message", "添加成功");
         return result;
     }
+    @GetMapping("/getIdentityIds")
+    public List<UserIdentity> getIdentityIds(){
+        return noticeService.getIdentityIds();
+    }
+
 }

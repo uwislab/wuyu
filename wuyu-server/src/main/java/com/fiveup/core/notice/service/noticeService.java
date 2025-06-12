@@ -1,6 +1,7 @@
 package com.fiveup.core.notice.service;
 
 import com.fiveup.core.notice.enetity.NoticeEntity;
+import com.fiveup.core.notice.enetity.UserIdentity;
 import com.fiveup.core.notice.info.noticeInfo;
 
 import java.util.List;
@@ -13,5 +14,7 @@ public interface noticeService {
     int addList(noticeInfo noticeInfo);
 
     void addNotice(NoticeEntity noticeEntity);
+
+    List<UserIdentity> getIdentityIds();
 
 }

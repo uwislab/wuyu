@@ -2,6 +2,7 @@ package com.fiveup.core.notice.mapper;
 
 import com.fiveup.core.notice.enetity.NoticeEntity;
 import com.fiveup.core.notice.enetity.NoticeIdentityEntity;
+import com.fiveup.core.notice.enetity.UserIdentity;
 import com.fiveup.core.notice.info.noticeInfo;
 import org.apache.ibatis.annotations.*;
 
@@ -25,5 +26,8 @@ public interface noticeMapper {
 
     @Insert("insert into notice_identity_record (notice_id,identity_id) values (#{noticeId},#{identityId})")
     void insertNoticeIdentityRecord(NoticeIdentityEntity entity);
+
+    @Select("select identity_id,identity_info from basic_user_identity")
+    List<UserIdentity> getIdentityIds();
 
 }
