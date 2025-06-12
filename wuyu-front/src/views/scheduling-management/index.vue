@@ -231,6 +231,7 @@
       show-icon
       class="import-result" />
 
+    <!-- 课程新增弹窗 -->
     <lesson-info-dialog
       :visible="dialogVisible"
       :form-data="formData"
