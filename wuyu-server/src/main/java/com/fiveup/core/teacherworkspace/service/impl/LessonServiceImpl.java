@@ -34,7 +34,7 @@ public class LessonServiceImpl extends ServiceImpl<LessonMapper, Lesson> impleme
     @Override
     public PageVo<Lesson> pageLesson(PageLessonDto dto) {
         String academicYear = dto.getAcademicYear();
-        if (CharSequenceUtil.isBlank(academicYear) && !RegexVerifyUtils.validAcademicYear(academicYear)) {
+        if (!CharSequenceUtil.isBlank(academicYear) && !RegexVerifyUtils.validAcademicYear(academicYear)) {
             throw new ApiException("学年格式错误, 格式为xxxx-xxxx");
         }
         Page<Lesson> page = this.lambdaQuery()
