@@ -157,7 +157,7 @@ const rules = reactive({
     { max: 50, message: '长度不能超过50个字符', trigger: 'blur' }
   ],
   teacherName: [
-    { required: true, message: '请输入任课教师姓名', trigger: 'blur' },
+    { required: false, message: '请输入任课教师姓名', trigger: 'blur' },
     { min: 2, message: '教师姓名至少需要2个字符', trigger: 'blur' }
   ]
 })
@@ -243,8 +243,8 @@ const openTeacherDialog = () => {
 
 // 处理教师选择
 const handleTeacherSelect = (teacher) => {
-  form.teacherName = teacher.teacherName
-  form.teacherId = teacher.id
+  form.value.teacherName = teacher.teacherName
+  form.value.teacherId = teacher.id
   teacherSelVisible.value = false
 }
 </script>
