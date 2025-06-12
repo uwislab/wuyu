@@ -10,11 +10,11 @@ export function getLessonPageAPI(params) {
 }
 
 //导入课程信息
-export function importExcel(params) {
+export function importExcel(data) {
   return request({
     url: '/lesson/excel/try-import',
     method: 'post',
-    params: params,
+    data: data,
     // responseType: 'blob',
   })
 }

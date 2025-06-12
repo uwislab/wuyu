@@ -481,7 +481,7 @@ const handleAutoCopy = async () => {
     })
 
     // const res = await copyLastSemesterSchedule()
-    // 
+    //
     // 将获取到的年级、班级、教师、课程，转换成树状结构
     // 数据结构
     // {
