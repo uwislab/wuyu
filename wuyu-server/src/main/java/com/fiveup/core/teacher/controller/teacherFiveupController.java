@@ -37,7 +37,7 @@ import java.util.List;
 @RequestMapping("/teacher")
 public class teacherFiveupController {
     private static final Logger logger = LoggerFactory.getLogger(teacherFiveupController.class);
-
+    
     @Autowired
     private teacherFiveupService teacherService;
     @Resource
@@ -54,14 +54,14 @@ public class teacherFiveupController {
             logger.error("查询参数不能为空");
             return CommonResponse.fail(BizErrorCodeEnum.PARAMS_VALIDATION_ERRNO,"查询参数不能为空");
         }
-
+        
         // 获取学校ID
         Long schoolId = pageDto.getSchoolId();
         if (schoolId == null || schoolId <= 0) {
             logger.error("学校ID不能为空或无效: {}", schoolId);
             return CommonResponse.fail(BizErrorCodeEnum.PARAMS_VALIDATION_ERRNO,"学校ID不能为空或无效");
         }
-
+        
         // 调用服务层获取数据
         TeacherList teacherList = teacherService.getTeacherByPage(pageDto, schoolId);
         return CommonResponse.ok(teacherList);
@@ -81,11 +81,34 @@ public class teacherFiveupController {
         return teacherService.list();
     }
     @DeleteMapping("/{id}")
-    public boolean delete(@PathVariable Integer id){
-        return teacherService.removeById(id);
+    public CommonResponse<Boolean> delete(@PathVariable Integer id) {
+        try {
+            if (id == null || id <= 0) {
+                logger.error("删除教师失败：无效的教师ID: {}", id);
+                return CommonResponse.fail(BizErrorCodeEnum.PARAMS_VALIDATION_ERRNO, "无效的教师ID");
+            }
+            
+            // 检查教师是否存在
+            teacher teacher = teacherService.getById(id);
+            if (teacher == null) {
+                logger.error("删除教师失败：教师不存在，ID: {}", id);
+                return CommonResponse.fail(BizErrorCodeEnum.ALARM_RECORD_NOT_EXIST, "教师不存在");
+            }
+            
+            // 执行逻辑删除
+            boolean result = teacherService.removeById(id);
+            if (result) {
+                logger.info("教师删除成功，ID: {}", id);
+                return CommonResponse.ok(true);
+            } else {
+                logger.error("教师删除失败，ID: {}", id);
+                return CommonResponse.fail(BizErrorCodeEnum.ROLLBACK_PLAN_ERRNO, "删除失败");
+            }
+        } catch (Exception e) {
+            logger.error("删除教师时发生异常，ID: {}, 异常信息: {}", id, e.getMessage(), e);
+            return CommonResponse.fail(BizErrorCodeEnum.ROLLBACK_PLAN_ERRNO, "系统异常");
+        }
     }
-
-
 
     @PostMapping("/del/batch")
     public boolean deleteBatch(@RequestBody List<Integer> ids){
