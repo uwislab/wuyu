@@ -305,6 +305,7 @@ export default {
       axios.get(baseUrl + '/api/teacherQuery/getFormObject').then(res => {
         if (res.data.code === 200) {
           // this.gradeList = res.data.data.gradeList;
+          console.log(res.data.data.gradeList)
           this.positionList = res.data.data.positionList;
         }
       })

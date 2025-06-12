@@ -1,4 +1,5 @@
 package com.fiveup.core.teacher.Service;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import com.fiveup.core.fuScale.develop_09.common.R;
@@ -26,9 +27,34 @@ public class teacherFiveupService extends ServiceImpl<teacherFiveupMapper, teach
     @Autowired
     private teacherFiveupMapper teacherMapper;
 
-    public boolean saveUser(teacher teacher){
-        return saveOrUpdate(teacher);
+    //新增或更新教师信息
+    //手机唯一性校验
+    public boolean saveUser(teacher teacher) {
+        if (teacher == null) {
+            throw new IllegalArgumentException("教师对象不能为空");
+        }
+
+        // 检查手机号是否存在
+        LambdaQueryWrapper<teacher> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(teacher::getPhoneNum, teacher.getPhoneNum());
+        teacher existingTeacherByPhone = teacherMapper.selectOne(queryWrapper);
+        if (existingTeacherByPhone != null) {
+            throw new IllegalArgumentException("手机号已存在");
+        }
+
+        // 检查ID是否存在
+        teacher existingTeacherById = teacherMapper.selectById(teacher.getId());
+        if (existingTeacherById != null) {
+            // 存在则更新
+            int rows = teacherMapper.updateById(teacher);
+            return rows > 0;
+        } else {
+            // 不存在则新增
+            int rows = teacherMapper.insert(teacher);
+            return rows > 0;
+        }
     }
+
 
     public teacher searchTeacherById(String id) {
         return teacherMapper.selectById(id);

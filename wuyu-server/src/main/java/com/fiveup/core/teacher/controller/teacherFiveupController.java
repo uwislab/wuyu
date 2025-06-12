@@ -37,7 +37,7 @@ import java.util.List;
 @RequestMapping("/teacher")
 public class teacherFiveupController {
     private static final Logger logger = LoggerFactory.getLogger(teacherFiveupController.class);
-    
+
     @Autowired
     private teacherFiveupService teacherService;
     @Resource
@@ -54,14 +54,14 @@ public class teacherFiveupController {
             logger.error("查询参数不能为空");
             return CommonResponse.fail(BizErrorCodeEnum.PARAMS_VALIDATION_ERRNO,"查询参数不能为空");
         }
-        
+
         // 获取学校ID
         Long schoolId = pageDto.getSchoolId();
         if (schoolId == null || schoolId <= 0) {
             logger.error("学校ID不能为空或无效: {}", schoolId);
             return CommonResponse.fail(BizErrorCodeEnum.PARAMS_VALIDATION_ERRNO,"学校ID不能为空或无效");
         }
-        
+
         // 调用服务层获取数据
         TeacherList teacherList = teacherService.getTeacherByPage(pageDto, schoolId);
         return CommonResponse.ok(teacherList);
@@ -71,6 +71,7 @@ public class teacherFiveupController {
         return teacherService.searchTeacherById(id);
     }
     @PostMapping
+    //用户新增
     public  boolean save(@RequestBody teacher teacher){
         //新增或者更新
         return teacherService.saveUser(teacher);
