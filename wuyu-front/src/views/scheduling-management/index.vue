@@ -742,7 +742,7 @@ const getSemesterStart = ()=> {
 
 // 处理自动复制开关变化
 const handleAutoCopySwitch = (val) => {
-  console.log('开关状态变化：', val)
+  // console.log('开关状态变化：', val)
   if (val) {
     // 手动打开开关时，打开弹窗
     semesterStartDialogVisible.value = true
@@ -752,8 +752,9 @@ const handleAutoCopySwitch = (val) => {
 // 到时自动复制
 const handleAutoCopyClass = (val) => {
   const SemesterStart = getSemesterStart()
-  const now = new Date();
-  console.log("SemesterStart",SemesterStart)
+  const now = new Date().toISOString().slice(0,10);
+  // SemesterStart {"startDate":"2025-06-03","academicYear":"2024-2025","semester":"2","timestamp":1749729506476}
+  // console.log("SemesterStart",SemesterStart,now)
   if (now >= SemesterStart) {
     copyLastSemesterSchedule();
   }
