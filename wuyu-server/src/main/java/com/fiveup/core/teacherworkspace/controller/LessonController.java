@@ -11,6 +11,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,9 +25,15 @@ public class LessonController {
     private final ScheduleConfig scheduleConfig;
     private final LessonService lessonService;
 
+    @GetMapping("/academic-year")
+    @ApiOperation("列出所有学年")
+    public CommonResult<List<String>> page() {
+        return CommonResult.success(lessonService.listAcademicYears());
+    }
+
     @GetMapping("/page")
     @ApiOperation("分页查询排课")
-    public CommonResult<PageVo<Lesson>> page(PageLessonDto dto) {
+    public CommonResult<PageVo<Lesson>> page(@Validated PageLessonDto dto) {
         return CommonResult.success(lessonService.pageLesson(dto));
     }
 

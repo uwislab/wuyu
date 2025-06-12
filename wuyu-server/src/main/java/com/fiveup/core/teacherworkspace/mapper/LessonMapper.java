@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.fiveup.core.teacherworkspace.model.Lesson;
 import com.fiveup.core.teacherworkspace.model.dto.PageLessonDto;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
@@ -67,4 +68,7 @@ public interface LessonMapper extends BaseMapper<Lesson> {
         batchInsert(newLessons);
         return true;
     }
+
+    @Select("select distinct academic_year from fiveup.basic_lesson")
+    List<String> listAcademicYears();
 }
