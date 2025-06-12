@@ -12,10 +12,13 @@ spring:
     password: root # Redis服务器连接密码（默认为空）
     timeout: 300ms # 连接超时时间（毫秒）
   datasource:
-    url: jdbc:mysql://49.51.69.99:6603/fiveup?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
-    username: Wuyu_Developer
-    password: D3G@qrukHR5S
-    driver: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/fiveup?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: "0000"
+#    url: jdbc:mysql://49.51.69.99:6603/fiveup?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
+#    username: Wuyu_Developer
+#    password: D3G@qrukHR5S
+#    driver: com.mysql.jdbc.Driver
     # 连接池配置
     hikari:
       maximum-pool-size: 50

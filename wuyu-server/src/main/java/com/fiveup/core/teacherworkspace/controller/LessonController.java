@@ -38,13 +38,21 @@ public class LessonController {
     @ApiOperation("添加排课信息")
     public CommonResult<Integer> addItems(@RequestBody Lesson lesson) {
         int addRow = lessonService.addLesson(lesson);
-        return CommonResult.success(addRow);
+        if (addRow > 0) {
+            return CommonResult.success(addRow);
+        } else {
+            return CommonResult.failed("添加信息失败");
+        }
     }
 
     @PutMapping("/{id}")
     @ApiOperation("修改排课信息")
     public CommonResult<Integer> updateLesson(@RequestBody Lesson lesson) {
         int updateRow = lessonService.updateLesson(lesson);
-        return CommonResult.success(updateRow);
+        if (updateRow > 0) {
+            return CommonResult.success(updateRow);
+        } else {
+            return CommonResult.failed("修改信息失败");
+        }
     }
 }
