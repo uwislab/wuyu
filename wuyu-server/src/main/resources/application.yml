@@ -7,14 +7,8 @@ spring:
     name: fiveup-core
   jackson:
     default-property-inclusion: non_null # springboot默认解析对象为json对象时属性值为null时不予显示此属性
-  redis:
-    host: 172.21.143.74 # Redis服务器地址
-    database: 0 # Redis数据库索引（默认为0）
-    port: 6379 # Redis服务器连接端口
-    password: root # Redis服务器连接密码（默认为空）
-    timeout: 300ms # 连接超时时间（毫秒）
   datasource:
-    url: jdbc:mysql://49.51.69.99:6603/fiveup?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://49.51.69.99:3306/fiveup?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
     username: Wuyu_Developer
     password: D3G@qrukHR5S
     driver: com.mysql.jdbc.Driver
@@ -42,6 +36,7 @@ mybatis-plus:
     map-underscore-to-camel-case: true # 开启驼峰原则，将数据库带下划线的字段自动转为驼峰原则的命名
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #mybatis-plus配置控制台打印完整带参数SQL语句
 
-#logging:
-#  level:
-#    root: warn
+
+schedule:
+  auto-copy:
+    enabled: true  # 定时任务默认开启
