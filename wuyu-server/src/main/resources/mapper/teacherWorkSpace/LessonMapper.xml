@@ -43,7 +43,7 @@
     <delete id="deleteByIds">
         DELETE FROM basic_lesson
         WHERE id IN
-        <foreach collection="list" item="id" open="(" separator="," close=")">
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
     </delete>
