@@ -128,13 +128,13 @@ public class teacherFiveupController {
         QueryWrapper<teacher> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("school_id", schoolId)
                    .eq("deleted", 0);  // 只查询未删除的数据
-        
+
         // 查询符合条件的数据
         List<teacher> list = teacherService.list(queryWrapper);
-        
+
         // 在内存操作，写出到浏览器
         ExcelWriter writer = ExcelUtil.getWriter(true);
-        
+
         // 自定义标题别名（使用中文表头）
         writer.addHeaderAlias("id", "教师ID");
         writer.addHeaderAlias("teacherName", "教师姓名");
@@ -203,7 +203,7 @@ public class teacherFiveupController {
     public void downloadTemplate(HttpServletResponse response) throws IOException {
         // 从classpath中读取模板文件
         ClassPathResource resource = new ClassPathResource("templates/教师信息下载模版.xlsx");
-        
+
         // 设置响应头
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
         String fileName = URLEncoder.encode("教师信息导入模板", "UTF-8");
