@@ -4,11 +4,11 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.fiveup.core.teacherworkspace.mapper.LessonMapper">
     <insert id="batchInsert">
-        INSERT INTO basic_lesson (id, grade, class_num, class_name, course, teacher_name, teacher_id)
+        INSERT INTO basic_lesson (id, grade, class_num, class_name, course, teacher_name, teacher_id,  academic_year, semester, is_current)
         VALUES
         <foreach collection="lessons" item="lesson" separator=",">
             (#{lesson.id}, #{lesson.grade}, #{lesson.classNum}, #{lesson.className}, #{lesson.course},
-            #{lesson.teacherName}, #{lesson.teacherId})
+            #{lesson.teacherName}, #{lesson.teacherId}, #{lesson.academicYear},#{lesson.semester},#{lesson.isCurrent})
         </foreach>
     </insert>
 
