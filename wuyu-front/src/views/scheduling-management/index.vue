@@ -35,14 +35,6 @@
           />
         </el-select>
 
-        <!-- 只查看当前学期开关 -->
-        <!-- <div class="filter-item current-semester-radio">
-          <el-radio-group v-model="filter.onlyCurrent" @change="handleCurrentSemesterChange">
-            <el-radio :label="true">仅当前学期</el-radio>
-            <el-radio :label="false">全部学期</el-radio>
-          </el-radio-group>
-        </div> -->
-
         <!-- 年级选择 -->
         <el-select
           v-model="filter.grade"
@@ -145,10 +137,6 @@
             <div class="tree-node">
               <div class="node-info">
                 <span class="node-label">{{ node.label }}</span>
-                <!-- <span v-if="data.type === 'course'" class="course-meta">
-                  <el-tag size="mini">{{ data.period }}课时</el-tag>
-                  <el-tag size="mini" type="success">{{ data.credit }}学分</el-tag>
-                </span> -->
               </div>
               <div v-if="data.type === 'course'" class="node-actions">
                 <el-button
@@ -202,8 +190,6 @@
           <el-table-column prop="academicYear" label="学年" width="120" align="center" />
           <el-table-column prop="semesterlabel" label="学期" width="120" align="center" />
           <el-table-column prop="className" label="班级" width="120" align="center" />
-          <!-- <el-table-column prop="grade" label="年级" width="120" align="center" />
-          <el-table-column prop="classNum" label="班级" width="150" align="center" /> -->
           <el-table-column prop="course" label="课程名称" min-width="120"  align="center"/>
           <el-table-column label="任课教师" width="150" align="left">
             <template #default="{ row }">
@@ -286,7 +272,6 @@
       :visible="dialogVisible"
       :form-data="formData"
       :academicYears="academicYearOptions"
-      @submit="handleSubmit"
       @update:visible="dialogVisible = $event"
       @refresh-data="refreshData"
     />
@@ -296,18 +281,14 @@
 
 <script setup>
 import { ref, reactive, computed, watch,onMounted } from 'vue';
-import { Message,Loading,MessageBox} from 'element-ui';
+import { Message,MessageBox} from 'element-ui';
 import {getLessonPageAPI,
         deleteLessonAPI,
         updateLessonAPI,
         copyLastSemesterSchedule,
         downloadModel,
         exportExcel,
-        copyLastSemesterAPI,
         getAcademicAPI,
-        exportLessonAPI,
-        importLessonAPI,
-        copyClass,
         autoCopyLastSemesterSchedule
       }
         from '@/api/schedulModule/index'
@@ -315,11 +296,8 @@ import lessonInfoDialog from './components/lessonInfoDialog.vue'
 import TeacherSel from './components/TeacherSel.vue'
 import SemesterStartDialog from './components/SemesterStartDialog.vue'
 import Import from './components/Import.vue'
-import pinyin from 'pinyin';
-
 
 const handleTreeCommand = ( data , e ) => {
-  console.log(data,e);
   if(e==='edit'){
     const row = {
       ...data,
@@ -343,11 +321,6 @@ const refreshData = async () => {
   await fetchAllCourses()
 }
 
-
-const handleSubmit = (form) => {
-  console.log('提交数据：', form)
-}
-
 // 年级/班级选项
 const gradeOptions = Array.from({ length: 6 }, (_, i) => ({
   value: i + 1,
@@ -364,7 +337,6 @@ const semesterOptions = [
 
 // 获取学年选项数据
 const fetchAcademicYearsA = () => {
-    console.log('进入了函数！！！！！！！！！！！')
     getAcademicAPI().then((res)=>{
       if (res.code === 200) {
         academicYearOptions.value = res.data.map(year => ({
@@ -409,7 +381,7 @@ const transformToTree = (records) => {
         label: `${item.grade}年级`,
         gradeValue: item.grade,
         children: []
-      });
+      })
     }
 
     // 班级节点
@@ -487,8 +459,6 @@ const handleSelectionChange = (e) => {
   } else {
     deleDisabled.value = true
   }
-  console.log('当前选中的ID列表：', ids.value);
-  console.log('当前变化的事件对象：', e);
 }
 // 课程信息的增删改
 const handleAddCourse = () => {
@@ -497,7 +467,6 @@ const handleAddCourse = () => {
 
 const handleDeleteLesson = (aaids) => {
   const normalizedAaids = Array.isArray(aaids) ? aaids : [aaids];
-  console.log('标准化后的原始id数组：', normalizedAaids);
 
   MessageBox.confirm(
     `确定要删除这${normalizedAaids.length}条数据吗?`,
@@ -515,7 +484,6 @@ const handleDeleteLesson = (aaids) => {
       return num;
     });
 
-    console.log('调用删除API的整数数组:', intAaids);  // 单值时为[5]，多值时为[2,1]
     const res = await deleteLessonAPI(intAaids);  // 始终传递数组
 
     if (res.code === 200) {
@@ -537,8 +505,6 @@ const handleDeleteLesson = (aaids) => {
 }
 
 const handleUpdateLesson = (row) => {
-  console.log('传进来的row值为：',row);
-
   formData.value = row
   dialogVisible.value = true
 }
@@ -546,7 +512,6 @@ const handleUpdateLesson = (row) => {
 watch(teacherSelVisible, (val) => {
   if (!val) currentCourse.value = null
 })
-
 
 // 获取表格数据（分页）
 const fetchData = async () => {
@@ -568,9 +533,7 @@ const fetchData = async () => {
     if (res.code === 200) {
       tableData.value = res.data.records.map(item => ({
         ...item,
-        // 将数字学期转换为中文描述
-        semesterlabel: item.semester === 1 ? '上学期' :
-                  item.semester === 2 ? '下学期' : '未知'
+        semesterlabel: item.semester === 1 ? '上学期' : item.semester === 2 ? '下学期' : '未知'
       }))
       pagination.total = Number(res.data.total)
     }
@@ -606,14 +569,6 @@ const fetchAllCourses = async () => {
   }
 }
 
-// 处理当前学期开关变化
-const handleCurrentSemesterChange = (value) => {
-  if (value) {
-    console.log(value);
-    filter.onlyCurrent = true // 需要实现获取当前学期的方法
-  }
-  handleFilterChange()
-}
 const handleGradeChange = () => {
   filter.classNum = null
   handleFilterChange()
@@ -640,14 +595,12 @@ const handleCurrentChange = (newPage) => {
 const importDialogVisible = ref(false)
 const handleUpload = () => {
   importDialogVisible.value = true
-  console.log("importDialogVisible:",importDialogVisible)
 };
 
 // 下载模板
 const downloadTemplate = async () => {
   try{
     const res = await downloadModel()
-    console.log(res)
     const url = window.URL.createObjectURL(new Blob([res.data],{ type:"application/vnd.ms-excel;charset=utf-8"}))
     const link = document.createElement('a')
     document.body.appendChild(link);
@@ -674,7 +627,6 @@ const downloadTemplate = async () => {
 
 //导出数据
 const handleExport = async () =>{
-  console.log(pagination.page,pagination.size)
   try{
     const res = await exportExcel({
       page: pagination.page,
@@ -781,7 +733,6 @@ const handleTeacherSelect = async (teacher) => {
       Message.error('设置教师失败');
     }
   } catch (error) {
-    console.error('更新教师信息失败:', error);
     Message.error('设置教师失败，请稍后重试');
   } finally {
     teacherSelVisible.value = false;
@@ -812,7 +763,6 @@ const handleAutoCopy = async () => {
       }
     }
 
-    console.log(currentYear, currentSemester)
     const res = await copyLastSemesterSchedule({
       academicYear: currentYear,
       semester: currentSemester,
@@ -825,7 +775,6 @@ const handleAutoCopy = async () => {
       await fetchAllCourses()
     }
   } catch (error) {
-    console.error('复制上学期排课失败:', error)
     Message.error('复制上学期排课失败')
   }
 }
@@ -836,20 +785,13 @@ watch(teacherSelVisible, (val) => {
   if (!val) {
     currentCourse.value = null;
   }
-});
+})
 
 // 学期初时间设置相关
-const autoCopyEnabled = ref(false);
-
-// 获取学期初时间
-const getSemesterStart = ()=> {
-  const savedSemesterStart = localStorage.getItem('semesterStartTime')
-  return savedSemesterStart
-}
+const autoCopyEnabled = ref(false)
 
 // 处理自动复制开关变化
 const handleAutoCopySwitch = (val) => {
-  // console.log('开关状态变化：', val)
   if (val) {
     // 手动打开开关时，打开弹窗
     semesterStartDialogVisible.value = true
@@ -864,7 +806,6 @@ const handleAutoCopyClass = (val) => {
 }
 // 处理学期初时间确认
 const handleSemesterStartConfirm = (formData) => {
-  console.log('学期初时间：', formData)
   semesterStartDialogVisible.value = false
   if(formData.isOverwrite){
     fetchData()
@@ -886,7 +827,6 @@ const handleSemesterStartConfirm = (formData) => {
 // 处理学期初时间取消
 const handleSemesterStartCancel = (formData) => {
   semesterStartDialogVisible.value = false
-  console.log("formData.isOverwrite",formData,formData.isOverwrite)
   if(!formData.isOverwrite){
     // 取消后关闭开关
     autoCopyEnabled.value = false
