@@ -16,6 +16,11 @@
       size="small"
       @row-click="handleTeacherSelect">
       <el-table-column prop="teacherName" label="教师姓名" width="120" />
+      <el-table-column label="性别" width="120">
+        <template slot-scope="{ row }">
+          {{ row.gender === 1 ? '男' : '女' }}
+        </template>
+      </el-table-column>
       <el-table-column prop="position" label="职位" width="120" />
       <el-table-column prop="title" label="职称" width="100" />
       <el-table-column prop="phoneNum" label="联系电话" width="160" />
@@ -37,6 +42,7 @@
 
 <script>
 import { getTeacherListByPage } from '@/api/schedulModule/index'
+import { teacherSearch } from '@/api/schedulModule/index'
 import pinyin from 'pinyin'
 
 export default {
@@ -52,7 +58,6 @@ export default {
       dialogVisible: false,
       searchQuery: '',
       teachers: [],
-      teacherPinyin: [], // 存储教师拼音数据
       pagination: {
         current: 1,
         size: 10
@@ -62,21 +67,14 @@ export default {
   },
   computed: {
     filteredTeachers() {
-      if (!this.searchQuery) {
-        return this.teachers
-      }
-      const query = this.searchQuery.toLowerCase()
-      return this.teachers.filter(teacher => {
-        const teacherPinyin = this.teacherPinyin.find(p => p.id === teacher.id)
-        return teacher.teacherName.toLowerCase().includes(query) ||
-               (teacherPinyin && teacherPinyin.pinyin.toLowerCase().includes(query))
-      })
+      return this.teachers
     }
   },
   watch: {
     visible(val) {
       this.dialogVisible = val
       if (val) {
+        this.searchQuery = ''
         this.fetchTeachers()
       }
     },
@@ -84,28 +82,27 @@ export default {
       if (!val) {
         this.$emit('update:visible', false)
       }
+    },
+    searchQuery: {
+      handler(val) {
+        this.pagination.current = 1
+        this.fetchTeachers()
+      },
+      debounce: 300
     }
   },
   methods: {
-    // 获取教师列表（使用教师管理中的接口getTeacherListByPage）
     async fetchTeachers() {
       try {
-        const res = await getTeacherListByPage({
-          pageNum: this.pagination.current,
-          pageSize: this.pagination.size
+        const res = await teacherSearch({
+          page: this.pagination.current,
+          size: this.pagination.size,
+          teacherName: this.searchQuery || ''
         })
         if (res.code === 200) {
-          this.teachers = res.data.list
-          this.totalTeachers = res.data.total
-          // 生成拼音数据
-          this.teacherPinyin = this.teachers.map(teacher => ({
-            id: teacher.id,
-            name: teacher.teacherName,
-            pinyin: pinyin(teacher.teacherName, {
-              style: pinyin.STYLE_NORMAL,
-              heteronym: false
-            }).join('')
-          }))
+          console.log(res.data.records)
+          this.teachers = res.data.records
+          this.totalTeachers = parseInt(res.data.total)
         }
       } catch (error) {
         console.error('获取教师列表失败:', error)

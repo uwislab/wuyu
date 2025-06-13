@@ -121,7 +121,7 @@
                 @change="handleAutoCopySwitch"
               />
               <el-popconfirm
-                title="确认复制上学期排课？"
+                :title="`是否确认复制上学期的排课`"
                 confirm-button-text="确认"
                 cancel-button-text="取消"
                 @confirm="handleAutoCopy"
@@ -183,7 +183,9 @@
                 <el-button type="primary" icon="el-icon-upload" size="small" @click="handleUpload">导入课表</el-button>
               </div>
               <Import :import-dialog-visible="importDialogVisible"
-              @update:importDialogVisible="importDialogVisible = $event"></Import>
+              @update:importDialogVisible="importDialogVisible = $event"
+              :fetchData="fetchData"
+              :fetchAllCourses="fetchAllCourses"></Import>
 
           </div>
         </template>
@@ -267,8 +269,19 @@
       :visible="semesterStartDialogVisible"
       @update:visible="semesterStartDialogVisible = $event"
       @confirm="handleSemesterStartConfirm"
+      @cancel="handleSemesterStartCancel"
     />
 
+    <!-- 导入结果提示 -->
+    <el-alert
+      v-if="importResult"
+      :title="importResult.message"
+      :type="importResult.type"
+      :closable="false"
+      show-icon
+      class="import-result" />
+
+    <!-- 课程新增弹窗 -->
     <lesson-info-dialog
       :visible="dialogVisible"
       :form-data="formData"
@@ -291,7 +304,12 @@ import {getLessonPageAPI,
         downloadModel,
         exportExcel,
         copyLastSemesterAPI,
-        getAcademicAPI}
+        getAcademicAPI,
+        exportLessonAPI,
+        importLessonAPI,
+        copyClass,
+        autoCopyLastSemesterSchedule
+      }
         from '@/api/schedulModule/index'
 import lessonInfoDialog from './components/lessonInfoDialog.vue'
 import TeacherSel from './components/TeacherSel.vue'
@@ -582,7 +600,6 @@ watch(teacherSelVisible, (val) => {
 // 获取表格数据（分页）
 const fetchData = async () => {
   try {
-    dialogVisible.value = false //点击分页会触发导入组件的显示（阻止触发）
     tableLoading.value = true
     const params = {
       page: pagination.page,
@@ -680,7 +697,7 @@ const downloadTemplate = async () => {
   try{
     const res = await downloadModel()
     console.log(res)
-    const url = window.URL.createObjectURL(new Blob([res.data],{ type: "application/vnd.ms-excel" }))
+    const url = window.URL.createObjectURL(new Blob([res.data],{ type:"application/vnd.ms-excel;charset=utf-8"}))
     const link = document.createElement('a')
     document.body.appendChild(link);
     link.href = url
@@ -783,10 +800,6 @@ const handleTeacherSelect = async (teacher) => {
 
   const { grade, classNum, course, id ,label } = currentCourse.value;
   try {
-    // 更新数据库表
-  // ==> Preparing: UPDATE basic_lesson SET grade = ?, class_num = ?, class_name = ?, course = ?, teacher_name = ?, teacher_id = ? WHERE id = ?
-  // ==> Parameters: 1(Integer), 3(Integer), null, 美育(String), 李七(String), 2018083083(Long), 3(Long)
-  // <==    Updates: 1
     const className = currentCourse.value.grade + '年级' + currentCourse.value.classNum + '班'
     const res = await updateLessonAPI({
       grade,
@@ -811,6 +824,49 @@ const handleTeacherSelect = async (teacher) => {
   }
 };
 
+// 复制上学期排课
+const handleAutoCopy = async () => {
+  try {
+    // 从 localStorage 获取当前学期和学年
+    let currentSemester = localStorage.getItem('currentSemester')
+    let currentYear = localStorage.getItem('currentYear')
+
+    // 如果没有学期和学年信息，设置默认值
+    if (!currentSemester || !currentYear) {
+      const currentDate = new Date()
+      const currentMonth = currentDate.getMonth() + 1 // 获取当前月份（0-11，需要+1）
+      const year = currentDate.getFullYear()
+
+      if (currentMonth >= 2 && currentMonth <= 8) {
+        // 2-8月，使用当前年
+        currentYear = `${year - 1}-${year}`
+        currentSemester = '2' // 第二学期
+      } else {
+        // 9-1月，使用当前年
+        currentYear = `${year}-${year + 1}`
+        currentSemester = '1' // 第一学期
+      }
+    }
+
+    console.log(currentYear, currentSemester)
+    const res = await copyLastSemesterSchedule({
+      academicYear: currentYear,
+      semester: currentSemester,
+      isOverwrite: true
+    })
+    if (res.code === 200) {
+      Message.success(`复制上学期${currentYear}学年${currentSemester}学期的排课成功`)
+      // 重新获取数据
+      await fetchData()
+      await fetchAllCourses()
+    }
+  } catch (error) {
+    console.error('复制上学期排课失败:', error)
+    Message.error('复制上学期排课失败')
+  }
+}
+
+
 // 监听弹窗关闭，重置当前课程
 watch(teacherSelVisible, (val) => {
   if (!val) {
@@ -821,29 +877,62 @@ watch(teacherSelVisible, (val) => {
 // 学期初时间设置相关
 const autoCopyEnabled = ref(false);
 
+// 获取学期初时间
+const getSemesterStart = ()=> {
+  const savedSemesterStart = localStorage.getItem('semesterStartTime')
+  return savedSemesterStart
+}
+
 // 处理自动复制开关变化
 const handleAutoCopySwitch = (val) => {
-  console.log('开关状态变化：', val)
-  console.log('当前弹窗状态：', semesterStartDialogVisible.value)
+  // console.log('开关状态变化：', val)
   if (val) {
+    // 手动打开开关时，打开弹窗
     semesterStartDialogVisible.value = true
-    console.log('设置弹窗状态为：', semesterStartDialogVisible.value)
-  } else {
-    semesterStartDialogVisible.value = false
   }
 }
 
+// 开关自动复制
+const handleAutoCopyClass = (val) => {
+  if (val) {
+    autoCopyLastSemesterSchedule({enabled: true});
+  }
+}
 // 处理学期初时间确认
-const handleSemesterStartConfirm = (startDate) => {
-  console.log('学期初时间：', startDate)
+const handleSemesterStartConfirm = (formData) => {
+  console.log('学期初时间：', formData)
   semesterStartDialogVisible.value = false
+  if(formData.isOverwrite){
+    fetchData()
+    fetchAllCourses()
+    // 确认后保持开关打开
+    autoCopyEnabled.value = true
+    // 保存学期初时间到localStorage
+    localStorage.setItem('semesterStartTime', JSON.stringify({
+      startDate: formData.startDate,
+      academicYear: formData.academicYear,
+      semester: formData.semester,
+      timestamp: new Date().getTime()
+    }))
+  }
+  handleAutoCopyClass(autoCopyEnabled.value)
   Message.success('学期初时间设置成功')
+}
+
+// 处理学期初时间取消
+const handleSemesterStartCancel = (formData) => {
+  semesterStartDialogVisible.value = false
+  console.log("formData.isOverwrite",formData,formData.isOverwrite)
+  if(!formData.isOverwrite){
+    // 取消后关闭开关
+    autoCopyEnabled.value = false
+  }
 }
 
 onMounted(() => {
   fetchData()
   fetchAllCourses()
-  fetchTeachers()
+  handleAutoCopyClass()
 })
 </script>
 
