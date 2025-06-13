@@ -38,12 +38,10 @@
       <el-table :data="users.data" border stripe>
         <el-table-column label="学号" prop="studentNum" />
         <el-table-column label="学生姓名" prop="studentName" />
-        <el-table-column label="性别" prop="gender" />
+        <el-table-column label="性别" :formatter="formatGender" />
         <el-table-column label="班级" prop="classId" />
         <el-table-column label="年级" prop="gradeId"/>
         <el-table-column label="家长电话" prop="parentPhoneNum"/>
-        <el-table-column label="批阅" prop="isreview"/>
-        <el-table-column label="是否录入" prop="isenter" />
         <el-table-column label="操作">
           <template #default="{ row }">
             <el-button size="small" @click="editUser(row)">编辑</el-button>
@@ -306,6 +304,9 @@ export default {
       });
     },
 
+    formatGender(row, column) {
+      return row.gender === 1 ? "男" : "女";
+    },
     // 分页处理
    handleSizeChange (size){
      this.users.sizeOfPage = size;
