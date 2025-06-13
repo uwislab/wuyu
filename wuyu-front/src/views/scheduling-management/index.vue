@@ -542,56 +542,6 @@ const handleUpdateLesson = (row) => {
   dialogVisible.value = true
 }
 
-// 自动复制排课
-const handleAutoCopy = async () => {
-  try {
-    const loading = Loading.service({
-      lock: true,
-      text: '正在复制上学期排课...',
-      spinner: 'el-icon-loading',
-      background: 'rgba(0, 0, 0, 0.7)'
-    })
-
-    // const res = await copyLastSemesterSchedule()
-    //
-    // 将获取到的年级、班级、教师、课程，转换成树状结构
-    // 数据结构
-    // {
-    //    code: 200,
-    //    data: {
-    //      records: [  // 课程列表
-    //        {
-    //          id: 课程ID,
-    //          grade: 年级,
-    //          classNum: 班级号,
-    //          className: 班级名称,
-    //          course: 课程名称,
-    //          teacherName: 教师姓名,
-    //          teacherId: 教师ID
-    //        },
-    //        // ...更多课程
-    //      ],
-    //      total: 总记录数
-    //    }
-    //  }
-    Message.success('复制上学期排课成功')
-      // 重新获取数据
-      await fetchData()
-      await fetchAllCourses()
-      loading.close()
-    if (res.code === 200) {
-      Message.success('复制上学期排课成功')
-      // 重新获取数据
-      await fetchData()
-      await fetchAllCourses()
-    } else {
-      console.log('复制失败：',res.message)
-    }
-  } catch (error) {
-    console.log('复制失败：',res.message)
-  }
-}
-
 watch(teacherSelVisible, (val) => {
   if (!val) currentCourse.value = null
 })
@@ -704,8 +654,13 @@ const downloadTemplate = async () => {
     link.setAttribute('download','排课模板.xls')
     link.click()
     // 清除
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+    Message.success({
+      message: '导出成功！',
+      duration: 3000,
+      showClose: true
+    })
 
 }catch (error) {
   Message.error({
@@ -726,6 +681,7 @@ const handleExport = async () =>{
     })
     const url = window.URL.createObjectURL(new Blob([res.data],{type:"application/vnd.ms-excel;charset=utf-8"}))
     const link = document.createElement('a')
+    document.body.appendChild(link);
     link.style.display = 'none'
     link.href = url
     link.setAttribute('download','排课信息.xls')
@@ -733,6 +689,11 @@ const handleExport = async () =>{
     // 清除
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
+    Message.success({
+      message: '导出成功！',
+      duration: 3000,
+      showClose: true
+    });
   } catch (error){
     Message.error({
       message: '导出失败，请重试'+ (error.message || '未知错误'),
