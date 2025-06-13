@@ -139,7 +139,9 @@
                 <el-button type="primary" icon="el-icon-upload" size="small" @click="handleUpload">导入课表</el-button>
               </div>
               <Import :import-dialog-visible="importDialogVisible"
-              @update:importDialogVisible="importDialogVisible = $event"></Import>
+              @update:importDialogVisible="importDialogVisible = $event"
+              :fetchData="fetchData"
+              :fetchAllCourses="fetchAllCourses"></Import>
 
           </div>
         </template>
@@ -242,7 +244,7 @@
       @refresh-data="refreshData"
     />
   </div>
-  
+
 
 </template>
 
@@ -478,7 +480,6 @@ const handleUpdateLesson = (row) => {
 // 获取表格数据（分页）
 const fetchData = async () => {
   try {
-    dialogVisible.value = false //点击分页会触发导入组件的显示（阻止触发）
     tableLoading.value = true
     const params = {
       page: pagination.page,
@@ -555,7 +556,7 @@ const downloadTemplate = async () => {
   try{
     const res = await downloadModel()
     console.log(res)
-    const url = window.URL.createObjectURL(new Blob([res.data],{ type: "application/vnd.ms-excel" }))
+    const url = window.URL.createObjectURL(new Blob([res.data],{ type:"application/vnd.ms-excel;charset=utf-8"}))
     const link = document.createElement('a')
     document.body.appendChild(link);
     link.href = url
@@ -687,7 +688,7 @@ const handleAutoCopy = async () => {
     // 从 localStorage 获取当前学期和学年
     let currentSemester = localStorage.getItem('currentSemester')
     let currentYear = localStorage.getItem('currentYear')
-    
+
     // 如果没有学期和学年信息，设置默认值
     if (!currentSemester || !currentYear) {
       const currentDate = new Date()
