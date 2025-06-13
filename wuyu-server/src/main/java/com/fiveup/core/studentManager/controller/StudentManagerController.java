@@ -1,8 +1,8 @@
 package com.fiveup.core.studentManager.controller;
 
-import com.fiveup.core.commentgeneration.utils.Result;
 import com.fiveup.core.studentManager.entity.StudentManager;
 import com.fiveup.core.studentManager.pojo.PageBean;
+import com.fiveup.core.studentManager.pojo.Result;
 import com.fiveup.core.studentManager.pojo.StudentManagerQuery;
 import com.fiveup.core.studentManager.service.StudentManagerService;
 import org.springframework.beans.factory.annotation.Autowired;
