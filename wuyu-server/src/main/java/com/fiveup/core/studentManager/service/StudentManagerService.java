@@ -4,15 +4,16 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.fiveup.core.studentManager.entity.StudentManager;
 import com.fiveup.core.studentManager.pojo.PageBean;
 import com.fiveup.core.studentManager.pojo.StudentManagerQuery;
+import com.fiveup.core.studentManager.pojo.StudentVO;
+
 
 public interface StudentManagerService extends IService<StudentManager> {
     void addStudent(StudentManager studentManager);
 
-    PageBean<StudentManager> getStudentPage(StudentManagerQuery studentManagerQuery);
+    //分页查询学生
+    PageBean<StudentVO> getStudentPage(StudentManagerQuery studentManagerQuery);
 
     void updateStudent(StudentManager studentManager);
 
     void removeStudent(Integer studentId);
-
-    void export();
 }

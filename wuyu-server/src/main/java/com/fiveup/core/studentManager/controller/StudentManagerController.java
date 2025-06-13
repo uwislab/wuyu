@@ -1,15 +1,16 @@
 package com.fiveup.core.studentManager.controller;
 
-import com.fiveup.core.common.result.Result;
+import com.fiveup.core.studentManager.pojo.Result;
 import com.fiveup.core.studentManager.entity.StudentManager;
 import com.fiveup.core.studentManager.pojo.PageBean;
 import com.fiveup.core.studentManager.pojo.StudentManagerQuery;
+import com.fiveup.core.studentManager.pojo.StudentVO;
 import com.fiveup.core.studentManager.service.StudentManagerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("StudentManager")
+@RequestMapping("/StudentManager")
 public class StudentManagerController {
     @Autowired
     private StudentManagerService studentManagerService;
@@ -19,10 +20,10 @@ public class StudentManagerController {
      * @param studentManager
      * @return
      */
-    @PostMapping("addStudent")
+    @PostMapping("/addStudent")
     public Result addStudent(@RequestBody StudentManager studentManager){
         studentManagerService.addStudent(studentManager);
-        return Result.ok(null);
+        return Result.SUCCESS;
     }
 
     /**
@@ -30,12 +31,11 @@ public class StudentManagerController {
      * @param studentManagerQuery
      * @return
      */
-    @PostMapping("getStudent")
-    public Result<PageBean<StudentManager>> getStudent(@RequestBody StudentManagerQuery studentManagerQuery){
-//        return new Result<>(studentManagerService.getStudent(studentManagerQuery));
-        PageBean<StudentManager> pageBean = studentManagerService.getStudentPage(studentManagerQuery);
+    @PostMapping("/getStudent")
+    public Result<PageBean<StudentVO>> getStudent(@RequestBody StudentManagerQuery studentManagerQuery){
+        PageBean<StudentVO> pageBean = studentManagerService.getStudentPage(studentManagerQuery);
 
-        return Result.success(pageBean);
+        return new Result(pageBean);
     }
 
     /**
@@ -43,19 +43,19 @@ public class StudentManagerController {
      * @param studentManager
      * @return
      */
-    @PostMapping("updateStudent")
+    @PostMapping("/updateStudent")
     public Result updateStudent(@RequestBody StudentManager studentManager){
         studentManagerService.updateStudent(studentManager);
-        return Result.ok(null);
+        return Result.SUCCESS;
     }
 
     /**
      * 删除学生（逻辑删除）
      * @return
      */
-    @GetMapping("removeStudent")
+    @GetMapping("/removeStudent")
     public Result removeStudent(@RequestParam("id") Integer studentId){
         studentManagerService.removeStudent(studentId);
-        return Result.ok(null);
+        return Result.SUCCESS;
     }
 }
