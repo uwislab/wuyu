@@ -26,7 +26,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class LessonLessonExcelServiceImpl implements LessonExcelService {
+public class LessonExcelServiceImpl implements LessonExcelService {
     private final TeacherMapper teacherMapper;
     private final LessonService lessonService;
     private final Cache<String, String> cache;
@@ -103,7 +103,6 @@ public class LessonLessonExcelServiceImpl implements LessonExcelService {
             // 查询是否已存在教师
             Lesson lesson = lessonService.getOne(
                     new LambdaQueryWrapper<Lesson>()
-                            .eq(Lesson::getTeacherId, lessonExcelBo.getTeacherId())
                             .eq(Lesson::getGrade, lessonExcelBo.getGrade())
                             .eq(Lesson::getClassNum, lessonExcelBo.getClassNum())
                             .eq(Lesson::getCourse, lessonExcelBo.getCourse())

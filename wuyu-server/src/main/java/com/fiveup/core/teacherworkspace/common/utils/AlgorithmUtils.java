@@ -2,6 +2,7 @@ package com.fiveup.core.teacherworkspace.common.utils;
 
 import cn.hutool.extra.pinyin.PinyinUtil;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -93,8 +94,45 @@ public class AlgorithmUtils {
         }
         return sequence;
     }
+
     public static boolean containsChinese(String str) {
         // 正则表达式：匹配基本汉字范围
         return str.matches(".*[\\u4e00-\\u9fff]+.*");
+    }
+
+    /**
+     * 根据日期计算学年，例如：
+     * - 9月 ~ 12月 => 2024~2025
+     * - 1月 ~ 2月 => 2024~2025（仍属上一学年）
+     * - 3月 ~ 8月 => 2023~2024
+     */
+    public static String calculateAcademicYear(LocalDate date) {
+        int year = date.getYear();
+        int monthValue = date.getMonthValue();
+
+        if (monthValue >= 9 || monthValue <= 2) {
+            // 9月到次年2月属于下一年的上半年
+            return year + "-" + (year + 1);
+        } else {
+            // 3月到8月属于本学年
+            return (year - 1) + "-" + year;
+        }
+    }
+
+    /**
+     * 根据日期计算当前学期：
+     * - 9月 ~ 12月 => 第一学期（1）
+     * - 3月 ~ 6月 => 第二学期（2）
+     * - 其他月份（如 1-2, 7-8）返回 0 表示非教学学期
+     */
+    public static int calculateSemester(LocalDate date) {
+        int monthValue = date.getMonthValue();
+        if (monthValue >= 9 || monthValue <= 2) {
+            return 1; // 秋季学期
+        } else if (monthValue <= 6) {
+            return 2; // 春季学期
+        } else {
+            return 0; // 非教学学期（暑假/寒假）
+        }
     }
 }
