@@ -1,5 +1,6 @@
 package com.fiveup.core.studentManager.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fiveup.core.studentManager.entity.StudentManager;
 import com.fiveup.core.studentManager.mapper.StudentManagerMapper;
@@ -38,6 +39,7 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
     public PageBean<StudentVO> getStudentPage(StudentManagerQuery studentManagerQuery) {
         System.out.println("前端传来页码"+studentManagerQuery.getPage());
         System.out.println("前端传来每页显示的条数"+studentManagerQuery.getSizeOfPage());
+
         int sizeOfPage = studentManagerQuery.getSizeOfPage() == null ? 10 : studentManagerQuery.getSizeOfPage();
         if (studentManagerQuery.getPage() == null) {
             studentManagerQuery.setPage(1);

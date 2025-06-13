@@ -8,12 +8,12 @@ import lombok.Data;
  * 用法:return new result(0, "成功").toString();
  */
 @Data
-public class Result {
+public class Result<T> {
 
     private int code;         //状态码
     private String msg;       //消息
     private int  count;       //记录条数
-    private Object data;      //数据对象
+    private T data;      //数据对象
 
     /**
      * 无参构造器
@@ -39,7 +39,7 @@ public class Result {
      @param msg
      @param data
      */
-    public Result(int code, String msg, Object data){
+    public Result(int code, String msg, T data){
         super();
         this.code=code;
         this.msg=msg;
@@ -53,7 +53,7 @@ public class Result {
      * @param count
      * @param data
      */
-    public Result(int code, String msg, int count, Object data){
+    public Result(int code, String msg, int count, T data){
         super();
         this.code=code;
         this.msg=msg;
@@ -61,9 +61,16 @@ public class Result {
         this.data=data;
     }
 
+    public Result(T data){
+        this(200, "success", data);
+    }
+
 
     @Override
     public String toString() {
         return JSON.toJSONString(this);
     }
+
+    public static final Result<Void> SUCCESS = new Result<Void>(200, "success");
+    public static final Result<Void> FAIL = new Result<Void>(500, "fail");
 }

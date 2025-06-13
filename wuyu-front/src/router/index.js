@@ -151,6 +151,21 @@ export const asyncRoutes = [
       },
     ],
   },
+  //学生管理
+  {
+    path: "/student",
+    component: Layout,
+    redirect: "/student",
+    meta: { title: "学生管理", icon: "dashboard" },
+    children: [
+      {
+        path: "student",
+        name: "student",
+        component: () => import("@/views/student_management/student_manage.vue"),
+        meta: { title: "学生管理", icon: "dashboard", role: [0] },
+      },
+    ],
+  },
   {
     path: "/teacher_workspace",
     name: "事项",
