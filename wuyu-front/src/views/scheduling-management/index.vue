@@ -183,7 +183,9 @@
                 <el-button type="primary" icon="el-icon-upload" size="small" @click="handleUpload">导入课表</el-button>
               </div>
               <Import :import-dialog-visible="importDialogVisible"
-              @update:importDialogVisible="importDialogVisible = $event"></Import>
+              @update:importDialogVisible="importDialogVisible = $event"
+              :fetchData="fetchData"
+              :fetchAllCourses="fetchAllCourses"></Import>
 
           </div>
         </template>
