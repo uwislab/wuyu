@@ -220,6 +220,7 @@
       :visible="semesterStartDialogVisible"
       @update:visible="semesterStartDialogVisible = $event"
       @confirm="handleSemesterStartConfirm"
+      @cancel="handleSemesterStartCancel"
     />
 
     <!-- 导入结果提示 -->
@@ -231,6 +232,7 @@
       show-icon
       class="import-result" />
 
+    <!-- 课程新增弹窗 -->
     <lesson-info-dialog
       :visible="dialogVisible"
       :form-data="formData"
@@ -240,6 +242,7 @@
       @refresh-data="refreshData"
     />
   </div>
+  
 
 </template>
 
@@ -255,7 +258,9 @@ import {getLessonPageAPI,
         exportExcel,
         copyLastSemesterAPI,
         exportLessonAPI,
-        importLessonAPI}
+        importLessonAPI,
+        copyClass
+      }
         from '@/api/schedulModule/index'
 import lessonInfoDialog from './components/lessonInfoDialog.vue'
 import TeacherSel from './components/TeacherSel.vue'
@@ -470,61 +475,6 @@ const handleUpdateLesson = (row) => {
   console.log('更新课程:', row)
 }
 
-// 自动复制排课
-const handleAutoCopy = async () => {
-  try {
-    const loading = Loading.service({
-      lock: true,
-      text: '正在复制上学期排课...',
-      spinner: 'el-icon-loading',
-      background: 'rgba(0, 0, 0, 0.7)'
-    })
-
-    // const res = await copyLastSemesterSchedule()
-    // 
-    // 将获取到的年级、班级、教师、课程，转换成树状结构
-    // 数据结构
-    // {
-    //    code: 200,
-    //    data: {
-    //      records: [  // 课程列表
-    //        {
-    //          id: 课程ID,
-    //          grade: 年级,
-    //          classNum: 班级号,
-    //          className: 班级名称,
-    //          course: 课程名称,
-    //          teacherName: 教师姓名,
-    //          teacherId: 教师ID
-    //        },
-    //        // ...更多课程
-    //      ],
-    //      total: 总记录数
-    //    }
-    //  }
-    Message.success('复制上学期排课成功')
-      // 重新获取数据
-      await fetchData()
-      await fetchAllCourses()
-      loading.close()
-    if (res.code === 200) {
-      Message.success('复制上学期排课成功')
-      // 重新获取数据
-      await fetchData()
-      await fetchAllCourses()
-    } else {
-      console.log('复制失败：',res.message)
-    }
-  } catch (error) {
-    console.log('复制失败：',res.message)
-  }
-}
-
-watch(teacherSelVisible, (val) => {
-  if (!val) currentCourse.value = null
-})
-
-
 // 获取表格数据（分页）
 const fetchData = async () => {
   try {
@@ -708,10 +658,6 @@ const handleTeacherSelect = async (teacher) => {
 
   const { grade, classNum, course, id } = currentCourse.value;
   try {
-    // 更新数据库表
-  // ==> Preparing: UPDATE basic_lesson SET grade = ?, class_num = ?, class_name = ?, course = ?, teacher_name = ?, teacher_id = ? WHERE id = ?
-  // ==> Parameters: 1(Integer), 3(Integer), null, 美育(String), 李七(String), 2018083083(Long), 3(Long)
-  // <==    Updates: 1
     const className = currentCourse.value.grade + '年级' + currentCourse.value.classNum + '班'
     const res = await updateLessonAPI({
       grade,
@@ -735,6 +681,48 @@ const handleTeacherSelect = async (teacher) => {
     teacherSelVisible.value = false;
   }
 };
+// 复制上学期排课
+const handleAutoCopy = async () => {
+  try {
+    // 从 localStorage 获取当前学期和学年
+    let currentSemester = localStorage.getItem('currentSemester')
+    let currentYear = localStorage.getItem('currentYear')
+    
+    // 如果没有学期和学年信息，设置默认值
+    if (!currentSemester || !currentYear) {
+      const currentDate = new Date()
+      const currentMonth = currentDate.getMonth() + 1 // 获取当前月份（0-11，需要+1）
+      const year = currentDate.getFullYear()
+
+      if (currentMonth >= 2 && currentMonth <= 8) {
+        // 2-8月，使用当前年
+        currentYear = `${year - 1}-${year}`
+        currentSemester = '2' // 第二学期
+      } else {
+        // 9-1月，使用当前年
+        currentYear = `${year}-${year + 1}`
+        currentSemester = '1' // 第一学期
+      }
+    }
+
+    console.log(currentYear, currentSemester)
+    const res = await copyLastSemesterSchedule({
+      academicYear: currentYear,
+      semester: currentSemester,
+      isOverwrite: true
+    })
+    if (res.code === 200) {
+      Message.success('复制上学期排课成功')
+      // 重新获取数据
+      await fetchData()
+      await fetchAllCourses()
+    }
+  } catch (error) {
+    console.error('复制上学期排课失败:', error)
+    Message.error('复制上学期排课失败')
+  }
+}
+
 
 // 监听弹窗关闭，重置当前课程
 watch(teacherSelVisible, (val) => {
@@ -746,29 +734,65 @@ watch(teacherSelVisible, (val) => {
 // 学期初时间设置相关
 const autoCopyEnabled = ref(false);
 
+// 获取学期初时间
+const getSemesterStart = ()=> {
+  const savedSemesterStart = localStorage.getItem('semesterStartTime')
+  return savedSemesterStart
+}
+
 // 处理自动复制开关变化
 const handleAutoCopySwitch = (val) => {
-  console.log('开关状态变化：', val)
-  console.log('当前弹窗状态：', semesterStartDialogVisible.value)
+  // console.log('开关状态变化：', val)
   if (val) {
+    // 手动打开开关时，打开弹窗
     semesterStartDialogVisible.value = true
-    console.log('设置弹窗状态为：', semesterStartDialogVisible.value)
-  } else {
-    semesterStartDialogVisible.value = false
+  }
+}
+
+// 到时自动复制
+const handleAutoCopyClass = (val) => {
+  const SemesterStart = getSemesterStart()
+  const now = new Date().toISOString().slice(0,10);
+  // SemesterStart {"startDate":"2025-06-03","academicYear":"2024-2025","semester":"2","timestamp":1749729506476}
+  // console.log("SemesterStart",SemesterStart,now)
+  if (now >= SemesterStart) {
+    copyLastSemesterSchedule();
   }
 }
 
 // 处理学期初时间确认
-const handleSemesterStartConfirm = (startDate) => {
-  console.log('学期初时间：', startDate)
+const handleSemesterStartConfirm = (formData) => {
+  console.log('学期初时间：', formData)
   semesterStartDialogVisible.value = false
+  if(formData.isOverwrite){
+    fetchData()
+    fetchAllCourses()
+    // 确认后保持开关打开
+    autoCopyEnabled.value = true
+    // 保存学期初时间到localStorage
+    localStorage.setItem('semesterStartTime', JSON.stringify({
+      startDate: formData.startDate,
+      academicYear: formData.academicYear,
+      semester: formData.semester,
+      timestamp: new Date().getTime()
+    }))
+  }
   Message.success('学期初时间设置成功')
+}
+
+// 处理学期初时间取消
+const handleSemesterStartCancel = (formData) => {
+  semesterStartDialogVisible.value = false
+  if(!formData.isOverwrite){
+    // 取消后关闭开关
+  autoCopyEnabled.value = false
+  }
 }
 
 onMounted(() => {
   fetchData()
   fetchAllCourses()
-  fetchTeachers()
+  handleAutoCopyClass()
 })
 </script>
 
