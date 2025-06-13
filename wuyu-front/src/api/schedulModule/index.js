@@ -80,6 +80,7 @@ export function updateLessonAPI(lesson) {
     data: lesson
   })
 }
+
 // 获取教师列表
 export function getTeacherListAPI() {
   return request({
@@ -96,12 +97,29 @@ export function getTeacherListByPage(params) {
     params
   })
 }
-
-// 复制上学期排课
-export function copyLastSemesterSchedule() {
+// 教师模糊搜索
+export function teacherSearch(params) {
   return request({
-    url: '/lesson/copyLastSemester',
+    url: '/teacher/search',
+    method: 'get',
+    params
+  })
+}
+
+// 根据学期、班级复制上学期排课
+export function copyClass() {
+  return request({
+    url: '/lesson/copy-class',
     method: 'post'
   })
 }
+// 复制上学期排课
+export function copyLastSemesterSchedule(params) {
+  return request({
+    url: '/lesson/copyLastSemester',
+    method: 'get',
+    params: params
+  })
+}
+
 
