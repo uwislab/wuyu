@@ -40,9 +40,7 @@ public class NoticeBookletServiceImpl implements NoticeBookletService {
         for (NoticeBooklet noticeBooklet : noticeBookletList) {
             try {
                 // 调用评语生成服务
-                String studentName = noticeBooklet.getStudentName();
-                Long studentIdLong = Long.valueOf(studentId);
-                String commentResult = commentGenerationService.generateCommentForStudent(studentName, studentIdLong);
+                String commentResult = commentGenerationService.generateCommentForStudent(noticeBooklet);
 
                 // 直接将生成的完整内容作为评语
                 noticeBooklet.setRemark(commentResult);

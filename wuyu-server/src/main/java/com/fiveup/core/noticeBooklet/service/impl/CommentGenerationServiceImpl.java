@@ -25,15 +25,7 @@ public class CommentGenerationServiceImpl implements CommentGenerationService {
     private ScoreMapper scoreMapper;
 
     @Override
-    public String generateCommentForStudent(String studentName, Long studentId) throws ApiException, NoApiKeyException, InputRequiredException {
-        Integer studentIdAsInt = studentId.intValue();
-        // 直接从 ScoreMapper 获取通知册信息
-        List<NoticeBooklet> noticeBooklets = scoreMapper.getNoticeBooklet(studentIdAsInt, null, null);
-        if (noticeBooklets.isEmpty()) {
-            return "未找到该学生的成绩信息。";
-        }
-        NoticeBooklet noticeBooklet = noticeBooklets.get(0);
-
+    public String generateCommentForStudent(NoticeBooklet noticeBooklet) throws ApiException, NoApiKeyException, InputRequiredException {
         // 提取五育成绩
         double[] scores = {
                 noticeBooklet.getSDeyu() == null ? 0.0 : noticeBooklet.getSDeyu(),
@@ -44,6 +36,6 @@ public class CommentGenerationServiceImpl implements CommentGenerationService {
         };
 
         // 调用生成评语的方法
-        return AIUtil.generateComment(studentName, scores);
+        return AIUtil.generateComment(noticeBooklet.getStudentName(), scores);
     }
 }
