@@ -253,7 +253,6 @@ const handleSubmit = async () => {
       if (form.value.id) {
         // 更新课程信息
         result = await updateLessonAPI(lessonData)
-        console.log(result);
 
         if(result.code === 200) {
           Message.success('课程信息更新成功')
@@ -263,7 +262,6 @@ const handleSubmit = async () => {
       } else {
         // 添加新课程
         result = await addLessonAPI(lessonData)
-        console.log(result);
 
         if(result.code === 200) {
           Message.success('新课程添加成功')
@@ -277,7 +275,6 @@ const handleSubmit = async () => {
       emit('refresh-data')
       formRef.value.resetFields() // 重置表单
     } catch (error) {
-      console.error('操作失败:', error)
       Message.error('操作失败，请重试')
     } finally {
       loading.value = false
