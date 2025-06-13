@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.teacher.mapper.JumpingMapper">
+
+    <resultMap id="teacherMap" type="com.fiveup.core.teacher.entity.teacher">
+        <id column="id" property="id"></id>
+        <result column="teacher_name" property="teacherName"></result>
+        <result column="gender" property="gender"></result>
+        <result column="phone_num" property="phoneNum"></result>
+        <result column="position" property="position"></result>
+        <result column="title" property="title"></result>
+        <result column="role" property="role"></result>
+        <result column="deleted" property="deleted"></result>
+        <result column="school_id" property="schoolId"></result>
+        <result column="username" property="username"></result>
+        <result column="password" property="password"></result>
+        <result column="political_appearance" property="politicalAppearance"></result>
+        <result column="birth_place" property="birthPlace"></result>
+        <result column="age" property="age"></result>
+        <result column="info" property="info"></result>
+    </resultMap>
+    <!--    <resultMap id="total" type="int">-->
+    <!--        <result column="total"></result>-->
+    <!--    </resultMap>-->
+    <select id="getTeacherByPage" resultMap="teacherMap">
+        select a.*, count(*) over() as total
+        from basic_teacher a
+        <where>
+            <if test="dto.id != null and dto.id != ''">
+                <bind name="id" value="'%' + dto.id + '%'"/>
+                and id like #{id}
+            </if>
+            <if test="dto.teacherName != null and dto.teacherName != ''">
+                <bind name="teacherName" value="'%' + dto.teacherName + '%'"/>
+                and teacher_name like #{teacherName}
+            </if>
+            <if test="dto.title != null and dto.title != ''">
+                and title = #{dto.title}
+            </if>
+            <if test="dto.gender != null">
+                and gender = #{dto.gender}
+            </if>
+            <if test="dto.position != null and dto.position != ''">
+                and position = #{dto.position}
+            </if>
+            and a.deleted = 0
+            and a.school_id = #{schoolId}
+        </where>
+        order by a.id asc
+    </select>
+
+    <!--    <select id="getClassInfo" resultMap="ClassInfoVoMap">-->
+    <!--        select id, class_name, grade  from basic_class order by grade,class-->
+    <!--    </select>-->
+
+    <select id="getTotalTeacherCount" resultType="java.lang.Integer">
+        select found_rows() as total;
+    </select>
+
+</mapper>

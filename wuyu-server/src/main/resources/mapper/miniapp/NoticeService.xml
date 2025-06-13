@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.miniapp.mapper.UserInfoMapper">
+    <select id="getParentList" resultType="com.fiveup.core.miniapp.model.ParentInfo">
+        select a.id,a.class_id,a.family_relationship,a.address,a.`password`,a.real_name,a.role,a.student_num,a.username,b.parent_phone_num,a.address
+        from `basic_miniapp_user` a left JOIN `basic_student` b on a.student_num=b.student_num
+        <where>
+            role = 0
+            <if test="studentNum !=-1 ">
+                and a.student_num like concat('%',#{studentNum},'%')
+            </if>
+            <if test="realName !=null ">
+                and real_name like concat('%',#{realName},'%')
+            </if>
+        </where>
+    </select>
+</mapper>
