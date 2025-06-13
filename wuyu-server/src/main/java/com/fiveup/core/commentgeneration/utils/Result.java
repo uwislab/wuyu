@@ -71,6 +71,6 @@ public class Result<T> {
         return JSON.toJSONString(this);
     }
 
-    public static final Result<Void> SUCCESS = new Result<>(200, "success");
-    public static final Result<Void> FAIL = new Result<>(500, "fail");
+    public static final Result<Void> SUCCESS = new Result<Void>(200, "success");
+    public static final Result<Void> FAIL = new Result<Void>(500, "fail");
 }

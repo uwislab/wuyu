@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.studentManager.mapper.StudentManagerMapper">
+    <select id="getStudentPage" resultType="com.fiveup.core.studentManager.pojo.StudentVO">
+        SELECT
+            bs.id,
+            bs.student_num,
+            bs.student_name,
+            bs.gender,
+            bs.grade_id,
+            bs.parent_phone_num,
+            bs.deleted,
+            bs.isreview,
+            bs.isenter,
+            bc.class_name,
+            bsc.school_name
+        FROM
+            basic_student bs
+            -- 左连接班级表，保留学生表所有数据，即使班级表无匹配
+            LEFT JOIN basic_class bc ON bs.class_id = bc.id
+            -- 左连接学校表，保留学生表所有数据，即使学校表无匹配
+            LEFT JOIN basic_school bsc ON bs.school_id = bsc.id
+        <where>
+            <if test="studentNum != null and studentNum != ''">
+                student_num like concat('%', #{studentNum}, '%')
+            </if>
+            <if test="studentName != null and studentName != ''">
+                and student_name like concat('%', #{studentName}, '%')
+            </if>
+            <if test="gender != null">
+                and gender = #{gender}
+            </if>
+            <if test="schoolId != null">
+                and bs.school_id = #{schoolId}
+            </if>
+            <if test="gradeId != null">
+                and bs.grade_id = #{gradeId}
+            </if>
+            <if test="classId != null">
+                and class_id = #{classId}
+            </if>
+        </where>
+    </select>
+</mapper>
