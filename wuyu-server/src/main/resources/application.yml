@@ -7,7 +7,7 @@ spring:
     default-property-inclusion: non_null # springboot默认解析对象为json对象时属性值为null时不予显示此属性
 
   datasource:
-    url: jdbc:mysql://49.51.69.99:6603/fiveup?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://49.51.69.99:3306/fiveup?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
     username: Wuyu_Developer
     password: D3G@qrukHR5S
     driver: com.mysql.jdbc.Driver
