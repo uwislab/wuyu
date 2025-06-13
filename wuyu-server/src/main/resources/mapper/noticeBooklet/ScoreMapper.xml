@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.noticeBooklet.mapper.ScoreMapper">
+
+    <select id="getNoticeBooklet" resultType="com.fiveup.core.noticeBooklet.domain.NoticeBooklet">
+        select
+        s.student_id,s.student_name,s.student_class_number,s.student_grade,
+        ss.s_deyu,ss.s_zhiyu,ss.s_tiyu,ss.s_meiyu,ss.s_laoyu,
+        dp.p_deyu,dp.p_zhiyu,dp.p_tiyu,dp.p_meiyu,dp.p_laoyu, dp.p_plan,
+        dc.comment
+        from fiveup.di_student s left join fiveup.di_studentscore ss on s.student_id =ss.student_id
+        left join fiveup.di_studentplan dp on dp.p_id = s.student_id
+        left join fiveup.di_studentplancomment dc on dc.p_id = dp.p_id
+        <where>
+            <if test="studentId != null">
+                s.student_id=#{studentId}
+            </if>
+            <if test="classId != null">
+                s.student_class_number= #{classId}
+            </if>
+            <if test="gradeId != null">
+                s.student_grade= #{gradeId}
+            </if>
+        </where>
+        order by student_id DESC;
+    </select>
+</mapper>
