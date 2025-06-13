@@ -44,6 +44,9 @@ public class LessonServiceImpl extends ServiceImpl<LessonMapper, Lesson> impleme
                 .like(CharSequenceUtil.isNotBlank(dto.getCourse()), Lesson::getCourse, dto.getCourse())
                 .eq(dto.getSemester() != null, Lesson::getSemester, dto.getSemester())
                 .eq(!CharSequenceUtil.isBlank(academicYear), Lesson::getAcademicYear, academicYear)
+                .orderByDesc(Lesson::getAcademicYear)
+                .orderByAsc(Lesson::getSemester)
+                .orderByAsc(Lesson::getGrade)
                 .page(Page.of(dto.getPage(), dto.getSize()));
         return PageVo.of(page);
     }
