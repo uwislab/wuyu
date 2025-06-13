@@ -21,17 +21,17 @@
       <section class="mainbox">
         <div class="item left">
           <div class="panel">
-            <h2>德育各年级变化</h2>
+            <h2>德育各年级平均分数</h2>
             <div id="id0" style="width: 350px;height: 200px"></div>
             <!--            <div class="panel-footer"></div>-->
           </div>
           <div class="panel">
-            <h2>智育各年级变化</h2>
+            <h2>智育各年级平均分数</h2>
             <div id="id1" style="width: 350px;height: 200px"></div>
             <!--            <div class="panel-footer"></div>-->
           </div>
           <div class="panel">
-            <h2>体育各年级变化</h2>
+            <h2>体育各年级平均分数</h2>
             <div id="id2" style="width: 350px;height: 200px"></div>
             <!--            <div class="panel-footer"></div>-->
           </div>
@@ -65,19 +65,9 @@
 
             <h3 style="color: white;text-align: center">班级风采</h3>
             <el-carousel :autoplay="true" indicator-position="none" :interval="4000" height="230px">
-              <el-carousel-item>
+              <el-carousel-item v-for="(item, index) in pictureList1" :key="index">
                 <div class="panel">
-                  <div class="echart" id="xybjChart1" :style="myChartStyle"></div>
-                </div>
-              </el-carousel-item>
-              <el-carousel-item>
-                <div class="panel">
-                  <div class="echart" id="xybjChart2" :style="myChartStyle"></div>
-                </div>
-              </el-carousel-item>
-              <el-carousel-item>
-                <div class="panel">
-                  <div class="echart" id="xybjChart3" :style="myChartStyle"></div>
+                  <img :src="item" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
               </el-carousel-item>
             </el-carousel>
@@ -105,7 +95,7 @@
               </el-carousel-item>
               <el-carousel-item>
                 <div class="panel">
-                  <div class="echart" id="xygrChart5" :style="myChartStyle"></div>、
+                  <div class="echart" id="xygrChart5" :style="myChartStyle"></div>
                 </div>
               </el-carousel-item>
               <el-carousel-item>
@@ -119,12 +109,12 @@
 
         <div class="item right">
           <div class="panel">
-            <h2>美育各年级变化</h2>
+            <h2>美育各年级平均分数</h2>
             <div id="id3" style="width: 350px;height: 200px"></div>
             <!--            <div class="panel-footer"></div>-->
           </div>
           <div class="panel">
-            <h2>劳育各年级变化</h2>
+            <h2>劳育各年级平均分数</h2>
             <div id="id4" style="width: 350px;height: 200px"></div>
             <!--            <div class="panel-footer"></div>-->
           </div>
@@ -148,6 +138,7 @@ import countTo from 'vue-count-to'
 import api from '@/api/demonstrate/api'
 import echarts from 'echarts'
 import screenfull from 'screenfull'
+import { getPanelData } from '@/api/managementModule/dataBase'
 export default {
   name: 'Brand',
   components: {
@@ -156,9 +147,9 @@ export default {
   data() {
     return {
       pictureList1: [
-        "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimg.jj20.com%2Fup%2Fallimg%2Ftp06%2F200QQU3202Y7-0-lp.jpg&refer=http%3A%2F%2Fimg.jj20.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1656687720&t=7cae6f9a936d1ce9b590ee9f4f574fc4",
-        "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimg.jj20.com%2Fup%2Fallimg%2F1114%2F0R620115Q8%2F200R6115Q8-6-1200.jpg&refer=http%3A%2F%2Fimg.jj20.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1656687720&t=c87971b1dfb562bd6e4314165076c073",
-        "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimg.jj20.com%2Fup%2Fallimg%2F1114%2F102920105033%2F201029105033-6-1200.jpg&refer=http%3A%2F%2Fimg.jj20.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1656687720&t=93f86a9d21d937fdba1c824955f87a60"
+        "https://i04piccdn.sogoucdn.com/54cf56a0bf810e40",
+        "https://i04piccdn.sogoucdn.com/bdc86846b7cd4586",
+        "http://5b0988e595225.cdn.sohucs.com/images/20170917/0ed434e0321b4c589607be372fc85572.jpeg"
       ],
       pictureList2: [
         "https://img2.baidu.com/it/u=2513024551,2896067572&fm=253&fmt=auto&app=138&f=JPEG?w=667&h=500",
@@ -173,7 +164,10 @@ export default {
       date: '',
       timer: null,
       imgSrc: '',
-      weatcherData: {},
+      weatcherData: {
+        tem: '--',
+        wea: '未知'
+      },
       startVal: 0,
       chartList: [],
       typeList: ['德', '智', '体', '美', '劳'],
@@ -186,35 +180,40 @@ export default {
     }
   },
   computed: {
-
+    schoolId() {
+      return JSON.parse(window.localStorage.getItem("UserInfo")).schoolId;
+    }
   },
   created() {
     const that = this;
-    api.getWynjbh().then(e => {
-      setTimeout(function () {
-        for (var i = 0; i < that.typeList.length; i++) {
-          // console.log(e[that.typeEnList[i]])
-          e[that.typeEnList[i]].forEach(eList => {
-            if (eList.data.length < 3) {
-              for (let i = 0; i <= 3 - eList.data.length; i++) {
-                eList.data.unshift('')
-              }
-            }
-          })
-          // console.log(e[that.typeEnList[i]])
-          that.initChart('id' + i, that.typeList[i], that.colorList[i]
-            , e["gradeList"]
-            , e[e["gradeList"][i] + 'riqi']
-            , e[that.typeEnList[i]]);
-        }
-      }, 500);
+    // 获取教师数和学生数
+    getPanelData({ schoolId: this.schoolId }).then((res) => {
+      that.all = res.data.panel.teacherNum;
+      that.ava = res.data.panel.studentNum;
+    });
+    
+    // 初始化五育各年级分数图表
+    api.getWydc().then(res => {
+      // 确保DOM已经渲染完成
+      that.$nextTick(() => {
+        // 初始化德育图表
+        that.initWynjChart('id0', 'deyu', '', res)
+        // 初始化智育图表
+        that.initWynjChart('id1', 'zhiyu', '', res)
+        // 初始化体育图表
+        that.initWynjChart('id2', 'tiyu', '', res)
+        // 初始化美育图表
+        that.initWynjChart('id3', 'meiyu', '', res)
+        // 初始化劳育图表
+        that.initWynjChart('id4', 'laoyu', '', res)
+      })
     })
+
+    // 初始化燃尽图
     api.getWanchengdu().then(e => {
-      that.all = Number.parseInt(e.count);
-      that.ava = Number.parseInt(e.ava);
-      setTimeout(function () {
+      that.$nextTick(() => {
         that.initWancheng("id5", e.gradeList, e.successList, e.failList);
-      }, 500);
+      })
     })
   },
   mounted() {
@@ -245,6 +244,7 @@ export default {
     },
     nowTimes() {
       this.timeFormate(new Date());
+      this.getLunarDate();
       setInterval(this.nowTimes, 1000);
       this.clear();
     },
@@ -253,216 +253,211 @@ export default {
       this.nowTimes = null;
     },
     getWeather() { // 第三方天气api接口
-      this.imgSrc = require('../../assets/img/brand/qing.png');
+      // 先获取城市位置
+      this.getLocation().then(location => {
+        const key = 'd1f1e40002524874b27188d57349f3b0'; // 和风天气API key
+        
+        fetch(`https://devapi.qweather.com/v7/weather/now?location=${location}&key=${key}`)
+          .then(response => response.json())
+          .then(data => {
+            if(data.code === '200') {
+              const weather = data.now;
+              this.weatcherData = {
+                tem: weather.temp,
+                wea: weather.text
+              };
+              
+              // 根据天气状况设置对应的图标
+              const weatherIcons = {
+                '晴': 'qing.png',
+                '多云': 'yun.png',
+                '阴': 'yin.png',
+                '小雨': 'yu.png',
+                '中雨': 'yu.png',
+                '大雨': 'yu.png',
+                '雷阵雨': 'yu.png',
+                '小雪': 'xue.png',
+                '中雪': 'xue.png',
+                '大雪': 'xue.png',
+                '雾': 'wu.png',
+                '沙尘暴': 'shachen.png',
+                '浮尘': 'shachen.png',
+                '扬沙': 'shachen.png',
+                '强沙尘暴': 'shachen.png',
+                '阵雪': 'xue.png',
+                '毛毛雨': 'yu.png',
+                '暴雨': 'yu.png',
+                '大暴雨': 'yu.png',
+                '特大暴雨': 'yu.png',
+                '强阵雨': 'yu.png',
+                '强雷阵雨': 'yu.png',
+                '雨': 'yu.png',
+                '雪': 'xue.png'
+              };
+              
+              this.imgSrc = require(`../../assets/img/brand/${weatherIcons[weather.text] || 'qing.png'}`);
+            }
+          })
+          .catch(error => {
+            console.error('获取天气数据失败:', error);
+            // 设置默认值
+            this.weatcherData = {
+              tem: '--',
+              wea: '未知'
+            };
+            this.imgSrc = require('../../assets/img/brand/qing.png');
+          });
+      });
     },
 
-    initChart(divId, index, myColor, legendData, riqi, series) {
-      const myChart = echarts.init(document.getElementById(divId))
+    // 获取城市位置
+    getLocation() {
+      return new Promise((resolve, reject) => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            position => {
+              const { latitude, longitude } = position.coords;
+              // 使用和风天气的城市查询API获取城市ID
+              const key = 'd1f1e40002524874b27188d57349f3b0'; // 和风天气API key
+              fetch(`https://geoapi.qweather.com/v2/city/lookup?location=${longitude},${latitude}&key=${key}`)
+                .then(response => response.json())
+                .then(data => {
+                  if(data.code === '200' && data.location && data.location.length > 0) {
+                    resolve(data.location[0].id);
+                  } else {
+                    resolve('101010100'); // 默认北京
+                  }
+                })
+                .catch(() => {
+                  resolve('101010100'); // 默认北京
+                });
+            },
+            error => {
+              console.error('获取位置失败:', error);
+              resolve('101010100'); // 默认北京
+            }
+          );
+        } else {
+          resolve('101010100'); // 默认北京
+        }
+      });
+    },
+
+    initWynjChart(divId, type, title, res) {
+      // 确保DOM元素存在
+      const dom = document.getElementById(divId)
+      if (!dom) {
+        console.error(`找不到id为${divId}的DOM元素`)
+        return
+      }
+
+      // 类型映射到数组索引
+      const typeMap = {
+        'deyu': 0,  // 德育对应每组数据的第一个数
+        'zhiyu': 1, // 智育对应每组数据的第二个数
+        'tiyu': 2,  // 体育对应每组数据的第三个数
+        'meiyu': 3, // 美育对应每组数据的第四个数
+        'laoyu': 4  // 劳育对应每组数据的第五个数
+      }
+
+      // 获取对应类型的分数数据
+      const scores = Object.keys(res).map(grade => res[grade][typeMap[type]])
+
+      const myChart = echarts.init(dom)
       const option = {
+        title: {
+          text: title,
+          textStyle: {
+            color: '#fff',
+            fontWeight: 500,
+          },
+          top: '5%'
+        },
         tooltip: {
-          trigger: 'axis'
+          trigger: 'axis',
+          formatter: '{b}年级: {c}分'
         },
         legend: {
-          data: legendData,
+          data: ['分数'],
           textStyle: {
-            color: '#fffff'//字体颜色
+            color: '#fff'
           }
         },
         xAxis: {
           type: 'category',
-          boundaryGap: false,
-          data: ['2020-2021学年', '2021-2022学年', '2022-2023学年'],
+          data: ['一年级', '二年级', '三年级', '四年级', '五年级', '六年级'],
           axisLabel: {
             show: true,
             textStyle: {
               color: '#fff'
             },
-            interval: 0,//使x轴文字显示全
-            formatter: function (params) {
-              var newParamsName = "";
-              var paramsNameNumber = params.length;
-              var provideNumber = 9; //一行显示几个字
-              var rowNumber = Math.ceil(paramsNameNumber / provideNumber);
-              if (paramsNameNumber > provideNumber) {
-                for (var p = 0; p < rowNumber; p++) {
-                  var tempStr = "";
-                  var start = p * provideNumber;
-                  var end = start + provideNumber;
-                  if (p == rowNumber - 1) {
-                    tempStr = params.substring(start, paramsNameNumber);
-                  } else {
-                    tempStr = params.substring(start, end) + "\n";
-                  }
-                  newParamsName += tempStr;
-                }
-              } else {
-                newParamsName = params;
-              }
-              return newParamsName;
-            }
+            interval: 0
           }
         },
         yAxis: {
           type: 'value',
+          name: '分数',
+          nameTextStyle: {
+            color: '#fff'
+          },
           axisLabel: {
             show: true,
             textStyle: {
               color: '#fff'
-            },
-          },
-          min: 60
-        },
-        series: series
-      };
-      myChart.setOption(option)
-      this.chartList.push(myChart)
-    },
-    initXYBJEcharts() {
-      api.getXYClass()
-        .then(function (res) {
-          const xyClassList = res.xyClass
-          for (let i = 0; i < xyClassList.length; i++) {
-            const option = {
-              title: {
-                text: xyClassList[i].class,
-                textStyle: {
-                  color: '#fff',
-                  fontWeight: 500,
-                },
-                top: '5%'
-              },
-              // legend: {
-              //     orient: 'vertical',
-              //     right: '10%'
-              // },
-              tooltip: {
-                trigger: 'item',
-                formatter: '{b} : {c} 分' // <br/>换行
-                //a:（系列名称） b:(数据名称) c:(数值) d:(饼图百分比)
-              },
-              series: [
-                {
-                  type: 'pie',
-                  radius: '50%',
-                  center: ['55%', '50%'],
-                  roseType: 'area',
-                  itemStyle: {
-                    borderRadius: 8
-                  },
-                  data: [
-                    { value: xyClassList[i].deyu, name: '德育' },
-                    { value: xyClassList[i].zhiyu, name: '智育' },
-                    { value: xyClassList[i].tiyu, name: '体育' },
-                    { value: xyClassList[i].meiyu, name: '美育' },
-                    { value: xyClassList[i].laoyu, name: '劳育' },
-                  ]
-                }
-              ]
-            };
-            const myChart = echarts.init(document.querySelector("#xybjChart" + (i + 1)));
-            myChart.setOption(option);
-            window.addEventListener("resize", function () {
-              myChart.resize();
-            });
-            this.chartList.push(myChart)
-          }
-        })
-        .catch(function (error) {
-          console.log(error);
-        })
-    },
-    initXYGREcharts() {
-      const kemu = ['zong', 'deyu', 'zhiyu', 'tiyu', 'meiyu', 'laoyu']
-      const kumuName = ['总分', '德育', '智育', '体育', '美育', '劳育']
-      api.getXYStudent()
-        .then(function (res) {
-          kemu.forEach((element, index) => {
-            const option = {
-              title: {
-                text: kumuName[index],
-                textStyle: {
-                  color: '#fff',
-                  fontWeight: 500,
-                },
-                top: '5%'
-              },
-              xAxis: {
-                data: res[element].name,
-                axisLabel: {
-                  show: true,
-                  textStyle: {
-                    color: '#fff'
-                  },
-                  interval: 0,//使x轴文字显示全
-                  formatter: function (params) {
-                    var newParamsName = "";
-                    var paramsNameNumber = params.length;
-                    var provideNumber = 2; //一行显示几个字
-                    var rowNumber = Math.ceil(paramsNameNumber / provideNumber);
-                    if (paramsNameNumber > provideNumber) {
-                      for (var p = 0; p < rowNumber; p++) {
-                        var tempStr = "";
-                        var start = p * provideNumber;
-                        var end = start + provideNumber;
-                        if (p == rowNumber - 1) {
-                          tempStr = params.substring(start, paramsNameNumber);
-                        } else {
-                          tempStr = params.substring(start, end) + "\n";
-                        }
-                        newParamsName += tempStr;
-                      }
-                    } else {
-                      newParamsName = params;
-                    }
-                    return newParamsName;
-                  }
-                }
-              },
-              // 图例
-              // legend: {
-              //   data: ["分数"],
-              //   top: "0%",
-              //   textStyle: {
-              //     color: '#fffff'//字体颜色
-              //   }
-              // },
-              yAxis: {
-                axisLabel: {
-                  show: true,
-                  textStyle: {
-                    color: '#fff'
-                  }
-                }
-              },
-              series: [
-                {
-                  type: "line",
-                  data: res[element].score,
-                  name: "分数", // legend属性
-                  label: {
-                    // 柱状图上方文本标签，默认展示数值信息
-                    show: true,
-                    position: "top"
-                  }
-                },
-              ],
-              grid: {
-                left: '15%',
-                right: '15%',
-                bottom: '15%'
-              },
             }
-            const myChart = echarts.init(document.getElementById(`xygrChart${index + 1}`))
-            myChart.setOption(option)
-            window.addEventListener("resize", function () {
-              myChart.resize();
-            });
-            this.chartList.push(myChart)
-          })
-        })
-        .catch(function (error) {
-          console.log(error);
-        })
+          },
+          min: 0,
+          max: 100
+        },
+        series: [
+          {
+            name: '分数',
+            type: 'line',
+            data: scores,  // 使用处理后的分数数据
+            smooth: true,
+            symbol: 'circle',
+            symbolSize: 8,
+            itemStyle: {
+              color: '#1b6cd2'
+            },
+            label: {
+              show: true,
+              position: 'top',
+              color: '#fff',
+              formatter: '{c}分'
+            },
+            areaStyle: {
+              color: {
+                type: 'linear',
+                x: 0,
+                y: 0,
+                x2: 0,
+                y2: 1,
+                colorStops: [{
+                  offset: 0,
+                  color: 'rgba(27, 108, 210, 0.5)'
+                }, {
+                  offset: 1,
+                  color: 'rgba(27, 108, 210, 0.1)'
+                }]
+              }
+            }
+          }
+        ],
+        grid: {
+          left: '5%',
+          right: '5%',
+          bottom: '10%',
+          top: '20%',
+          containLabel: true
+        }
+      }
+      
+      myChart.setOption(option)
+      window.addEventListener("resize", function () {
+        myChart.resize();
+      });
+      this.chartList.push(myChart)
     },
     initWancheng(divId, xAxisData, succesList, failList) {
       const myChart = echarts.init(document.getElementById(divId))
@@ -541,7 +536,27 @@ export default {
         chart.dispose()
       })
       this.chartList = []
-    }
+    },
+    getWeekOfYear() {
+      const now = new Date();
+      const start = new Date(now.getFullYear(), 0, 1);
+      const diff = now - start;
+      const oneWeek = 7 * 24 * 60 * 60 * 1000;
+      return Math.ceil(diff / oneWeek);
+    },
+    getLunarDate() {
+      const lunar = new Date();
+      const lunarInfo = [
+        '正', '二', '三', '四', '五', '六', '七', '八', '九', '十', '冬', '腊'
+      ];
+      const lunarDay = [
+        '初一', '初二', '初三', '初四', '初五', '初六', '初七', '初八', '初九', '初十',
+        '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十',
+        '廿一', '廿二', '廿三', '廿四', '廿五', '廿六', '廿七', '廿八', '廿九', '三十'
+      ];
+      // 这里使用一个简单的模拟，实际项目中建议使用专门的农历转换库
+      this.lunarDate = `农历${lunarInfo[lunar.getMonth()]}月${lunarDay[lunar.getDate() - 1]}`;
+    },
   },
   beforeDestroy() {
     clearInterval(this.timer);
@@ -922,6 +937,60 @@ export default {
 @media screen and (min-width: 1920px) {
   html {
     font-size: 80px !important;
+  }
+}
+
+.weather {
+  display: flex;
+  align-items: center;
+  color: #fff;
+  font-size: 14px;
+  
+  img {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+  }
+  
+  .tem {
+    font-size: 20px;
+    margin: 0 10px;
+  }
+  
+  .wea {
+    margin-right: 15px;
+  }
+  
+  .humidity, .wind {
+    margin: 0 10px;
+    padding: 2px 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+  }
+}
+
+.showTime {
+  color: #fff;
+  text-align: right;
+  
+  .time {
+    font-size: 24px;
+    margin-right: 15px;
+  }
+  
+  .date {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    
+    span {
+      margin: 2px 0;
+    }
+    
+    .lunar {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.8);
+    }
   }
 }
 </style>
