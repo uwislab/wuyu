@@ -338,6 +338,7 @@ const formData = ref({})
 const semesterStartDialogVisible = ref(false)
 
 const refreshData = async () => {
+  formData.value = {}
   await fetchData()
   await fetchAllCourses()
 }
