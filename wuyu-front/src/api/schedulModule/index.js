@@ -9,6 +9,14 @@ export function getLessonPageAPI(params) {
   })
 }
 
+// 获取全部学年
+export function getAcademicAPI() {
+  return request({
+    url: '/lesson/academic-year',
+    method: 'get'
+  })
+}
+
 //导入课程信息
 export function importExcel(data) {
   return request({
