@@ -121,5 +121,11 @@ export function copyLastSemesterSchedule(params) {
     params: params
   })
 }
-
-
+// 开关复制上学期排课
+export function autoCopyLastSemesterSchedule(params) {
+  return request({
+    url: '/lesson/auto-copy',
+    method: 'get',
+    params: params
+  })
+}

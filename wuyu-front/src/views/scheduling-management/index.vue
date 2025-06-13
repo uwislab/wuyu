@@ -77,7 +77,7 @@
                 @change="handleAutoCopySwitch"
               />
               <el-popconfirm
-                title="确认复制上学期排课？"
+                :title="`是否确认复制上学期的排课`"
                 confirm-button-text="确认"
                 cancel-button-text="取消"
                 @confirm="handleAutoCopy"
@@ -261,7 +261,8 @@ import {getLessonPageAPI,
         copyLastSemesterAPI,
         exportLessonAPI,
         importLessonAPI,
-        copyClass
+        copyClass,
+        autoCopyLastSemesterSchedule
       }
         from '@/api/schedulModule/index'
 import lessonInfoDialog from './components/lessonInfoDialog.vue'
@@ -682,6 +683,7 @@ const handleTeacherSelect = async (teacher) => {
     teacherSelVisible.value = false;
   }
 };
+
 // 复制上学期排课
 const handleAutoCopy = async () => {
   try {
@@ -713,7 +715,7 @@ const handleAutoCopy = async () => {
       isOverwrite: true
     })
     if (res.code === 200) {
-      Message.success('复制上学期排课成功')
+      Message.success(`复制上学期${currentYear}学年${currentSemester}学期的排课成功`)
       // 重新获取数据
       await fetchData()
       await fetchAllCourses()
@@ -750,17 +752,12 @@ const handleAutoCopySwitch = (val) => {
   }
 }
 
-// 到时自动复制
+// 开关自动复制
 const handleAutoCopyClass = (val) => {
-  const SemesterStart = getSemesterStart()
-  const now = new Date().toISOString().slice(0,10);
-  // SemesterStart {"startDate":"2025-06-03","academicYear":"2024-2025","semester":"2","timestamp":1749729506476}
-  // console.log("SemesterStart",SemesterStart,now)
-  if (now >= SemesterStart) {
-    copyLastSemesterSchedule();
+  if (val) {
+    autoCopyLastSemesterSchedule({enabled: true});
   }
 }
-
 // 处理学期初时间确认
 const handleSemesterStartConfirm = (formData) => {
   console.log('学期初时间：', formData)
@@ -778,15 +775,17 @@ const handleSemesterStartConfirm = (formData) => {
       timestamp: new Date().getTime()
     }))
   }
+  handleAutoCopyClass(autoCopyEnabled.value)
   Message.success('学期初时间设置成功')
 }
 
 // 处理学期初时间取消
 const handleSemesterStartCancel = (formData) => {
   semesterStartDialogVisible.value = false
+  console.log("formData.isOverwrite",formData,formData.isOverwrite)
   if(!formData.isOverwrite){
     // 取消后关闭开关
-  autoCopyEnabled.value = false
+    autoCopyEnabled.value = false
   }
 }
 

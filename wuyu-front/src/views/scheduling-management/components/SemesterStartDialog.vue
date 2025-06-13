@@ -33,9 +33,6 @@
           inactive-text="不覆盖"
         />
       </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="handleFetchData" :loading="loading">获取上学期数据</el-button>
-      </el-form-item>
     </el-form>
 
 
@@ -96,56 +93,6 @@ watch(() => props.visible, (newVal) => {
     setDefaultAcademicYearAndSemester();
   }
 });
-
-// 获取上学期数据
-const fetchLastSemesterData = async () => {
-  if (!form.academicYear || !form.semester) {
-    Message.warning('请先填写学年和学期信息');
-    return;
-  }
-
-  try {
-    loading.value = true;
-    const params = {
-      academicYear: form.academicYear,
-      semester: form.semester,
-      isOverwrite: form.isOverwrite
-    };
-    console.log('请求参数：', params);
-    const res = await copyLastSemesterSchedule({
-      academicYear: form.academicYear,
-      semester: form.semester,
-      isOverwrite: form.isOverwrite
-    });
-    
-    if (res.code === 200) {
-      // 检查返回数据的结构
-      if (res.data && Array.isArray(res.data)) {
-        lastSemesterData.value = res.data;
-      } else if (res.data && Array.isArray(res.data.records)) {
-        lastSemesterData.value = res.data.records;
-      } else {
-        lastSemesterData.value = [];
-      }
-      Message.success('获取数据成功');
-      console.log("获取上学期数据: res.data",res.data)
-    } else {
-      Message.error(res.message || '获取上学期数据失败');
-      lastSemesterData.value = [];
-    }
-  } catch (error) {
-    console.error('获取上学期数据失败:', error);
-    Message.error('获取上学期数据失败');
-    lastSemesterData.value = [];
-  } finally {
-    loading.value = false;
-  }
-};
-
-// 处理获取数据按钮点击
-const handleFetchData = () => {
-  fetchLastSemesterData();
-};
 
 // 处理关闭
 const handleClose = () => {
