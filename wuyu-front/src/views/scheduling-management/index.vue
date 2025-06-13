@@ -759,10 +759,12 @@ const handleTeacherSelect = async (teacher) => {
     return;
   }
 
-  const { grade, classNum, course, id ,label } = currentCourse.value;
+  const { grade, classNum, course, id ,label ,academicYear , semester } = currentCourse.value;
   try {
     const className = currentCourse.value.grade + '年级' + currentCourse.value.classNum + '班'
     const res = await updateLessonAPI({
+      academicYear,
+      semester,
       grade,
       classNum,
       className,
