@@ -99,11 +99,19 @@
       importDialogVisible: {
       type: Boolean,
       default: false
+    },
+      fetchData: {
+      type: Function,
+      required: true,
+    },
+    fetchAllCourses: {
+      type: Function,
+      required: true,
     }
   });
 
   const emit = defineEmits(['update:importDialogVisible']);
-    
+
   const activeName = ref('first') // tab标签
   const successData = ref([]) //成功数据
   const failData = ref([])  //失败数据
@@ -158,7 +166,7 @@
     )
   }
 
-     
+
   // 文件上传处理
   const customRequest = async ({ file, onSuccess, onError }) => {
     loading.value = true
@@ -166,16 +174,16 @@
       // 创建FormData并添加文件
       const formData = new FormData()
       formData.append('file', file)
-      
+
       const response = await importExcel(formData)
-      
+
       if(response.code === 200) {
         successData.value = response.data.successList
         failData.value = response.data.failList
         successNumber.value = response.data.successNumber
         failNumber.value = response.data.failNumber
         id.value = response.data.id
-        
+
         // 显示成功消息
         Message({
           message: '上传成功',
@@ -185,10 +193,10 @@
           showClose: false
         })
       }
-      
+
       // 通知Upload组件上传成功
       onSuccess(response.data)
-      
+
     } catch (error) {
       // 处理错误
       Message.error(`${file.name}上传出错，${error.message}`)
@@ -221,6 +229,8 @@
           )
       } finally {
           loading.value = false
+          props.fetchData()
+          props.fetchAllCourses()
       }
   }
 
