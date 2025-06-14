@@ -69,32 +69,37 @@
       </span>
     </el-dialog>
     <el-table :data="paginatedList" style="width: 100%" id="dataTable">
-			<el-table-column fixed type="selection" tooltip-effect="dark">
-			</el-table-column>
-      <el-table-column prop="studentGrade" label="年级" >
-			</el-table-column>
-			<el-table-column prop="studentClassNumber" label="班级" >
-			</el-table-column>
+      <el-table-column fixed type="selection" tooltip-effect="dark">
+      </el-table-column>
+      <el-table-column prop="studentGrade" label="年级"> </el-table-column>
+      <el-table-column prop="studentClassNumber" label="班级">
+      </el-table-column>
 
-			<el-table-column prop="studentId" label="学生学号" >
-			</el-table-column>
-			<el-table-column prop="studentName" label="学生姓名">
-			</el-table-column>
+      <el-table-column prop="studentId" label="学生学号"> </el-table-column>
+      <el-table-column prop="studentName" label="学生姓名"> </el-table-column>
 
       <el-table-column label="操作" align="center" width="190px">
         <template slot-scope="scope">
-          <el-button type="primary" @click="handleExport(scope.row)">导出<i class="el-icon-tickets"></i></el-button>
+          <el-button type="primary" @click="handleExport(scope.row)"
+            >导出<i class="el-icon-tickets"></i
+          ></el-button>
         </template>
       </el-table-column>
-		</el-table>
+    </el-table>
     <!-- 分页器 -->
-		<div class="mt text_center">
-			<el-pagination :current-page="query.page" :page-sizes="[10, 30, 100]" :page-size="query.pageSize"
-				:total="totalCount" @size-change="handleSizeChange" @current-change="handleCurrentChange"
-				layout="total, sizes, prev, pager, next, jumper">
-			</el-pagination>
-		</div>
-		<!-- /分页器 -->
+    <div class="mt text_center">
+      <el-pagination
+        :current-page="query.page"
+        :page-sizes="[10, 30, 100]"
+        :page-size="query.pageSize"
+        :total="totalCount"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        layout="total, sizes, prev, pager, next, jumper"
+      >
+      </el-pagination>
+    </div>
+    <!-- /分页器 -->
   </div>
 </template>
 
@@ -129,32 +134,32 @@ export default {
       dialogVisiblepreview: false,
       content: "", // 预览内容
       // 查询
-			query: {
-				"pageSize": 10,
-				"page": 1,
-				"courseName": "",
-				"courseType": "",
-				"teacherName": "",
-				"studentNum": "",
-				"studentName": "",
-				"login_time": "",
-				"create_time": "",
-				"orderby": `create_time desc`
-			},
+      query: {
+        pageSize: 10,
+        page: 1,
+        courseName: "",
+        courseType: "",
+        teacherName: "",
+        studentNum: "",
+        studentName: "",
+        login_time: "",
+        create_time: "",
+        orderby: `create_time desc`,
+      },
       // 数据
-			total: 0,//数据总数
-			list: [],
-			list_user_course_teacher: [],
-			deleteIds: [],
-    }
+      total: 0, //数据总数
+      list: [],
+      list_user_course_teacher: [],
+      deleteIds: [],
+    };
   },
   computed: {
     filteredClasses() {
-      if (!this.gradeId) return []
-      const uniqueClasses = new Set()
-      this.classNames.forEach(item => {
+      if (!this.gradeId) return [];
+      const uniqueClasses = new Set();
+      this.classNames.forEach((item) => {
         if (item[0] === this.gradeId) {
-          uniqueClasses.add(item[1])
+          uniqueClasses.add(item[1]);
         }
       });
       return Array.from(uniqueClasses).sort((a, b) => a - b);
@@ -308,12 +313,16 @@ export default {
         }
       }
     },
+    cleanpreview() {
+      this.dialogVisiblepreview = false;
+      this.content = ""; // 清除预览内容
+    },
     handleExportBatch() {
       // Implementation of handleExportBatch method
     },
     handleClose() {
       // Implementation of handleClose method
-    }
+    },
   },
   created() {
     this.fetchCourse();
@@ -330,7 +339,7 @@ export default {
   // margin-bottom: 20px;
 
   .left-filters {
-  margin-top: 20px;
+    margin-top: 20px;
     display: flex;
     // gap: 10px;
     margin-left: 20px;
