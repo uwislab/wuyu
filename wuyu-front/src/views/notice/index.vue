@@ -2,7 +2,7 @@
  * @Author: hezeliangfj
  * @Date: 2025-06-14 12:54:59
  * @LastEditors: hezeliangfj
- * @LastEditTime: 2025-06-14 18:41:48
+ * @LastEditTime: 2025-06-14 21:50:44
  * @version: 0.0.1
  * @FilePath: \wuyu-front\src\views\notice\index.vue
  * @Descripttion: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
@@ -48,6 +48,18 @@
         <el-button type="primary" @click="handleExportBatch">确 定</el-button>
       </span>
     </el-dialog>
+    <el-dialog
+      title="预览通知册"
+      :visible.sync="dialogVisiblepreview"
+      width="60%"
+      :before-close="handleClose"
+      >
+      <span v-html="content"></span>
+      <span slot="footer" class="dialog-footer">
+      <el-button @click="cleanpreview">取 消</el-button>
+      <el-button type="primary" @click="cleanpreview">确 定</el-button>
+      </span>
+      </el-dialog>
     <div class="table-container">
       <el-table :data="paginatedList" style="width: 100%" id="dataTable" @selection-change="handleSelectionChange" border stripe>
         <el-table-column fixed type="selection" tooltip-effect="dark" width='40'>
@@ -85,8 +97,9 @@
             {{ scope.row.smeiyu || '暂无' }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center" width="190px">
+        <el-table-column label="操作" align="center" width="200px">
           <template slot-scope="scope">
+            <el-button type="success" @click="handlepreview(scope.row)">预览<i class="el-icon-tickets"></i></el-button>
             <el-button type="primary" @click="handleExport(scope.row)">导出<i class="el-icon-tickets"></i></el-button>
           </template>
         </el-table-column>
@@ -103,7 +116,7 @@
 </template>
 
 <script>
-import { getStudent, exportZip,noticeBooklet } from '@/api/notice.js'
+import { getStudent, exportZip,noticeBooklet,exportBooklet,previewNoticeBooklet } from '@/api/notice.js'
 // import { create } from 'sortablejs';
 export default {
   // name: 'NoticeIndex',
@@ -146,7 +159,8 @@ export default {
       uploadHeaders: {
         'Content-Type': 'multipart/form-data'
       },
-      uploadFile: null
+      uploadFile: null,
+      content: '',
     }
   },
   computed: {
@@ -221,33 +235,48 @@ export default {
     handleCurrentChange(page) {
       this.query.page = page
     },
-    handleExport (row) {
-      console.log('222',row)
+    async handleExport (row) {
+      const payload = {
+        studentId: row.studentId
+      }
+      const res = await exportBooklet(payload)
+      conlose.log(res)
+    },
+    async handlepreview(row) {
+    //   this.dialogVisiblepreview=true
+    //   const params = {studentId:row.studentId}
+    //   const res = await previewBooklet({params})
+    // },
+    const loadingInstance = this.$loading({
+      lock: true,
+      text: "预览生成中，请稍候...",
+      spinner: "el-icon-loading",
+      background: "rgba(0, 0, 0, 0.7)",
+    });
+    try {
+      const params = {
+        studentId: row.studentId,
+      };
+      const res = await previewNoticeBooklet({ params });
+      // 处理预览逻辑，例如打开一个新窗口显示预览内容
+      // this.content = res.data; // 假设预览数据是字符串或HTML内容
+      if (res.code === 200) {
+        this.dialogVisiblepreview = true; // 打开预览对话框
+        this.content = res.data; // 假设预览数据是字符串或HTML内容
+        loadingInstance.close();
+      } else {
+        this.$message.error("预览数据获取失败");
+      }
+    } catch (error){
+      console.error("预览失败:", error);
+    } finally {
+      if (loadingInstance) {
+      loadingInstance.close();
+      }
+      }
     },
     handleFileChange(file) {
       this.uploadFile = file.raw
-    },
-    async handleUpload() {
-      if (!this.uploadFile) {
-        this.$message.warning('请先选择文件')
-        return
-      }
-
-      const formData = new FormData()
-      formData.append('file', this.uploadFile)
-
-      try {
-        const response = await axios.post('http://localhost:9080/studentExcel/import', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        })
-        this.$message.success('上传成功')
-        this.dialogVisible = false
-        this.fetchCourse() // 刷新数据
-      } catch (error) {
-        this.$message.error('上传失败：' + (error.message || '未知错误'))
-      }
     },
     cancelExcel() {
       this.uploadFile = null
