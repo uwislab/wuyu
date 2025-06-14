@@ -2,7 +2,6 @@ package com.fiveup.core.studentManager.service.impl;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fiveup.core.common.exception.ApiException;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -53,8 +52,6 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
 
     private StudentManagerService studentManagerService;
 
-    @Autowired
-    private StudentManagerMapper studentManagerMapper;
     @Override
     public void addStudent(StudentManager studentManager) {
         studentManager.setDeleted(0);

@@ -53,7 +53,7 @@ public class RemarkController {
     @ResponseBody
     @GetMapping("/get")
     public String getPersonalRemark(Integer sid) {
-        Result<V> result = new Result<V>();
+        Result result = new Result();
         // 根据sid查询对应的学生表现
         StudentPerformanceVO studentPerformanceVO = studentPerformanceService.getBySid(sid);
         if(studentPerformanceVO != null) {
@@ -78,7 +78,7 @@ public class RemarkController {
     public String getClassEvaluationBook(Integer tid,
                                          @RequestParam(value = "page", required = false) Integer page,
                                          @RequestParam(value = "export", required = false) Integer export) {
-        Result<V> result = new Result<V>();
+        Result result = new Result();
         // 获取教师ID对应的班级平均分
         System.out.println("搜嘎预防使用它属于头发啊："+tid);
         System.out.println("大大大电视："+page);
@@ -158,7 +158,7 @@ public class RemarkController {
     @ResponseBody
     @PutMapping("/update")
     public String update(@RequestBody StudentPerformance studentPerformance) {
-        Result<V> result = new Result<V>();
+        Result result = new Result();
         studentPerformanceService.updateById(studentPerformance);
         result.setCode(600);
         result.setMsg("更新成功！");
@@ -174,7 +174,7 @@ public class RemarkController {
     @ResponseBody
     @GetMapping("/generate")
     public String generate(Integer id) {
-        Result<V> result = new Result<V>();
+        Result result = new Result();
         // 查询当前的学生表现数据
         StudentPerformanceVO studentPerformanceVO = studentPerformanceService.getById(id);
 
