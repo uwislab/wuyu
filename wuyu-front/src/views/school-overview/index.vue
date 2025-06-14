@@ -18,19 +18,47 @@
     </el-dialog>
 
 
-    <!--    进行添加的方框-->
-    <el-dialog title="收货地址" :visible.sync="dialogFormVisible" width="70%">
-      <el-form label-width="120px" size="small">
-        <el-form-item label="主题">
-          <el-input v-model="form.theme" autocomplete="off"></el-input>
+    <!-- 添加公告对话框 -->
+    <el-dialog
+      title="发布公告"
+      :visible.sync="dialogFormVisible"
+      width="60%">
+      <el-form
+        :model="form"
+        :rules="rules"
+        ref="form"
+        label-width="80px">
+        <el-form-item label="主题" prop="theme">
+          <el-input v-model="form.theme" placeholder="请输入公告主题"></el-input>
         </el-form-item>
-        <el-form-item label="主要内容">
-          <el-input v-model="form.content" autocomplete="off"></el-input>
+        <el-form-item label="内容" prop="content">
+          <el-input
+            type="textarea"
+            v-model="form.content"
+            :rows="6"
+            placeholder="请输入公告内容">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="重要性">
+          <el-switch
+            v-model="form.isImportant"
+            active-text="重要公告">
+          </el-switch>
+        </el-form-item>
+        <el-form-item label="发放对象" prop="identityId">
+          <el-select v-model="form.identityId" placeholder="请选择发放对象">
+            <el-option
+              v-for="option in identityOptions"
+              :key="option.identityId"
+              :label="option.identityInfo"
+              :value="option.identityId">
+            </el-option>
+          </el-select>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="save">确 定</el-button>
+        <el-button type="primary" @click="save">发 布</el-button>
       </div>
     </el-dialog>
 
@@ -57,22 +85,47 @@
 import {getNoticeList} from "@/api/fuScale";
 import {deleteById} from "@/api/fuScale";
 import axios from 'axios';
-import {addList} from "@/api/fuScale";
+import {addNotice,getIdentityIds} from "@/api/notice";
 import request from "@/utils/request";
 
 export default {
   data() {
     return {
       notifications: [],
+      searchQuery: '', // 新增搜索关键词
       dialogVisible: false,
       dialogFormVisible: false,
-      fileContent: "这是一段文字",
-      form: {}
+      currentAnnouncement: {},
+      form: {
+        theme: '',
+        content: '',
+        isImportant: false,
+        createdBy: null,
+        identityId: null // 新增字段：发放对象身份ID
+      },
+      rules: {
+        theme: [
+          { required: true, message: '请输入公告主题', trigger: 'blur' },
+          { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
+        ],
+        content: [
+          { required: true, message: '请输入公告内容', trigger: 'blur' },
+          { min: 10, max: 1000, message: '长度在 10 到 1000 个字符', trigger: 'blur' }
+        ],
+        identityId: [
+          { required: true, message: '请选择发放对象', trigger: 'change' }
+        ]
+      },
+      pageNum: 1, // 当前页码
+      pageSize: 10, // 每页大小
+      total: 0, // 总记录数
+      identityOptions: [] // 新增数据属性：身份列表
     };
   },
 
   mounted() {
     this.load()
+    this.getIdentityOptions()
   },
 
   methods: {
@@ -90,20 +143,62 @@ export default {
     },
 
     save() {
-      addList(this.form).then(res => {
-        console.log(this.form)
-        if (res) {
-          this.$message.success("添加成功")
-          this.dialogFormVisible = false;
-          this.load()
+      this.$refs.form.validate(async (valid) => {
+        if (valid) {
+          try {
+            const userId = this.getCurrentUserId();
+            if (!userId) {
+              this.$message.error("无法获取当前用户ID，请重新登录。");
+              return;
+            }
+            this.form.createdBy = userId;
+
+            const res = await addNotice(this.form); // 传递整个表单对象，其中已包含 identityId
+            if (res.code === 200) {
+              this.$message.success("发布成功");
+              this.dialogFormVisible = false;
+              this.load(); // 重新加载公告列表
+            } else {
+              this.$message.error(res.message || "发布失败");
+            }
+          } catch (error) {
+            console.error("发布公告请求失败:", error);
+            this.$message.error("发布公告失败，请稍后再试");
+          }
         } else {
-          this.$message.error("添加失败")
+          return false;
         }
-      })
-
+      });
     },
-
-
+    async getIdentityOptions() {//需要注释的地方
+      try {
+        const res = await getIdentityIds();
+        if (res.length>0) {
+          this.identityOptions = res;
+          // 如果表单的 identityId 为空，则默认选中第一个选项
+          if (this.identityOptions.length > 0 && this.form.identityId === null) {
+            this.form.identityId = this.identityOptions[0].identityId;
+          }
+        } else {
+          this.$message.error("获取身份列表失败");
+        }
+      } catch (error) {
+        console.error("获取身份列表请求失败:", error);
+        this.$message.error("获取身份列表失败，请稍后再试");
+      }
+    },
+    getCurrentUserId() {
+      try {
+        const userInfoString = localStorage.getItem("UserInfo");
+        if (userInfoString) {
+          const userInfo = JSON.parse(userInfoString);
+          return userInfo.id;
+        }
+      } catch (e) {
+        console.error("从 localStorage 解析 UserInfo 失败", e);
+      }
+      return null;
+    },
     handleClose(done) {
       this.$confirm('确认关闭？')
         .then(_ => {
