@@ -5,7 +5,6 @@ import com.fiveup.core.studentManager.entity.StudentManager;
 import com.fiveup.core.studentManager.pojo.PageBean;
 import com.fiveup.core.studentManager.pojo.StudentManagerQuery;
 import com.fiveup.core.studentManager.pojo.StudentVO;
-
 import com.fiveup.core.studentManager.service.StudentManagerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -38,6 +37,7 @@ public class StudentManagerController {
         PageBean<StudentVO> pageBean = studentManagerService.getStudentPage(studentManagerQuery);
 
         return new Result(pageBean);
+    }
 
     /**
      * 修改学生
