@@ -32,7 +32,7 @@ public class CorpusController {
     @ResponseBody
     @GetMapping("/all")
     public String getAll() {
-        Result<V> result = new Result<V>();
+        Result result = new Result();
 
         // 查询所有语料库数据
         List<CorpusVO> all = corpusService.getAll();
@@ -51,7 +51,7 @@ public class CorpusController {
     @ResponseBody
     @PostMapping("/add")
     public String add(@RequestBody Corpus corpus){
-        Result<V> result = new Result<V>();
+        Result result = new Result();
 
         // 增加
         corpusService.add(corpus);
@@ -68,7 +68,7 @@ public class CorpusController {
     @ResponseBody
     @DeleteMapping("/delete")
     public String delete(@RequestBody Corpus corpus){
-        Result<V> result = new Result<V>();
+        Result result = new Result();
 
         // 删除
         corpusService.deleteById(corpus.getId());
@@ -85,7 +85,7 @@ public class CorpusController {
     @ResponseBody
     @PutMapping("/update")
     public String update(@RequestBody Corpus corpus){
-        Result<V> result = new Result<V>();
+        Result result = new Result();
 
         // 更新
         corpusService.updateById(corpus);
@@ -101,8 +101,8 @@ public class CorpusController {
      */
     @ResponseBody
     @PostMapping("/deleteAll")
-    public Result<V> deleteAll(@RequestBody Integer[] ids) {
-        Result<V> result = new Result<V>();
+    public Result deleteAll(@RequestBody Integer[] ids) {
+        Result result = new Result();
         try {
             int rowsAffected = corpusService.deleteAll(ids);
             if (rowsAffected == ids.length) {
@@ -141,7 +141,7 @@ public class CorpusController {
     @GetMapping("/search")
     public String search(@RequestParam(defaultValue = "") Integer subjectId,
                          @RequestParam(defaultValue = "") String comment) {
-        Result<V> result = new Result<V>();
+        Result result = new Result();
 //        System.out.println("-------------subject:"+subjectId);
 //        System.out.println("----------------comment:"+comment);
         List<CorpusVO> corpusVOS = corpusService.search(subjectId,comment);
