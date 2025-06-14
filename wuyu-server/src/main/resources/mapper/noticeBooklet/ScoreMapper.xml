@@ -25,4 +25,12 @@
         </where>
         order by student_id DESC;
     </select>
+    <select id="getAllStudent" resultType="com.fiveup.core.noticeBooklet.domain.Student">
+        select s.student_id,
+               s.student_name,
+               s.student_class_number,
+               s.student_grade
+        from fiveup.di_student s
+        order by student_id DESC;
+    </select>
 </mapper>

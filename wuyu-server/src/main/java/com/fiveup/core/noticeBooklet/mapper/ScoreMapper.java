@@ -1,6 +1,7 @@
 package com.fiveup.core.noticeBooklet.mapper;
 
 import com.fiveup.core.noticeBooklet.domain.NoticeBooklet;
+import com.fiveup.core.noticeBooklet.domain.Student;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -20,4 +21,10 @@ public interface ScoreMapper {
      */
     List<NoticeBooklet> getNoticeBooklet(Integer studentId, Integer classId, Integer gradeId);
 
+    /**
+     * 获取所有学生信息
+     *
+     * @return 所有学生信息
+     */
+    List<Student> getAllStudent();
 }

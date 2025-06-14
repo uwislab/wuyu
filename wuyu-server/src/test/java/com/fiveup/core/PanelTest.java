@@ -25,11 +25,11 @@ public class PanelTest {
     @Test
     public void testCalc() {
         // 测试学号
-        List<NoticeBooklet> noticeBooklet1 = noticeBookletService.getNoticeBooklet(2018083062, null, null);
+        List<NoticeBooklet> noticeBooklet1 = noticeBookletService.getNoticeBooklet(2018083062, null, null, true);
         // 测试班级
-        List<NoticeBooklet> noticeBooklet2 = noticeBookletService.getNoticeBooklet(null, 1, null);
+        List<NoticeBooklet> noticeBooklet2 = noticeBookletService.getNoticeBooklet(null, 1, null, true);
         // 测试年级
-        List<NoticeBooklet> noticeBooklet3 = noticeBookletService.getNoticeBooklet(null, null, 6);
+        List<NoticeBooklet> noticeBooklet3 = noticeBookletService.getNoticeBooklet(null, null, 6, true);
         System.out.println(noticeBooklet1);
         System.out.println(noticeBooklet2);
         System.out.println(noticeBooklet3);
