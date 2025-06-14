@@ -99,6 +99,22 @@
 		</div>
 		<!-- /分页器 -->
 
+		<!-- 成绩统计图表 -->
+		<div class="statistics-container mt">
+			<div class="statistics-header">
+				<h3>课程成绩统计</h3>
+				<el-select v-model="selectedCourse" placeholder="请选择课程" @change="handleCourseChange" style="width: 200px;">
+					<el-option
+						v-for="item in courseOptions"
+						:key="item.value"
+						:label="item.label"
+						:value="item.value">
+					</el-option>
+				</el-select>
+			</div>
+			<div id="scoreChart" class="chart-container"></div>
+		</div>
+		<!-- /成绩统计图表 -->
 
 		<div class="modal_wrap" v-if="showModal">
 			<div class="modal_box">
@@ -118,6 +134,7 @@
 <script>
 
 import axios from "axios";
+import * as echarts from 'echarts';
 import { getCourseScore, deleteCourseScore } from '@/api/courseScore/';
 
 export default {
@@ -157,6 +174,12 @@ export default {
 			list: [],
 			list_user_course_teacher: [],
 			deleteIds: [],
+
+			// 成绩统计相关数据
+			selectedCourse: '',
+			courseOptions: [],
+			statisticsData: [],
+			chart: null,
 		}
 	},
 	methods: {
@@ -177,6 +200,8 @@ export default {
 				console.log("数据总数:" + this.total)
 				this.list = res.data.data;
 
+				// 查询条件变化后，重新计算统计数据
+				this.calculateCourseScoreStatistics();
 			})
 		},
 		//
@@ -217,6 +242,8 @@ export default {
 					this.$message.success(res.msg)
 					//成功重新获取数据
 					this.getCourseScoreApi()
+					// 删除数据后重新计算统计数据
+					this.calculateCourseScoreStatistics();
 				} else {
 					// 前端更新
 					this.$message.error(res.msg)
@@ -227,6 +254,189 @@ export default {
 		// 关闭弹框
 		closeModal() {
 			this.showModal = false;
+		},
+
+		// 获取所有课程成绩数据（包括所有分页）
+		async getAllCourseScoreData() {
+			try {
+				// 保存当前分页设置
+				const currentPage = this.query.page;
+				const currentPageSize = this.query.pageSize;
+
+				// 计算总页数
+				const totalPages = Math.ceil(this.total / currentPageSize);
+				let allData = [];
+
+				// 创建一个临时的查询对象，避免影响当前页面显示
+				const tempQuery = { ...this.query };
+
+				// 获取所有页的数据
+				for (let page = 1; page <= totalPages; page++) {
+					const formData = new FormData();
+					formData.append('courseName', tempQuery.courseName);
+					formData.append('courseType', tempQuery.courseType);
+					formData.append('teacherName', tempQuery.teacherName);
+					formData.append('studentNum', tempQuery.studentNum);
+					formData.append('studentName', tempQuery.studentName);
+					formData.append('page', page);
+					formData.append('pageSize', currentPageSize);
+
+					const res = await getCourseScore(formData);
+					if (res.code === 200 && res.data.data) {
+						allData = allData.concat(res.data.data);
+					}
+				}
+
+				return allData;
+			} catch (error) {
+				console.error('获取所有课程成绩数据出错:', error);
+				this.$message.error('获取所有课程成绩数据出错');
+				return [];
+			}
+		},
+
+		// 计算课程成绩统计数据
+		async calculateCourseScoreStatistics() {
+			try {
+				// 获取所有课程成绩数据
+				const allData = await this.getAllCourseScoreData();
+
+				if (allData.length === 0) {
+					this.$message.warning('没有可用的课程成绩数据');
+					return;
+				}
+
+				// 按课程名称分组
+				const courseGroups = {};
+				allData.forEach(item => {
+					if (!courseGroups[item.courseName]) {
+						courseGroups[item.courseName] = [];
+					}
+					courseGroups[item.courseName].push(item);
+				});
+
+				// 计算每个课程的成绩分布
+				const statisticsData = [];
+				for (const courseName in courseGroups) {
+					const scores = courseGroups[courseName].map(item => parseFloat(item.score));
+
+					const bucket_0_59 = scores.filter(score => score >= 0 && score < 60).length;
+					const bucket_60_69 = scores.filter(score => score >= 60 && score < 70).length;
+					const bucket_70_79 = scores.filter(score => score >= 70 && score < 80).length;
+					const bucket_80_89 = scores.filter(score => score >= 80 && score < 90).length;
+					const bucket_90_100 = scores.filter(score => score >= 90 && score <= 100).length;
+
+					statisticsData.push({
+						courseName,
+						bucket_0_59,
+						bucket_60_69,
+						bucket_70_79,
+						bucket_80_89,
+						bucket_90_100
+					});
+				}
+
+				this.statisticsData = statisticsData;
+
+				// 处理课程选项
+				this.courseOptions = this.statisticsData.map(item => ({
+					value: item.courseName,
+					label: item.courseName
+				}));
+
+				// 默认选择第一个课程
+				if (this.courseOptions.length > 0 && !this.selectedCourse) {
+					this.selectedCourse = this.courseOptions[0].value;
+					this.initChart();
+				} else if (this.chart) {
+					this.updateChart();
+				}
+			} catch (error) {
+				console.error('计算课程成绩统计数据出错:', error);
+				this.$message.error('计算课程成绩统计数据出错');
+			}
+		},
+
+		// 处理课程选择变化
+		handleCourseChange(value) {
+			this.selectedCourse = value;
+			this.updateChart();
+		},
+
+		// 初始化图表
+		initChart() {
+			// 确保DOM已经渲染
+			this.$nextTick(() => {
+				// 初始化ECharts实例
+				const chartDom = document.getElementById('scoreChart');
+				if (chartDom) {
+					this.chart = echarts.init(chartDom);
+					this.updateChart();
+				}
+			});
+		},
+
+		// 更新图表数据
+		updateChart() {
+			if (!this.chart || !this.selectedCourse) return;
+
+			// 查找选中课程的数据
+			const courseData = this.statisticsData.find(item => item.courseName === this.selectedCourse);
+			if (!courseData) return;
+
+			// 准备图表数据
+			const option = {
+				title: {
+					text: `${this.selectedCourse} - 成绩分布统计`,
+					left: 'center'
+				},
+				tooltip: {
+					trigger: 'axis',
+					axisPointer: {
+						type: 'shadow'
+					}
+				},
+				xAxis: {
+					type: 'category',
+					data: ['0-59分', '60-69分', '70-79分', '80-89分', '90-100分'],
+					axisLabel: {
+						interval: 0
+					}
+				},
+				yAxis: {
+					type: 'value',
+					name: '学生人数',
+					nameLocation: 'end'
+				},
+				series: [
+					{
+						name: '学生人数',
+						type: 'bar',
+						data: [
+							courseData.bucket_0_59,
+							courseData.bucket_60_69,
+							courseData.bucket_70_79,
+							courseData.bucket_80_89,
+							courseData.bucket_90_100
+						],
+						itemStyle: {
+							color: function(params) {
+								// 根据分数段设置不同颜色
+								const colors = ['#FF4500', '#FF8C00', '#FFD700', '#90EE90', '#32CD32'];
+								return colors[params.dataIndex];
+							}
+						},
+						label: {
+							show: true,
+							position: 'top',
+							formatter: '{c}人'
+						}
+					}
+				]
+			};
+
+			// 设置图表选项并渲染
+			this.chart.setOption(option);
 		},
 
 		get_list_before(param) {
@@ -418,8 +628,36 @@ export default {
 		setTimeout(() => {
 			this.open_tip();
 		}, 1000)
+
+		// 计算课程成绩统计数据
+		setTimeout(() => {
+			this.calculateCourseScoreStatistics();
+		}, 1500);
 	},
 	mounted() {
+		// 初始化图表
+		this.initChart();
+
+		// 监听窗口大小变化，重新调整图表大小
+		window.addEventListener('resize', () => {
+			if (this.chart) {
+				this.chart.resize();
+			}
+		});
+	},
+	beforeDestroy() {
+		// 销毁图表实例，避免内存泄漏
+		if (this.chart) {
+			this.chart.dispose();
+			this.chart = null;
+		}
+
+		// 移除窗口大小变化监听
+		window.removeEventListener('resize', () => {
+			if (this.chart) {
+				this.chart.resize();
+			}
+		});
 	}
 }
 </script>
@@ -449,6 +687,31 @@ export default {
 	float: right;
 }
 
+/* 成绩统计图表样式 */
+.statistics-container {
+	background-color: white;
+	padding: 20px;
+	border-radius: 4px;
+	box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
+
+.statistics-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 20px;
+}
+
+.statistics-header h3 {
+	margin: 0;
+	font-size: 18px;
+	color: #303133;
+}
+
+.chart-container {
+	height: 400px;
+	width: 100%;
+}
 
 .modal_wrap {
 	width: 100vw;

@@ -21,10 +21,10 @@
     </properties>
     <dependencies>
 
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-security</artifactId>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
 
 
         <dependency>
@@ -90,13 +90,19 @@
             <artifactId>sigar</artifactId>
             <version>1.6.4</version>
         </dependency>
+<!-- h2依赖 -->
+         <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
 
 
         <!--Mysql数据库驱动-->
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <scope>runtime</scope>
+             <groupId>mysql</groupId>
+             <artifactId>mysql-connector-java</artifactId>
+             <scope>runtime</scope>
         </dependency>
 
         <!--SpringBoot配置处理-->

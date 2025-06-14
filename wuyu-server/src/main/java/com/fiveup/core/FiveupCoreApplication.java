@@ -8,6 +8,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.mybatis.spring.annotation.MapperScan;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 
 @EnableAspectJAutoProxy(proxyTargetClass=true)
@@ -23,9 +24,9 @@ public class FiveupCoreApplication {
     public static void main(String[] args) {
         SpringApplication.run(FiveupCoreApplication.class, args);
     }
-//    @Bean
-//    public BCryptPasswordEncoder passwordEncoder() {
-//        return new BCryptPasswordEncoder();
-//    }
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
 }
