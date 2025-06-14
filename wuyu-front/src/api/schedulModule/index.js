@@ -1,4 +1,5 @@
 import request from '@/utils/request'
+import axios from 'axios'
 
 export function getLessonPageAPI(params) {
   return request({
@@ -17,11 +18,11 @@ export function getAcademicAPI() {
 }
 
 //导入课程信息
-export function importExcel(params) {
+export function importExcel(data) {
   return request({
     url: '/lesson/excel/try-import',
     method: 'post',
-    params: params,
+    data: data,
     // responseType: 'blob',
   })
 }
@@ -62,6 +63,7 @@ export function exportExcel(params) {
     responseType: 'blob',
   })
 }
+
 
 export function addLessonAPI(lesson) {
   return request({
@@ -127,5 +129,11 @@ export function copyLastSemesterSchedule(params) {
     params: params
   })
 }
-
-
+// 开关复制上学期排课
+export function autoCopyLastSemesterSchedule(params) {
+  return request({
+    url: '/lesson/auto-copy',
+    method: 'get',
+    params: params
+  })
+}

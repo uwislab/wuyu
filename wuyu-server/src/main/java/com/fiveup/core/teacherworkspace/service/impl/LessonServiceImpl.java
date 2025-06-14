@@ -46,6 +46,9 @@ public class LessonServiceImpl extends ServiceImpl<LessonMapper, Lesson> impleme
                 .like(CharSequenceUtil.isNotBlank(dto.getCourse()), Lesson::getCourse, dto.getCourse())
                 .eq(dto.getSemester() != null, Lesson::getSemester, dto.getSemester())
                 .eq(!CharSequenceUtil.isBlank(academicYear), Lesson::getAcademicYear, academicYear)
+                .orderByDesc(Lesson::getAcademicYear)
+                .orderByAsc(Lesson::getSemester)
+                .orderByAsc(Lesson::getGrade)
                 .page(Page.of(dto.getPage(), dto.getSize()));
         return PageVo.of(page);
     }
@@ -67,6 +70,11 @@ public class LessonServiceImpl extends ServiceImpl<LessonMapper, Lesson> impleme
 
         if (!teacherWorkspaceMapper.existsTeacher(lesson.getTeacherId(), lesson.getTeacherName())) {
             return "教师不存在";
+        }
+
+        String academicYear = lesson.getAcademicYear();
+        if (!CharSequenceUtil.isBlank(academicYear) && !RegexVerifyUtils.validAcademicYear(academicYear)) {
+            return "学年格式错误, 格式为xxxx-xxxx";
         }
 
         // 检查课程是否已存在
@@ -110,6 +118,11 @@ public class LessonServiceImpl extends ServiceImpl<LessonMapper, Lesson> impleme
 
         if (!teacherWorkspaceMapper.existsTeacher(lesson.getTeacherId(), lesson.getTeacherName())) {
             return "修改的教师不存在";
+        }
+
+        String academicYear = lesson.getAcademicYear();
+        if (!CharSequenceUtil.isBlank(academicYear) && !RegexVerifyUtils.validAcademicYear(academicYear)) {
+            return "学年格式错误, 格式为xxxx-xxxx";
         }
 
         // 如果需要更新关键字段，检查是否会导致重复
