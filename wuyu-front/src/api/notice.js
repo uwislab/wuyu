@@ -1,5 +1,5 @@
 import request from '@/utils/request'
-
+// 获取学生信息
 export function getStudent(data) {
   return request.get('/noticeBooklet/getAllStudentAndClassAndGrade',data)
 }
@@ -12,6 +12,7 @@ export function noticeBooklet (data) {
   return request.get('/noticeBooklet/get',data)
 }
 // 导出通知册
+//  feature-06-lsy
 // export function exportNoticeBooklet (data) {
 //   return request.post('/noticeBooklet/word/generate', data)
 // }
@@ -32,4 +33,12 @@ export function exportNoticeBooklet (studentId) {
 // 预览通知册
 export function previewNoticeBooklet (data) {
   return request.get('/noticeBooklet/word/generateHTML', data)
+}
+=======
+export function exportBooklet(data) {
+  return request.post('/noticeBooklet/word/generate',data)
+}
+// 预览通过册
+export function previewNoticeBooklet(data) {
+  return request.get('/noticeBooklet/word/generateHTML',data)
 }
