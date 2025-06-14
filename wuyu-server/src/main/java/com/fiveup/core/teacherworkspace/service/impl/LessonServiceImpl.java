@@ -72,6 +72,11 @@ public class LessonServiceImpl extends ServiceImpl<LessonMapper, Lesson> impleme
             return "教师不存在";
         }
 
+        String academicYear = lesson.getAcademicYear();
+        if (!CharSequenceUtil.isBlank(academicYear) && !RegexVerifyUtils.validAcademicYear(academicYear)) {
+            return "学年格式错误, 格式为xxxx-xxxx";
+        }
+
         // 检查课程是否已存在
         LambdaQueryWrapper<Lesson> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Lesson::getGrade, lesson.getGrade())
@@ -113,6 +118,11 @@ public class LessonServiceImpl extends ServiceImpl<LessonMapper, Lesson> impleme
 
         if (!teacherWorkspaceMapper.existsTeacher(lesson.getTeacherId(), lesson.getTeacherName())) {
             return "修改的教师不存在";
+        }
+
+        String academicYear = lesson.getAcademicYear();
+        if (!CharSequenceUtil.isBlank(academicYear) && !RegexVerifyUtils.validAcademicYear(academicYear)) {
+            return "学年格式错误, 格式为xxxx-xxxx";
         }
 
         // 如果需要更新关键字段，检查是否会导致重复
