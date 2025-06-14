@@ -837,7 +837,19 @@ export const asyncRoutes = [
       },
     ],
   },
-
+   // 通知册
+   {
+    path: '/notice',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/notice/index'),
+        name: 'Notice',
+        meta: { title: '通知册', icon: 'el-icon-menu' }
+      }
+    ]
+  },
   {
     path: "/demonstrate",
     component: Layout,
