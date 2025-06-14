@@ -79,7 +79,7 @@
       </div>
 
   <div class="operation-group">
-    <el-button type="primary" icon="el-icon-plus" @click="dialogVisible=true">新增</el-button>
+    <el-button type="primary" icon="el-icon-plus" @click="handleAddCourse()">新增</el-button>
     <el-button type="danger" icon="el-icon-delete" :disabled="deleDisabled" @click="handleDeleteLesson(ids)">删除</el-button>
     <el-dropdown trigger="click" class="more-actions">
       <el-button type="info">
@@ -312,7 +312,16 @@ const handleTreeCommand = ( data , e ) => {
 
 }
 const dialogVisible = ref(false)
-const formData = ref({})
+const formData = ref({
+  academicYear: null,
+  semester: null,
+  grade: null,
+  classNum: null,
+  className: '',
+  course: '',
+  teacherName: '',
+  teacherId: null
+})
 const semesterStartDialogVisible = ref(false)
 
 const refreshData = async () => {
@@ -492,6 +501,16 @@ const handleSelectionChange = (e) => {
 }
 // 课程信息的增删改
 const handleAddCourse = () => {
+   formData.value = {
+    academicYear: null,
+    semester: null,
+    grade: null,
+    classNum: null,
+    className: '',
+    course: '',
+    teacherName: '',
+    teacherId: null
+  }
   dialogVisible.value = true
 }
 
@@ -535,7 +554,7 @@ const handleDeleteLesson = (aaids) => {
 }
 
 const handleUpdateLesson = (row) => {
-  formData.value = row
+  formData.value = { ...row }
   dialogVisible.value = true
 }
 
