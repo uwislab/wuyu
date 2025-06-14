@@ -342,31 +342,46 @@ export default {
     save() {
       this.$refs.formRef.validate((valid) => {
         if (valid) {
-          // alert('提交成功');
+          // 处理性别值
           if (this.form.gender === '男') this.form.gender = '1';
           if (this.form.gender === '女') this.form.gender = '0';
-/*          if (this.form.deleted === '是') this.form.deleted = '1';
-          if (this.form.deleted === '否') this.form.deleted = '0';*/
+          
+          // 处理空值
           if (this.form.username === '(暂无)') this.form.username = null;
           if (this.form.politicalAppearance === '(暂无)') this.form.politicalAppearance = null;
           if (this.form.birthPlace === '(暂无)') this.form.birthPlace = null;
           if (this.form.age === '(暂无)') this.form.age = null;
           if (this.form.info === '(暂无)') this.form.info = null;
 
-          // 从localStorage获取schoolId
+          // 获取学校ID
           const userInfo = JSON.parse(localStorage.getItem('UserInfo'));
           this.form.schoolId = userInfo.schoolId;
           this.form.deleted = 0;
-          request.post("/teacher", this.form).then(res => {
-            if (res) {
-              this.$message.success("保存成功")
-              //保存成功后弹窗关闭
-              this.dialogFormVisible = false
-              this.searchTeacher()
-            } else {
-              this.$message.success("保存失败")
-            }
-          })
+
+          // 根据是否有id判断是新增还是编辑
+          if (this.form.id) {
+            // 编辑操作，调用updateTeacherInfo接口
+            request.post("/teacher/updateTeacherInfo", this.form).then(res => {
+              if (res) {
+                this.$message.success("修改成功")
+                this.dialogFormVisible = false
+                this.searchTeacher()
+              } else {
+                this.$message.error("修改失败")
+              }
+            })
+          } else {
+            // 新增操作，调用save接口
+            request.post("/teacher", this.form).then(res => {
+              if (res) {
+                this.$message.success("保存成功")
+                this.dialogFormVisible = false
+                this.searchTeacher()
+              } else {
+                this.$message.error("保存失败")
+              }
+            })
+          }
         } else {
           console.log('表单验证失败');
           return false;

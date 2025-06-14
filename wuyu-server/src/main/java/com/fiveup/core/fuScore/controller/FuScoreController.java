@@ -48,7 +48,7 @@ public class FuScoreController {
     private String[] fuItem = new String[]{"morality_score", "intelligence_score", "physical_score", "aesthetic_score", "labour_score"};
 
     // 获得某一班级所有学生的某一五育项目成绩
-    // ！！！第二个页面table表中的内容gh
+    // ！！！第二个页面table表中的内容
     @GetMapping("/getStudentsFuScoreList")
     public CommonResponse getStudentsFuScoreList( int gradeId, int classId, int date) {
         List<StudentFuScore> studentFuScore;

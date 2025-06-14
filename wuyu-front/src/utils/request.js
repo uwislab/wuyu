@@ -11,6 +11,7 @@ const service = axios.create({
   // baseURL: 'http://49.51.69.99:9200',
   baseURL: 'http://localhost:9085',
   // baseURL: "http://49.51.69.99:33304",
+  // baseURL: "http://36.111.68.174:33380",
   withCredentials: true, // send cookies when cross-domain requests
   timeout: 5000, // request timeout
 });

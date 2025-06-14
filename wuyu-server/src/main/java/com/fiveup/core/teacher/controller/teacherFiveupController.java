@@ -180,15 +180,15 @@ public class teacherFiveupController {
         // 一次性写出list内的对象到excel，使用默认格式，强制输出标题
         writer.write(list, true);
 
-        // 设置浏览器响应格式
+        //设置浏览器响应格式
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
         String fileName = URLEncoder.encode("教师信息", "UTF-8");
         response.setHeader("Content-Disposition", "attachment;filename=" + fileName + ".xlsx");
 
         ServletOutputStream outputStream = response.getOutputStream();
-        writer.flush(outputStream, true);
+        writer.flush(outputStream,true);
 
-        // 关闭流
+        //关闭流
         outputStream.close();
         writer.close();
     }
