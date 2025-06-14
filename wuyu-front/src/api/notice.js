@@ -1,5 +1,5 @@
 import request from '@/utils/request'
-
+// 获取学生信息
 export function getStudent(data) {
   return request.get('/noticeBooklet/getAllStudentAndClassAndGrade',data)
 }

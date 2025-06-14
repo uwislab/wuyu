@@ -2,7 +2,7 @@
  * @Author: hezeliangfj
  * @Date: 2025-06-14 12:54:59
  * @LastEditors: hezeliangfj
- * @LastEditTime: 2025-06-14 15:12:54
+ * @LastEditTime: 2025-06-14 18:41:48
  * @version: 0.0.1
  * @FilePath: \wuyu-front\src\views\notice\index.vue
  * @Descripttion: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
@@ -11,7 +11,7 @@
   <div>
     <div class="filter-container">
       <div class="left-filters">
-        <el-select v-model="gradeId" placeholder="请选择年级">
+        <el-select v-model="gradeId" placeholder="请选择年级" style="width:150px">
           <el-option
             v-for="item in grades"
             :key="item"
@@ -19,7 +19,7 @@
             :value="item">
           </el-option>
         </el-select>
-        <el-select v-model="classId" placeholder="请选择班级" style="margin-left: 20px;">
+        <el-select v-model="classId" placeholder="请选择班级" style="margin-left: 20px;width: 150px;">
           <el-option
             v-for="item in classes"
             :key="item"
@@ -37,39 +37,68 @@
       :visible.sync="dialogVisible"
       width="30%"
       :before-close="handleClose">
-      <span>是否导出{{ gradeId ? gradeId + '年级' : '' }}{{ classId ? classId + '班' : '' }}的所有学生的通知册信息</span>
+      <span v-if="selectedStudents.length > 0">
+        是否导出选中的 {{ selectedStudents.length }} 名学生（{{ selectedStudents.map(s => s.studentName).join('、') }}）的通知册信息
+      </span>
+      <span v-else>
+        是否导出{{ gradeId ? gradeId + '年级' : '' }}{{ classId ? classId + '班' : '' }}的所有学生的通知册信息
+      </span>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="handleExportBatch">确 定</el-button>
       </span>
     </el-dialog>
-    <el-table :data="paginatedList" style="width: 100%" id="dataTable">
-			<el-table-column fixed type="selection" tooltip-effect="dark">
-			</el-table-column>
-      <el-table-column prop="studentGrade" label="年级" >
-			</el-table-column>
-			<el-table-column prop="studentClassNumber" label="班级" >
-			</el-table-column>
-
-			<el-table-column prop="studentId" label="学生学号" >
-			</el-table-column>
-			<el-table-column prop="studentName" label="学生姓名">
-			</el-table-column>
-
-      <el-table-column label="操作" align="center" width="190px">
-        <template slot-scope="scope">
-          <el-button type="primary" @click="handleExport(scope.row)">导出<i class="el-icon-tickets"></i></el-button>
-        </template>
-      </el-table-column>
-		</el-table>
-    <!-- 分页器 -->
-		<div class="mt text_center">
-			<el-pagination :current-page="query.page" :page-sizes="[10, 30, 100]" :page-size="query.pageSize"
-				:total="totalCount" @size-change="handleSizeChange" @current-change="handleCurrentChange"
-				layout="total, sizes, prev, pager, next, jumper">
-			</el-pagination>
-		</div>
-		<!-- /分页器 -->
+    <div class="table-container">
+      <el-table :data="paginatedList" style="width: 100%" id="dataTable" @selection-change="handleSelectionChange" border stripe>
+        <el-table-column fixed type="selection" tooltip-effect="dark" width='40'>
+        </el-table-column>
+        <el-table-column prop="studentGrade" label="年级" width='80'>
+        </el-table-column>
+        <el-table-column prop="studentClassNumber" label="班级" width='80'>
+        </el-table-column>
+        <el-table-column prop="studentId" label="学生学号" >
+        </el-table-column>
+        <el-table-column prop="studentName" label="学生姓名">
+        </el-table-column>
+        <el-table-column prop="sdeyu" label="德育">
+          <template slot-scope="scope">
+            {{ scope.row.sdeyu || '暂无' }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="slaoyu" label="劳育">
+          <template slot-scope="scope">
+            {{ scope.row.slaoyu || '暂无' }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="stiyu" label="体育">
+          <template slot-scope="scope">
+            {{ scope.row.stiyu || '暂无' }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="szhiyu" label="智育">
+          <template slot-scope="scope">
+            {{ scope.row.szhiyu || '暂无' }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="smeiyu" label="美育">
+          <template slot-scope="scope">
+            {{ scope.row.smeiyu || '暂无' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" align="center" width="190px">
+          <template slot-scope="scope">
+            <el-button type="primary" @click="handleExport(scope.row)">导出<i class="el-icon-tickets"></i></el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <!-- 分页器 -->
+      <div class="mt text_center">
+        <el-pagination :current-page="query.page" :page-sizes="[10, 30, 100]" :page-size="query.pageSize"
+          :total="totalCount" @size-change="handleSizeChange" @current-change="handleCurrentChange"
+          layout="total, sizes, prev, pager, next, jumper">
+        </el-pagination>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -96,23 +125,28 @@ export default {
       gradeId: null,
       classId: null,
       // 查询
-			query: {
-				"pageSize": 10,
-				"page": 1,
-				"courseName": "",
-				"courseType": "",
-				"teacherName": "",
-				"studentNum": "",
-				"studentName": "",
-				"login_time": "",
-				"create_time": "",
-				"orderby": `create_time desc`
-			},
+      query: {
+        "pageSize": 10,
+        "page": 1,
+        "courseName": "",
+        "courseType": "",
+        "teacherName": "",
+        "studentNum": "",
+        "studentName": "",
+        "login_time": "",
+        "create_time": "",
+        "orderby": `create_time desc`
+      },
       // 数据
-			total: 0,//数据总数
-			list: [],
-			list_user_course_teacher: [],
-			deleteIds: [],
+      total: 0,//数据总数
+      list: [],
+      list_user_course_teacher: [],
+      deleteIds: [],
+      selectedStudents: [], // 存储选中的学生信息
+      uploadHeaders: {
+        'Content-Type': 'multipart/form-data'
+      },
+      uploadFile: null
     }
   },
   computed: {
@@ -120,8 +154,8 @@ export default {
       if (!this.gradeId) return []
       const uniqueClasses = new Set()
       this.classNames.forEach(item => {
-        if (item[0] === this.gradeId) {
-          uniqueClasses.add(item[1])
+        if (item[1] === this.gradeId) {
+          uniqueClasses.add(item[0])
         }
       })
       return Array.from(uniqueClasses).sort((a, b) => a - b)
@@ -190,11 +224,41 @@ export default {
     handleExport (row) {
       console.log('222',row)
     },
-    handleExportBatch() {
-      // Implementation of handleExportBatch method
+    handleFileChange(file) {
+      this.uploadFile = file.raw
     },
-    handleClose() {
-      // Implementation of handleClose method
+    async handleUpload() {
+      if (!this.uploadFile) {
+        this.$message.warning('请先选择文件')
+        return
+      }
+
+      const formData = new FormData()
+      formData.append('file', this.uploadFile)
+
+      try {
+        const response = await axios.post('http://localhost:9080/studentExcel/import', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        })
+        this.$message.success('上传成功')
+        this.dialogVisible = false
+        this.fetchCourse() // 刷新数据
+      } catch (error) {
+        this.$message.error('上传失败：' + (error.message || '未知错误'))
+      }
+    },
+    cancelExcel() {
+      this.uploadFile = null
+      this.dialogVisible = false
+    },
+    handleSelectionChange(selection) {
+      this.selectedStudents = selection.map(item => ({
+        studentId: item.studentId,
+        studentName: item.studentName
+      }))
+      // console.log('选中的学生：', this.selectedStudents)
     }
   },
   created() {
@@ -209,17 +273,22 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  // margin-bottom: 20px;
+  margin-top: 20px;
 
   .left-filters {
-  margin-top: 20px;
     display: flex;
-    // gap: 10px;
     margin-left: 20px;
   }
 
   .right-actions {
     margin-right: 20px;
   }
+}
+
+.table-container {
+  margin: 0px 20px 20px 20px;
+  // padding: 20px;
+  background-color: #fff;
+  border-radius: 4px;
 }
 </style>
