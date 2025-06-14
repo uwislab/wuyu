@@ -671,8 +671,8 @@ const handleExport = async () =>{
     const res = await exportExcel({
       page: pagination.page,
       size: pagination.size,
-      minGrade: filter.minGrade,
-      maxGrade: filter.maxGrade,
+      minGrade: filter.grade,
+      maxGrade: filter.grade,
       classNum: filter.classNum,
       course: filter.course,
       academicYear: filter.academicYear,
