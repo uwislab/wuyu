@@ -47,22 +47,22 @@ public class LessonController {
     @PostMapping("/add")
     @ApiOperation("添加排课信息")
     public CommonResult<Integer> addItems(@RequestBody Lesson lesson) {
-        int addRow = lessonService.addLesson(lesson);
-        if (addRow > 0) {
-            return CommonResult.success(addRow);
+        String status = lessonService.addLesson(lesson);
+        if (status.equals("OK")) {
+            return CommonResult.success();
         } else {
-            return CommonResult.failed("添加信息失败");
+            return CommonResult.failed(status);
         }
     }
 
     @PutMapping("/{id}")
     @ApiOperation("修改排课信息")
     public CommonResult<Integer> updateLesson(@RequestBody Lesson lesson) {
-        int updateRow = lessonService.updateLesson(lesson);
-        if (updateRow > 0) {
-            return CommonResult.success(updateRow);
+        String status = lessonService.updateLesson(lesson);
+        if (status.equals("OK")) {
+            return CommonResult.success();
         } else {
-            return CommonResult.failed("修改信息失败");
+            return CommonResult.failed(status);
         }
     }
 
