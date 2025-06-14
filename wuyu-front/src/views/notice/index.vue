@@ -275,6 +275,10 @@ export default {
       }
       }
     },
+     cleanpreview() {
+      this.dialogVisiblepreview = false;
+      this.content = ""; // 清除预览内容
+    },
     handleFileChange(file) {
       this.uploadFile = file.raw
     },
