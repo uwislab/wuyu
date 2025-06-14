@@ -7,6 +7,7 @@ import com.fiveup.core.studentManager.entity.StudentManager;
 import com.fiveup.core.studentManager.pojo.PageBean;
 import com.fiveup.core.studentManager.pojo.StudentManagerQuery;
 import com.fiveup.core.studentManager.pojo.StudentVO;
+
 import com.fiveup.core.studentManager.service.StudentManagerService;
 import jnr.ffi.annotations.In;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/StudentManager")
+
 public class StudentManagerController {
     @Autowired
     private StudentManagerService studentManagerService;
@@ -26,7 +28,7 @@ public class StudentManagerController {
      * @return
      */
     @PostMapping("/addStudent")
-    public Result addStudent(@RequestBody StudentManager studentManager){
+    public Result<Void> addStudent(@RequestBody StudentManager studentManager){
         studentManagerService.addStudent(studentManager);
         return Result.SUCCESS;
     }
@@ -41,15 +43,14 @@ public class StudentManagerController {
         PageBean<StudentVO> pageBean = studentManagerService.getStudentPage(studentManagerQuery);
 
         return new Result(pageBean);
-    }
 
     /**
      * 修改学生
      * @param studentManager
      * @return
      */
-    @PostMapping("/updateStudent")
-    public Result updateStudent(@RequestBody StudentManager studentManager){
+    @PostMapping("updateStudent")
+    public Result<Void> updateStudent(@RequestBody StudentManager studentManager){
         studentManagerService.updateStudent(studentManager);
         return Result.SUCCESS;
     }
@@ -58,8 +59,8 @@ public class StudentManagerController {
      * 删除学生（逻辑删除）
      * @return
      */
-    @GetMapping("/removeStudent")
-    public Result removeStudent(@RequestParam("id") Integer studentId){
+    @GetMapping("removeStudent")
+    public Result<Void> removeStudent(@RequestParam("id") Integer studentId){
         studentManagerService.removeStudent(studentId);
         return Result.SUCCESS;
     }
