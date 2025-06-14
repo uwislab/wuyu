@@ -182,7 +182,16 @@ const dialogVisible = ref(false)
 const loading = ref(false) // 添加加载状态
 const teacherSelVisible = ref(false)
 
-const form = ref({ ...props.formData })
+const form = ref({
+  academicYear: null,
+  semester: null,
+  grade: null,
+  classNum: null,
+  className: '',
+  course: '',
+  teacherName: '',
+  teacherId: null
+})
 
 const rules = reactive({
   academicYear: [
@@ -212,18 +221,45 @@ const rules = reactive({
 })
 
 // 监听props.visible变化
-watch(() => props.visible, val => {
+watch(() => props.visible, (val) => {
   dialogVisible.value = val
   if (val) {
-    // 打开对话框时重置表单
-    formRef.value?.resetFields()
-    // Object.assign(form, props.formData)
+    if (props.formData && Object.keys(props.formData).length > 0) {
+      form.value = { ...props.formData }
+    } else {
+      form.value = {
+        academicYear: null,
+        semester: null,
+        grade: null,
+        classNum: null,
+        className: '',
+        course: '',
+        teacherName: '',
+        teacherId: null
+      }
+    }
+    nextTick(() => {
+      formRef.value?.resetFields()
+    })
   }
 })
 
- watch(() => props.formData, (newVal) => {
-      form.value = { ...newVal };
-    }, { deep: true });
+watch(() => props.formData, (newVal) => {
+  if (newVal) {
+    form.value = { ...newVal }
+  } else {
+    form.value = {
+      academicYear: null,
+      semester: null,
+      grade: null,
+      classNum: null,
+      className: '',
+      course: '',
+      teacherName: '',
+      teacherId: null
+    }
+  }
+}, { deep: true, immediate: true })
 
 // 关闭对话框处理
 const handleClose = () => {
