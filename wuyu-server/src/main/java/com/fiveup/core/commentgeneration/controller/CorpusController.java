@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.lang.reflect.Array;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -34,7 +32,7 @@ public class CorpusController {
     @ResponseBody
     @GetMapping("/all")
     public String getAll() {
-        Result result = new Result();
+        Result<V> result = new Result<V>();
 
         // 查询所有语料库数据
         List<CorpusVO> all = corpusService.getAll();
@@ -53,7 +51,7 @@ public class CorpusController {
     @ResponseBody
     @PostMapping("/add")
     public String add(@RequestBody Corpus corpus){
-        Result result = new Result();
+        Result<V> result = new Result<V>();
 
         // 增加
         corpusService.add(corpus);
@@ -70,7 +68,7 @@ public class CorpusController {
     @ResponseBody
     @DeleteMapping("/delete")
     public String delete(@RequestBody Corpus corpus){
-        Result result = new Result();
+        Result<V> result = new Result<V>();
 
         // 删除
         corpusService.deleteById(corpus.getId());
@@ -87,7 +85,7 @@ public class CorpusController {
     @ResponseBody
     @PutMapping("/update")
     public String update(@RequestBody Corpus corpus){
-        Result result = new Result();
+        Result<V> result = new Result<V>();
 
         // 更新
         corpusService.updateById(corpus);
@@ -103,8 +101,8 @@ public class CorpusController {
      */
     @ResponseBody
     @PostMapping("/deleteAll")
-    public Result deleteAll(@RequestBody Integer[] ids) {
-        Result result = new Result();
+    public Result<V> deleteAll(@RequestBody Integer[] ids) {
+        Result<V> result = new Result<V>();
         try {
             int rowsAffected = corpusService.deleteAll(ids);
             if (rowsAffected == ids.length) {
@@ -143,7 +141,7 @@ public class CorpusController {
     @GetMapping("/search")
     public String search(@RequestParam(defaultValue = "") Integer subjectId,
                          @RequestParam(defaultValue = "") String comment) {
-        Result result = new Result();
+        Result<V> result = new Result<V>();
 //        System.out.println("-------------subject:"+subjectId);
 //        System.out.println("----------------comment:"+comment);
         List<CorpusVO> corpusVOS = corpusService.search(subjectId,comment);
