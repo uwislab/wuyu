@@ -38,8 +38,8 @@
             <if test="gradeId != null">
                 and bs.grade_id = #{gradeId}
             </if>
-            <if test="classId != null">
-                and class_id = #{classId}
+            <if test="className != null and className !=''">
+                and bc.class_name = #{className}
             </if>
         </where>
     </select>
