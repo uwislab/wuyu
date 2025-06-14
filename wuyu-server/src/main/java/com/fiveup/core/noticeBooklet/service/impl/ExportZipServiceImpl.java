@@ -1,8 +1,6 @@
 package com.fiveup.core.noticeBooklet.service.impl;
 
 import com.fiveup.core.noticeBooklet.domain.NoticeBooklet;
-import com.fiveup.core.noticeBooklet.domain.vo.NoticeBookletVo;
-import com.fiveup.core.noticeBooklet.mapper.ExportZipMapper;
 import com.fiveup.core.noticeBooklet.service.ExportZipService;
 import com.fiveup.core.noticeBooklet.service.NoticeBookletService;
 import com.fiveup.core.noticeBooklet.utils.FileUtils;
