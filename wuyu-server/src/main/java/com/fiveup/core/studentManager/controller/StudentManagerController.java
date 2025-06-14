@@ -39,10 +39,11 @@ public class StudentManagerController {
      * @return
      */
     @PostMapping("/getStudent")
-    public Result<PageBean<StudentVO>> getStudent(@RequestBody StudentManagerQuery studentManagerQuery){
+    public Result<PageBean<StudentVO>> getStudent(@RequestBody StudentManagerQuery studentManagerQuery) {
         PageBean<StudentVO> pageBean = studentManagerService.getStudentPage(studentManagerQuery);
 
         return new Result(pageBean);
+    }
 
     /**
      * 修改学生

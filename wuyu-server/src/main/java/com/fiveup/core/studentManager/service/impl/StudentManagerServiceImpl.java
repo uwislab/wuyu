@@ -9,7 +9,6 @@ import com.fiveup.core.studentManager.pojo.PageBean;
 import com.fiveup.core.studentManager.pojo.StudentManagerQuery;
 import com.fiveup.core.studentManager.pojo.StudentVO;
 import com.fiveup.core.studentManager.service.StudentManagerService;
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -55,11 +54,11 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
 
         //为pagebean赋值
         PageBean<StudentVO> pageBean = new PageBean<>();
-        pageBean.setData(newPage.getResult());
+        pageBean.setData(newPage.getRecords());
         pageBean.setTotalNum((int) newPage.getTotal());
-        pageBean.setTotalPage(newPage.getPages());
+        pageBean.setTotalPage((int) newPage.getPages());
         pageBean.setSizeOfPage(sizeOfPage);
-        pageBean.setSizeOfCurrPage(newPage.getResult().size());
+        pageBean.setSizeOfCurrPage(newPage.getRecords().size());
         pageBean.setPage(studentManagerQuery.getPage());
 
         return pageBean;
