@@ -18,9 +18,9 @@ public interface LessonService extends IService<Lesson> {
 
     int deleteItems(List<Long> ids);
 
-    int addLesson(Lesson lesson);
+    String addLesson(Lesson lesson);
 
-    int updateLesson(Lesson lesson);
+    String updateLesson(Lesson lesson);
 
     Boolean copyLessonClassToClass(Lesson source, Lesson target, boolean isOverwrite);
 

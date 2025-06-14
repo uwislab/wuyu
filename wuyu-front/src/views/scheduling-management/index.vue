@@ -79,7 +79,7 @@
       </div>
 
   <div class="operation-group">
-    <el-button type="primary" icon="el-icon-plus" @click="dialogVisible=true">新增</el-button>
+    <el-button type="primary" icon="el-icon-plus" @click="handleAddCourse()">新增</el-button>
     <el-button type="danger" icon="el-icon-delete" :disabled="deleDisabled" @click="handleDeleteLesson(ids)">删除</el-button>
     <el-dropdown trigger="click" class="more-actions">
       <el-button type="info">
@@ -110,13 +110,14 @@
                 v-model="autoCopyEnabled"
                 active-text="自动复制"
                 active-color="#409EFF"
-                @change="handleAutoCopySwitch"
+                @change="handleAutoCopyClass"
               />
               <el-popconfirm
-                :title="`是否确认复制上学期的排课`"
-                confirm-button-text="确认"
-                cancel-button-text="取消"
-                @confirm="handleAutoCopy"
+                title="确认复制上学期的排课？"
+                confirm-button-text="覆盖"
+                cancel-button-text="不覆盖"
+                @confirm="() => handleAutoCopy(true)"
+                @cancel="() => handleAutoCopy(false)"
               >
                 <template #reference>
                   <el-button type="text" icon="el-icon-copy-document" circle>上学期排课</el-button>
@@ -249,15 +250,6 @@
       @select="handleTeacherSelect"
     />
 
-
-    <!-- 学期初时间设置弹窗 -->
-    <semester-start-dialog
-      :visible="semesterStartDialogVisible"
-      @update:visible="semesterStartDialogVisible = $event"
-      @confirm="handleSemesterStartConfirm"
-      @cancel="handleSemesterStartCancel"
-    />
-
     <!-- 导入结果提示 -->
     <el-alert
       v-if="importResult"
@@ -294,7 +286,6 @@ import {getLessonPageAPI,
         from '@/api/schedulModule/index'
 import lessonInfoDialog from './components/lessonInfoDialog.vue'
 import TeacherSel from './components/TeacherSel.vue'
-import SemesterStartDialog from './components/SemesterStartDialog.vue'
 import Import from './components/Import.vue'
 
 const handleTreeCommand = ( data , e ) => {
@@ -312,11 +303,20 @@ const handleTreeCommand = ( data , e ) => {
 
 }
 const dialogVisible = ref(false)
-const formData = ref({})
+const formData = ref({
+  academicYear: null,
+  semester: null,
+  grade: null,
+  classNum: null,
+  className: '',
+  course: '',
+  teacherName: '',
+  teacherId: null
+})
 const semesterStartDialogVisible = ref(false)
 
 const refreshData = async () => {
-  formData.value = {}
+  // formData.value = {}
   await fetchData()
   await fetchAllCourses()
 }
@@ -370,12 +370,30 @@ const transformToTree = (records) => {
   const treeMap = new Map()
 
   records.forEach(item => {
-    const gradeKey = `grade-${item.grade}`;
-    const classKey = `class-${item.grade}-${item.classNum}`
+    const semesterLabel = item.semester === 1 ? '上学期' : '下学期';
+    const yearSemesterKey = `yearSemester-${item.academicYear}-${item.semester}`;
+    const yearSemesterLabel = `${item.academicYear}${semesterLabel}`;
+
+    // 学年学期节点
+    if (!treeMap.has(yearSemesterKey)) {
+      treeMap.set(yearSemesterKey, {
+        id: yearSemesterKey,
+        type: 'yearSemester',
+        label: yearSemesterLabel,
+        academicYear: item.academicYear,
+        semester: item.semester,
+        sortValue: `${item.academicYear}-${3 - item.semester}`, //排序标识 用的学年倒序和学期正序
+        children: []
+      })
+    }
 
     // 年级节点
-    if (!treeMap.has(gradeKey)) {
-      treeMap.set(gradeKey, {
+    const gradeKey = `grade-${item.grade}`;
+    const yearSemesterNode = treeMap.get(yearSemesterKey);
+    const gradeNode = yearSemesterNode.children.find(g => g.gradeValue === item.grade)
+
+    if (!gradeNode) {
+      yearSemesterNode.children.push({
         id: gradeKey,
         type: 'grade',
         label: `${item.grade}年级`,
@@ -385,10 +403,12 @@ const transformToTree = (records) => {
     }
 
     // 班级节点
-    const gradeNode = treeMap.get(gradeKey);
-    const classNode = gradeNode.children.find(c => c.classNum === item.classNum)
+    const classKey = `class-${item.grade}-${item.classNum}`
+    const targetGrade = yearSemesterNode.children.find(g => g.gradeValue === item.grade);
+    const classNode = targetGrade.children.find(c => c.classNum === item.classNum)
+
     if (!classNode) {
-      gradeNode.children.push({
+      targetGrade.children.push({
         id: classKey,
         type: 'class',
         label: item.classNum+'班',
@@ -398,7 +418,7 @@ const transformToTree = (records) => {
     }
 
     // 课程节点
-    const targetClass = gradeNode.children.find(c => c.classNum === item.classNum);
+    const targetClass = targetGrade.children.find(c => c.classNum === item.classNum);
     targetClass.children.push({
       id: item.id,
       type: 'course',
@@ -407,12 +427,22 @@ const transformToTree = (records) => {
       teacherId: item.teacherId,
       grade: item.grade,
       classNum: item.classNum,
-      academicYear:item.academicYear,
-      semester:item.semester
+      academicYear: item.academicYear,
+      semester: item.semester
     })
   })
 
-  return Array.from(treeMap.values())
+  // 转换为数组并排序
+  const sortedTree = Array.from(treeMap.values())
+    .sort((a, b) => {
+      return b.sortValue.localeCompare(a.sortValue);
+    })
+    .map(yearSemesterNode => {
+      yearSemesterNode.children.sort((a, b) => a.gradeValue - b.gradeValue);
+      return yearSemesterNode;
+    });
+
+  return sortedTree;
 }
 
 const currentCourse = ref(null);
@@ -462,6 +492,16 @@ const handleSelectionChange = (e) => {
 }
 // 课程信息的增删改
 const handleAddCourse = () => {
+   formData.value = {
+    academicYear: null,
+    semester: null,
+    grade: null,
+    classNum: null,
+    className: '',
+    course: '',
+    teacherName: '',
+    teacherId: null
+  }
   dialogVisible.value = true
 }
 
@@ -505,7 +545,7 @@ const handleDeleteLesson = (aaids) => {
 }
 
 const handleUpdateLesson = (row) => {
-  formData.value = row
+  formData.value = { ...row }
   dialogVisible.value = true
 }
 
@@ -682,17 +722,21 @@ const openTeacherDialog = (course) => {
 // 处理教师选择
 const handleTeacherSelect = async (teacher) => {
   if (!currentCourse.value) return;
-
-  // 检查教师是否已在同一班级有其他课程
+  // console.log("课程信息",currentCourse.value) 
+  // 检查教师在本学期，是否已在同一班级，有同样的课程
+  // 原则上，一门课程只有一个授课教师；一个授课教师可以承担多门课程。
   const hasConflict = tableData.value.some(item =>
     item.teacherId === teacher.id &&
+    item.academicYear === currentCourse.value.academicYear && // 学年
     item.grade === currentCourse.value.grade &&
     item.classNum === currentCourse.value.classNum &&
-    item.id !== currentCourse.value.id
-  );
+    item.course === currentCourse.value.course && // 课程名称比较
+    item.id !== currentCourse.value.id &&
+    item.semester === currentCourse.value.semester // 学期
+);
 
   if (hasConflict) {
-    Message.error(`${teacher.teacherName}老师已经在${currentCourse.value.grade}年级${currentCourse.value.classNum}班有其他课程，不能重复分配`);
+    Message.error(`本学期${teacher.teacherName}老师已经在${currentCourse.value.className}分配有课程，不能重复分配`);
     return;
   }
 
@@ -754,37 +798,19 @@ const handleTeacherSelect = async (teacher) => {
 };
 
 // 复制上学期排课
-const handleAutoCopy = async () => {
+const handleAutoCopy = async (val) => {
+  console.log(val)
   try {
-    // 从 localStorage 获取当前学期和学年
-    let currentSemester = localStorage.getItem('currentSemester')
-    let currentYear = localStorage.getItem('currentYear')
-
-    // 如果没有学期和学年信息，设置默认值
-    if (!currentSemester || !currentYear) {
-      const currentDate = new Date()
-      const currentMonth = currentDate.getMonth() + 1 // 获取当前月份（0-11，需要+1）
-      const year = currentDate.getFullYear()
-
-      if (currentMonth >= 2 && currentMonth <= 8) {
-        // 2-8月，使用当前年
-        currentYear = `${year - 1}-${year}`
-        currentSemester = '2' // 第二学期
-      } else {
-        // 9-1月，使用当前年
-        currentYear = `${year}-${year + 1}`
-        currentSemester = '1' // 第一学期
-      }
-    }
-
     const res = await copyLastSemesterSchedule({
-      academicYear: currentYear,
-      semester: currentSemester,
-      isOverwrite: true
+      isOverwrite: val
     })
     if (res.code === 200) {
-      Message.success(`复制上学期${currentYear}学年${currentSemester}学期的排课成功`)
-      // 重新获取数据
+      if(val){
+        Message.success(`以覆盖的方式复制上学期的排课成功`)
+      } else {
+        Message.success(`以不覆盖的方式复制上学期的排课成功`)
+      }
+      // 重新获取数据（应该获取到本学期的课程信息）
       await fetchData()
       await fetchAllCourses()
     }
@@ -801,50 +827,26 @@ watch(teacherSelVisible, (val) => {
   }
 })
 
-// 学期初时间设置相关
+// 自动复制设置相关
 const autoCopyEnabled = ref(false)
 
-// 处理自动复制开关变化
-const handleAutoCopySwitch = (val) => {
-  if (val) {
-    // 手动打开开关时，打开弹窗
-    semesterStartDialogVisible.value = true
-  }
-}
-
-// 开关自动复制
-const handleAutoCopyClass = (val) => {
-  if (val) {
-    autoCopyLastSemesterSchedule({enabled: true});
-  }
-}
-// 处理学期初时间确认
-const handleSemesterStartConfirm = (formData) => {
-  semesterStartDialogVisible.value = false
-  if(formData.isOverwrite){
-    fetchData()
-    fetchAllCourses()
-    // 确认后保持开关打开
-    autoCopyEnabled.value = true
-    // 保存学期初时间到localStorage
-    localStorage.setItem('semesterStartTime', JSON.stringify({
-      startDate: formData.startDate,
-      academicYear: formData.academicYear,
-      semester: formData.semester,
-      timestamp: new Date().getTime()
-    }))
-  }
-  handleAutoCopyClass(autoCopyEnabled.value)
-  Message.success('学期初时间设置成功')
-}
-
-// 处理学期初时间取消
-const handleSemesterStartCancel = (formData) => {
-  semesterStartDialogVisible.value = false
-  if(!formData.isOverwrite){
-    // 取消后关闭开关
-    autoCopyEnabled.value = false
-  }
+// 开关自动复制 
+const handleAutoCopyClass = async (val) => { 
+  try { 
+    if (val) { 
+      const res = await autoCopyLastSemesterSchedule({enabled: true}); 
+      if (res.code === 200) { 
+        Message.success(`开启自动复制排课成功`);
+      } 
+    } else { 
+      const res = await autoCopyLastSemesterSchedule({enabled: false}); 
+      if (res.code === 200) { 
+        Message.success(`已取消自动复制排课`);
+      } 
+    } 
+  } catch (error) { 
+    Message.error('复制上学期排课失败');
+  } 
 }
 
 onMounted(() => {
