@@ -11,3 +11,11 @@ export function exportZip (data) {
 export function noticeBooklet (data) {
   return request.get('/noticeBooklet/get',data)
 }
+// 导出通知册
+export function exportBooklet(data) {
+  return request.post('/noticeBooklet/word/generate',data)
+}
+// 预览通过册
+export function previewNoticeBooklet(data) {
+  return request.get('/noticeBooklet/word/generateHTML',data)
+}
