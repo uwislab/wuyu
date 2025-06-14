@@ -42,10 +42,13 @@
             <div class="resume-hd">
               <ul>
                 <li>
-                  <countTo :startVal='startVal' :endVal='all' :duration='6000' separator=""></countTo>
+                  <countTo :startVal='startVal' :endVal='panel.teacherNum' :duration='6000' separator=""></countTo>
                 </li>
                 <li>
-                  <countTo :startVal='startVal' :endVal='ava' :duration='6000' separator=""></countTo>
+                  <countTo :startVal='startVal' :endVal='panel.studentNum' :duration='6000' separator=""></countTo>
+                </li>
+                <li>
+                  <countTo :startVal='startVal' :endVal='panel.gradeNum' :duration='6000' separator=""></countTo>
                 </li>
               </ul>
             </div>
@@ -53,34 +56,15 @@
               <ul>
                 <li>老师人数（单位：人）</li>
                 <li>学生人数（单位：人）</li>
+                <li>年级数量（单位：个）</li>
               </ul>
             </div>
           </div>
           <div class="map">
-            <!--
-            <div class="map1"></div>
-            <div class="map2"></div>
-            <div class="map3"></div>
--->
-
-            <h3 style="color: white;text-align: center">班级风采</h3>
-            <el-carousel :autoplay="true" indicator-position="none" :interval="4000" height="230px">
-              <el-carousel-item>
-                <div class="panel">
-                  <div class="echart" id="xybjChart1" :style="myChartStyle"></div>
-                </div>
-              </el-carousel-item>
-              <el-carousel-item>
-                <div class="panel">
-                  <div class="echart" id="xybjChart2" :style="myChartStyle"></div>
-                </div>
-              </el-carousel-item>
-              <el-carousel-item>
-                <div class="panel">
-                  <div class="echart" id="xybjChart3" :style="myChartStyle"></div>
-                </div>
-              </el-carousel-item>
-            </el-carousel>
+            <h3 style="color: white;text-align: center">五育达成情况</h3>
+            <div class="panel">
+              <div class="echart" id="wydcChart" :style="myChartStyle"></div>
+            </div>
             <h3 style="color: white;text-align: center">五育标兵</h3>
             <el-carousel :autoplay="true" indicator-position="none" :interval="5000" arrow="always" height="250px">
               <el-carousel-item>
@@ -105,7 +89,7 @@
               </el-carousel-item>
               <el-carousel-item>
                 <div class="panel">
-                  <div class="echart" id="xygrChart5" :style="myChartStyle"></div>、
+                  <div class="echart" id="xygrChart5" :style="myChartStyle"></div>
                 </div>
               </el-carousel-item>
               <el-carousel-item>
@@ -146,8 +130,10 @@ import '@/assets/js/flexible'
 import '@/assets/js/china'
 import countTo from 'vue-count-to'
 import api from '@/api/demonstrate/api'
+import { getPanelData } from "@/api/managementModule/dataBase"
 import echarts from 'echarts'
 import screenfull from 'screenfull'
+import { getGradeScore } from '@/api/fuScale'
 export default {
   name: 'Brand',
   components: {
@@ -180,20 +166,40 @@ export default {
       typeEnList: ['deyu', 'zhiyu', 'tiyu', 'meiyu', 'laoyu'],
       idList: ['id0', 'id1', 'id2', 'id3', 'id4'],
       colorList: ['#1b6cd2', '#B5C334', '#FCCE10', '#E87C25', '#27727B'],
+      panel: {
+        studentNum: 0,
+        teacherNum: 0,
+        gradeNum: 0
+      },
       all: 0,
       ava: 0,
       myChartStyle: { float: "left", width: "100%", height: "230px" }, //图表样式
+      grades: ['一年级', '二年级', '三年级', '四年级', '五年级', '六年级'],
+      wuyuSeries: [
+        { name: '德育', data: [] },
+        { name: '智育', data: [] },
+        { name: '体育', data: [] },
+        { name: '美育', data: [] },
+        { name: '劳育', data: [] }
+      ],
     }
   },
   computed: {
-
+    schoolId() {
+      return JSON.parse(window.localStorage.getItem("UserInfo")).schoolId;
+    }
   },
   created() {
     const that = this;
+    // 获取学校基本信息
+    getPanelData({ schoolId: this.schoolId }).then((res) => {
+      this.panel = res.data.panel;
+    });
+
+    // 获取五育年级变化数据
     api.getWynjbh().then(e => {
       setTimeout(function () {
         for (var i = 0; i < that.typeList.length; i++) {
-          // console.log(e[that.typeEnList[i]])
           e[that.typeEnList[i]].forEach(eList => {
             if (eList.data.length < 3) {
               for (let i = 0; i <= 3 - eList.data.length; i++) {
@@ -201,7 +207,6 @@ export default {
               }
             }
           })
-          // console.log(e[that.typeEnList[i]])
           that.initChart('id' + i, that.typeList[i], that.colorList[i]
             , e["gradeList"]
             , e[e["gradeList"][i] + 'riqi']
@@ -209,6 +214,15 @@ export default {
         }
       }, 500);
     })
+
+    // 获取五育达成数据
+    api.getWydc().then(e => {
+      setTimeout(() => {
+        this.initWydcChart(e);
+      }, 500);
+    })
+
+    // 获取完成度数据
     api.getWanchengdu().then(e => {
       that.all = Number.parseInt(e.count);
       that.ava = Number.parseInt(e.ava);
@@ -216,6 +230,9 @@ export default {
         that.initWancheng("id5", e.gradeList, e.successList, e.failList);
       }, 500);
     })
+
+    // 获取五育年级平均成绩数据
+    this.fetchAllGradeWuyuScore();
   },
   mounted() {
     this.getWeather();
@@ -224,7 +241,6 @@ export default {
     }, 1000 * 60 * 60)
 
     this.nowTimes();
-    this.initXYBJEcharts();
     this.initXYGREcharts();
   },
   methods: {
@@ -317,60 +333,6 @@ export default {
       myChart.setOption(option)
       this.chartList.push(myChart)
     },
-    initXYBJEcharts() {
-      api.getXYClass()
-        .then(function (res) {
-          const xyClassList = res.xyClass
-          for (let i = 0; i < xyClassList.length; i++) {
-            const option = {
-              title: {
-                text: xyClassList[i].class,
-                textStyle: {
-                  color: '#fff',
-                  fontWeight: 500,
-                },
-                top: '5%'
-              },
-              // legend: {
-              //     orient: 'vertical',
-              //     right: '10%'
-              // },
-              tooltip: {
-                trigger: 'item',
-                formatter: '{b} : {c} 分' // <br/>换行
-                //a:（系列名称） b:(数据名称) c:(数值) d:(饼图百分比)
-              },
-              series: [
-                {
-                  type: 'pie',
-                  radius: '50%',
-                  center: ['55%', '50%'],
-                  roseType: 'area',
-                  itemStyle: {
-                    borderRadius: 8
-                  },
-                  data: [
-                    { value: xyClassList[i].deyu, name: '德育' },
-                    { value: xyClassList[i].zhiyu, name: '智育' },
-                    { value: xyClassList[i].tiyu, name: '体育' },
-                    { value: xyClassList[i].meiyu, name: '美育' },
-                    { value: xyClassList[i].laoyu, name: '劳育' },
-                  ]
-                }
-              ]
-            };
-            const myChart = echarts.init(document.querySelector("#xybjChart" + (i + 1)));
-            myChart.setOption(option);
-            window.addEventListener("resize", function () {
-              myChart.resize();
-            });
-            this.chartList.push(myChart)
-          }
-        })
-        .catch(function (error) {
-          console.log(error);
-        })
-    },
     initXYGREcharts() {
       const kemu = ['zong', 'deyu', 'zhiyu', 'tiyu', 'meiyu', 'laoyu']
       const kumuName = ['总分', '德育', '智育', '体育', '美育', '劳育']
@@ -418,14 +380,6 @@ export default {
                   }
                 }
               },
-              // 图例
-              // legend: {
-              //   data: ["分数"],
-              //   top: "0%",
-              //   textStyle: {
-              //     color: '#fffff'//字体颜色
-              //   }
-              // },
               yAxis: {
                 axisLabel: {
                   show: true,
@@ -463,6 +417,44 @@ export default {
         .catch(function (error) {
           console.log(error);
         })
+    },
+    initWydcChart(data) {
+      const myChart = echarts.init(document.getElementById('wydcChart'))
+      const option = {
+        tooltip: {
+          trigger: 'item'
+        },
+        legend: {
+          data: data.gradeList,
+          textStyle: {
+            color: '#fff'
+          }
+        },
+        radar: {
+          indicator: [
+            { name: '德', max: 100 },
+            { name: '智', max: 100 },
+            { name: '体', max: 100 },
+            { name: '美', max: 100 },
+            { name: '劳', max: 100 }
+          ]
+        },
+        series: [{
+          type: 'radar',
+          data: data.gradeList.map(grade => ({
+            value: [
+              data[grade].deyu,
+              data[grade].zhiyu,
+              data[grade].tiyu,
+              data[grade].meiyu,
+              data[grade].laoyu
+            ],
+            name: grade
+          }))
+        }]
+      };
+      myChart.setOption(option)
+      this.chartList.push(myChart)
     },
     initWancheng(divId, xAxisData, succesList, failList) {
       const myChart = echarts.init(document.getElementById(divId))
@@ -541,7 +533,60 @@ export default {
         chart.dispose()
       })
       this.chartList = []
-    }
+    },
+    async fetchAllGradeWuyuScore() {
+      // 清空数据
+      this.wuyuSeries = [
+        { name: '德育', data: [] },
+        { name: '智育', data: [] },
+        { name: '体育', data: [] },
+        { name: '美育', data: [] },
+        { name: '劳育', data: [] }
+      ];
+      for (let i = 0; i < this.grades.length; i++) {
+        const grade = this.grades[i];
+        try {
+          const res = await getGradeScore(grade);
+          // res 应为 [{name: '平均分', data: [德,智,体,美,劳], type: 'line'}]
+          if (Array.isArray(res) && res.length > 0 && Array.isArray(res[0].data)) {
+            for (let j = 0; j < 5; j++) {
+              this.wuyuSeries[j].data.push(res[0].data[j]);
+            }
+          } else {
+            // 若无数据，补空
+            for (let j = 0; j < 5; j++) {
+              this.wuyuSeries[j].data.push(null);
+            }
+          }
+        } catch (e) {
+          for (let j = 0; j < 5; j++) {
+            this.wuyuSeries[j].data.push(null);
+          }
+        }
+      }
+      // 渲染五育图表
+      for (let i = 0; i < 5; i++) {
+        this.drawWuyuChart('id' + i, this.typeList[i], this.colorList[i], this.grades, this.wuyuSeries[i].data);
+      }
+    },
+    drawWuyuChart(divId, name, color, xData, data) {
+      const myChart = echarts.init(document.getElementById(divId));
+      const option = {
+        title: { text: name + '各年级变化', left: 'center', textStyle: { color: '#fff', fontSize: 16 } },
+        tooltip: { trigger: 'axis' },
+        xAxis: { type: 'category', data: xData, axisLabel: { color: '#fff' } },
+        yAxis: { type: 'value', min: 0, max: 100, axisLabel: { color: '#fff' } },
+        series: [{
+          name: name,
+          data: data,
+          type: 'line',
+          itemStyle: { color: color },
+          label: { show: true, position: 'top', color: '#fff' }
+        }]
+      };
+      myChart.setOption(option);
+      this.chartList.push(myChart);
+    },
   },
   beforeDestroy() {
     clearInterval(this.timer);
