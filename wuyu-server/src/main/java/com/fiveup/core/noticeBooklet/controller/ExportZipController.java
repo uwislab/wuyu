@@ -18,10 +18,14 @@ public class ExportZipController {
     /**
      * 生成多个Word文件并打包为ZIP
      * @param response HTTP响应对象
-     * @param studentIds 多个通知册的id集合
+     * @param classId 班级id
+     * @param gradeId 年级 id
      */
     @GetMapping("/zip")
-    public void exportMultipleWords(HttpServletResponse response, @RequestParam List<Long> studentIds) {
-        exportZipService.exportMultipleWords(response, studentIds);
+    public void exportMultipleWords(HttpServletResponse response,
+                                    @RequestParam(required = false) Integer classId,
+                                    @RequestParam(required = false) Integer gradeId)
+    {
+        exportZipService.exportMultipleWords(response, classId,  gradeId);
     }
 }

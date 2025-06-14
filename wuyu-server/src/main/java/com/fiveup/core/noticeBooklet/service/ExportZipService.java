@@ -10,5 +10,5 @@ public interface ExportZipService {
      * @param response HTTP响应对象
      * @param ids 多个通知册的id集合
      */
-    public void exportMultipleWords(HttpServletResponse response, List<Long> ids);
+    public void exportMultipleWords(HttpServletResponse response, Integer classId, Integer gradeId);
 }
