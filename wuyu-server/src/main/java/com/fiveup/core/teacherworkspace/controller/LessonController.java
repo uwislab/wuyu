@@ -1,6 +1,7 @@
 package com.fiveup.core.teacherworkspace.controller;
 
 import com.fiveup.core.common.api.CommonResult;
+import com.fiveup.core.teacherworkspace.common.utils.AlgorithmUtils;
 import com.fiveup.core.teacherworkspace.config.ScheduleConfig;
 import com.fiveup.core.teacherworkspace.model.Lesson;
 import com.fiveup.core.teacherworkspace.model.dto.PageLessonDto;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -81,7 +83,10 @@ public class LessonController {
 
     @GetMapping("/copyLastSemester")
     @ApiOperation("复制上一学期排课信息")
-    public CommonResult<Integer> copyLessonByLastSemester(@RequestParam String academicYear, @RequestParam int semester, @RequestParam boolean isOverwrite) {
+    public CommonResult<Integer> copyLessonByLastSemester(@RequestParam boolean isOverwrite) {
+        LocalDate date = LocalDate.now();
+        String academicYear = AlgorithmUtils.calculateAcademicYear(date);
+        int semester = AlgorithmUtils.calculateSemester(date);
         log.info("复制上一学期排课信息: {} {}", academicYear, semester);
         try {
             Boolean copied = lessonService.copyLessonByLastSemester(academicYear, semester, isOverwrite);
