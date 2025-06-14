@@ -73,34 +73,9 @@
             </el-carousel>
             <h3 style="color: white;text-align: center">五育标兵</h3>
             <el-carousel :autoplay="true" indicator-position="none" :interval="5000" arrow="always" height="250px">
-              <el-carousel-item>
+              <el-carousel-item v-for="(item, index) in pictureList2" :key="index">
                 <div class="panel">
-                  <div class="echart" id="xygrChart1" :style="myChartStyle"></div>
-                </div>
-              </el-carousel-item>
-              <el-carousel-item>
-                <div class="panel">
-                  <div class="echart" id="xygrChart2" :style="myChartStyle"></div>
-                </div>
-              </el-carousel-item>
-              <el-carousel-item>
-                <div class="panel">
-                  <div class="echart" id="xygrChart3" :style="myChartStyle"></div>
-                </div>
-              </el-carousel-item>
-              <el-carousel-item>
-                <div class="panel">
-                  <div class="echart" id="xygrChart4" :style="myChartStyle"></div>
-                </div>
-              </el-carousel-item>
-              <el-carousel-item>
-                <div class="panel">
-                  <div class="echart" id="xygrChart5" :style="myChartStyle"></div>
-                </div>
-              </el-carousel-item>
-              <el-carousel-item>
-                <div class="panel">
-                  <div class="echart" id="xygrChart6" :style="myChartStyle"></div>
+                  <img :src="item" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
               </el-carousel-item>
             </el-carousel>
