@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fiveup.core.common.exception.ApiException;
 import com.fiveup.core.teacherworkspace.common.utils.RegexVerifyUtils;
 import com.fiveup.core.teacherworkspace.mapper.LessonMapper;
+import com.fiveup.core.teacherworkspace.mapper.TeacherWorkspaceMapper;
 import com.fiveup.core.teacherworkspace.model.Lesson;
 import com.fiveup.core.teacherworkspace.model.dto.PageLessonDto;
 import com.fiveup.core.teacherworkspace.model.vo.PageVo;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class LessonServiceImpl extends ServiceImpl<LessonMapper, Lesson> implements LessonService {
     private final LessonMapper lessonMapper;
+    private final TeacherWorkspaceMapper teacherWorkspaceMapper;
 
     @Override
     public List<String> listAcademicYears() {
@@ -54,13 +56,92 @@ public class LessonServiceImpl extends ServiceImpl<LessonMapper, Lesson> impleme
     }
 
     @Override
-    public int addLesson(Lesson lesson) {
-        return lessonMapper.addLesson(lesson);
+    public String addLesson(Lesson lesson) {
+        // 检查必要字段是否为空
+        if (lesson.getGrade() == 0 || lesson.getClassNum() == 0
+                || StringUtils.isEmpty(lesson.getAcademicYear())
+                || lesson.getSemester() == 0
+                || StringUtils.isEmpty(lesson.getCourse())) {
+            return "必要的课程信息不能为空";
+        }
+
+        if (!teacherWorkspaceMapper.existsTeacher(lesson.getTeacherId(), lesson.getTeacherName())) {
+            return "教师不存在";
+        }
+
+        // 检查课程是否已存在
+        LambdaQueryWrapper<Lesson> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Lesson::getGrade, lesson.getGrade())
+                .eq(Lesson::getClassNum, lesson.getClassNum())
+                .eq(Lesson::getAcademicYear, lesson.getAcademicYear())
+                .eq(Lesson::getSemester, lesson.getSemester())
+                .eq(Lesson::getCourse, lesson.getCourse());
+
+        if (lessonMapper.exists(wrapper)) {
+            return "该课程已存在";
+        }
+
+        // 设置className
+        if (StringUtils.isEmpty(lesson.getClassName())) {
+            lesson.setClassName(lesson.getGrade() + "年级" + lesson.getClassNum() + "班");
+        }
+
+        // 设置默认值
+        if (lesson.getIsCurrent() == null) {
+            lesson.setIsCurrent(false);
+        }
+
+        lessonMapper.addLesson(lesson);
+        return "OK";
     }
 
     @Override
-    public int updateLesson(Lesson lesson) {
-        return lessonMapper.updateLesson(lesson);
+    public String updateLesson(Lesson lesson) {
+        // 检查ID是否存在
+        if (lesson.getId() == null) {
+            return "课程ID不能为空";
+        }
+
+        // 检查课程是否存在
+        Lesson existingLesson = lessonMapper.selectById(lesson.getId());
+        if (existingLesson == null) {
+            return "要更新的课程不存在";
+        }
+
+        if (!teacherWorkspaceMapper.existsTeacher(lesson.getTeacherId(), lesson.getTeacherName())) {
+            return "修改的教师不存在";
+        }
+
+        // 如果需要更新关键字段，检查是否会导致重复
+        if (lesson.getGrade() != 0 || lesson.getClassNum() != 0
+                || lesson.getAcademicYear() != null
+                || lesson.getSemester() != 0
+                || lesson.getCourse() != null) {
+
+            LambdaQueryWrapper<Lesson> wrapper = new LambdaQueryWrapper<>();
+            wrapper.ne(Lesson::getId, lesson.getId()) // 排除当前记录
+                    .eq(Lesson::getGrade, lesson.getGrade() != 0 ? lesson.getGrade() : existingLesson.getGrade())
+                    .eq(Lesson::getClassNum, lesson.getClassNum() != 0 ? lesson.getClassNum() : existingLesson.getClassNum())
+                    .eq(Lesson::getAcademicYear, lesson.getAcademicYear() != null ? lesson.getAcademicYear() : existingLesson.getAcademicYear())
+                    .eq(Lesson::getSemester, lesson.getSemester() != 0 ? lesson.getSemester() : existingLesson.getSemester())
+                    .eq(Lesson::getCourse, lesson.getCourse() != null ? lesson.getCourse() : existingLesson.getCourse());
+
+            if (lessonMapper.exists(wrapper)) {
+                return "更新后的课程信息与现有课程冲突";
+            }
+        }
+
+        // 如果年级或班级号发生变化，更新className
+        if ((lesson.getGrade() != 0 && lesson.getGrade() != existingLesson.getGrade())
+                || (lesson.getClassNum() != 0 && lesson.getClassNum() != existingLesson.getClassNum())) {
+            lesson.setClassName(lesson.getGrade()
+                    + "年级"
+                    + lesson.getClassNum()
+                    + "班");
+        }
+
+        lessonMapper.updateLesson(lesson);
+        return "OK";
     }
 
     @Override
