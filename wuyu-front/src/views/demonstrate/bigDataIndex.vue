@@ -153,8 +153,8 @@ export default {
       ],
       pictureList2: [
         "https://img2.baidu.com/it/u=2513024551,2896067572&fm=253&fmt=auto&app=138&f=JPEG?w=667&h=500",
-        "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimg.jj20.com%2Fup%2Fallimg%2F1113%2F060120105F7%2F200601105F7-3-1200.jpg&refer=http%3A%2F%2Fimg.jj20.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1656687720&t=867c801f0911ed362a3d06f2c1fff054",
-        "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimg.jj20.com%2Fup%2Fallimg%2F1114%2F102920105033%2F201029105033-1-1200.jpg&refer=http%3A%2F%2Fimg.jj20.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1656687720&t=b8754d6573884c844088a92959416fcf"
+        "https://i04piccdn.sogoucdn.com/54cf56a0bf810e40",
+        "https://i04piccdn.sogoucdn.com/54cf56a0bf810e40"
       ],
 
 
