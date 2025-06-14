@@ -316,7 +316,7 @@ const formData = ref({})
 const semesterStartDialogVisible = ref(false)
 
 const refreshData = async () => {
-  formData.value = {}
+  // formData.value = {}
   await fetchData()
   await fetchAllCourses()
 }
@@ -370,12 +370,30 @@ const transformToTree = (records) => {
   const treeMap = new Map()
 
   records.forEach(item => {
-    const gradeKey = `grade-${item.grade}`;
-    const classKey = `class-${item.grade}-${item.classNum}`
+    const semesterLabel = item.semester === 1 ? '上学期' : '下学期';
+    const yearSemesterKey = `yearSemester-${item.academicYear}-${item.semester}`;
+    const yearSemesterLabel = `${item.academicYear}${semesterLabel}`;
+
+    // 学年学期节点
+    if (!treeMap.has(yearSemesterKey)) {
+      treeMap.set(yearSemesterKey, {
+        id: yearSemesterKey,
+        type: 'yearSemester',
+        label: yearSemesterLabel,
+        academicYear: item.academicYear,
+        semester: item.semester,
+        sortValue: `${item.academicYear}-${3 - item.semester}`, //排序标识 用的学年倒序和学期正序
+        children: []
+      })
+    }
 
     // 年级节点
-    if (!treeMap.has(gradeKey)) {
-      treeMap.set(gradeKey, {
+    const gradeKey = `grade-${item.grade}`;
+    const yearSemesterNode = treeMap.get(yearSemesterKey);
+    const gradeNode = yearSemesterNode.children.find(g => g.gradeValue === item.grade)
+
+    if (!gradeNode) {
+      yearSemesterNode.children.push({
         id: gradeKey,
         type: 'grade',
         label: `${item.grade}年级`,
@@ -385,10 +403,12 @@ const transformToTree = (records) => {
     }
 
     // 班级节点
-    const gradeNode = treeMap.get(gradeKey);
-    const classNode = gradeNode.children.find(c => c.classNum === item.classNum)
+    const classKey = `class-${item.grade}-${item.classNum}`
+    const targetGrade = yearSemesterNode.children.find(g => g.gradeValue === item.grade);
+    const classNode = targetGrade.children.find(c => c.classNum === item.classNum)
+
     if (!classNode) {
-      gradeNode.children.push({
+      targetGrade.children.push({
         id: classKey,
         type: 'class',
         label: item.classNum+'班',
@@ -398,7 +418,7 @@ const transformToTree = (records) => {
     }
 
     // 课程节点
-    const targetClass = gradeNode.children.find(c => c.classNum === item.classNum);
+    const targetClass = targetGrade.children.find(c => c.classNum === item.classNum);
     targetClass.children.push({
       id: item.id,
       type: 'course',
@@ -407,12 +427,22 @@ const transformToTree = (records) => {
       teacherId: item.teacherId,
       grade: item.grade,
       classNum: item.classNum,
-      academicYear:item.academicYear,
-      semester:item.semester
+      academicYear: item.academicYear,
+      semester: item.semester
     })
   })
 
-  return Array.from(treeMap.values())
+  // 转换为数组并排序
+  const sortedTree = Array.from(treeMap.values())
+    .sort((a, b) => {
+      return b.sortValue.localeCompare(a.sortValue);
+    })
+    .map(yearSemesterNode => {
+      yearSemesterNode.children.sort((a, b) => a.gradeValue - b.gradeValue);
+      return yearSemesterNode;
+    });
+
+  return sortedTree;
 }
 
 const currentCourse = ref(null);
