@@ -6,6 +6,7 @@ import com.fiveup.core.noticeBooklet.utils.WordUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,6 +32,12 @@ public class NoticeBookletWordServiceImpl implements NoticeBookletWordService {
         wordData.put("pPlan", noticeBooklet.getPPlan() == null ? "无" : noticeBooklet.getPPlan());
         wordData.put("comment", noticeBooklet.getComment() == null ? "无" : noticeBooklet.getComment());
         wordData.put("remark", noticeBooklet.getRemark() == null ? "无" : noticeBooklet.getRemark());
+
+        // 获取当前日期
+        LocalDate currentDate = LocalDate.now();
+        wordData.put("year", currentDate.getYear());
+        wordData.put("month", currentDate.getMonthValue());
+        wordData.put("day", currentDate.getDayOfMonth());
 
         // 获取文件保存路径
         String path = this.getClass().getClassLoader().getResource("application.yml").getPath();

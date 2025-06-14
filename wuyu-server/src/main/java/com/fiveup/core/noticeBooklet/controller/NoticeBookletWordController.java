@@ -33,7 +33,7 @@ public class NoticeBookletWordController {
     public CommonResponse<String> generateWord(@RequestParam(required = false) Integer studentId, @RequestParam(required = false) Integer classId, @RequestParam(required = false) Integer gradeId) {
         try {
             // 查询通知册内容
-            List<NoticeBooklet> noticeBooklets = noticeBookletService.getNoticeBooklet(studentId, classId, gradeId);
+            List<NoticeBooklet> noticeBooklets = noticeBookletService.getNoticeBooklet(studentId, classId, gradeId,false);
             if (noticeBooklets != null && !noticeBooklets.isEmpty()) {
                 for (NoticeBooklet noticeBooklet : noticeBooklets) {
                     // 生成Word文件
