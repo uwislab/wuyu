@@ -187,6 +187,7 @@ export default {
           }
         });
       },
+      
       addUser() {
         console.log('请求地址:', StudentManagerUrl);
         axios.post(`${StudentManagerUrl}StudentManager/addStudent`, this.newUser)
