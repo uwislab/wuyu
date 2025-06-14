@@ -13,6 +13,43 @@
       label-position="right"
     >
       <el-row :gutter="20">
+        <!-- 学年 -->
+        <el-col :span="12">
+          <el-form-item label="学年" prop="academicYear">
+            <el-select
+              v-model="form.academicYear"
+              placeholder="请选择学年"
+              clearable
+              class="w-full"
+              @change="updateClassName"
+            >
+              <el-option
+                v-for="year in academicYears"
+                :key="year.value"
+                :label="year.label"
+                :value="year.value"
+              />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <!-- 学期 -->
+        <el-col :span="12">
+          <el-form-item label="学期" prop="semester">
+            <el-select
+              v-model="form.semester"
+              placeholder="请选择学期"
+              clearable
+              class="w-full"
+            >
+              <el-option
+                v-for="seme in semesterOptions"
+                :key="seme.value"
+                :label="seme.label"
+                :value="seme.value"
+              />
+            </el-select>
+          </el-form-item>
+        </el-col>
         <!-- 年级 -->
         <el-col :span="12">
           <el-form-item label="年级" prop="grade">
@@ -117,11 +154,17 @@ const props = defineProps({
     type: Object,
     default: () => ({})
   },
-  teachers: {
-    type: Array,
+  academicYears:{
+    type:Array,
     default: () => []
   }
 })
+
+const semesterOptions = [
+  { label: '上学期', value: 1 },
+  { label: '下学期', value: 2 }
+]
+
 
 const emit = defineEmits(['update:visible', 'submit', 'success','refresh-data'])
 
@@ -139,9 +182,24 @@ const dialogVisible = ref(false)
 const loading = ref(false) // 添加加载状态
 const teacherSelVisible = ref(false)
 
-const form = ref({ ...props.formData })
+const form = ref({
+  academicYear: null,
+  semester: null,
+  grade: null,
+  classNum: null,
+  className: '',
+  course: '',
+  teacherName: '',
+  teacherId: null
+})
 
 const rules = reactive({
+  academicYear: [
+    { required: true, message: '请选择学年', trigger: 'change' }
+  ],
+  semester: [
+    { required: true, message: '请选择学期', trigger: 'change' }
+  ],
   grade: [
     { required: true, message: '请选择年级', trigger: 'change' }
   ],
@@ -157,24 +215,51 @@ const rules = reactive({
     { max: 50, message: '长度不能超过50个字符', trigger: 'blur' }
   ],
   teacherName: [
-    { required: true, message: '请输入任课教师姓名', trigger: 'blur' },
+    { required: false, message: '请输入任课教师姓名', trigger: 'blur' },
     { min: 2, message: '教师姓名至少需要2个字符', trigger: 'blur' }
   ]
 })
 
 // 监听props.visible变化
-watch(() => props.visible, val => {
+watch(() => props.visible, (val) => {
   dialogVisible.value = val
   if (val) {
-    // 打开对话框时重置表单
-    formRef.value?.resetFields()
-    // Object.assign(form, props.formData)
+    if (props.formData && Object.keys(props.formData).length > 0) {
+      form.value = { ...props.formData }
+    } else {
+      form.value = {
+        academicYear: null,
+        semester: null,
+        grade: null,
+        classNum: null,
+        className: '',
+        course: '',
+        teacherName: '',
+        teacherId: null
+      }
+    }
+    nextTick(() => {
+      formRef.value?.resetFields()
+    })
   }
 })
 
- watch(() => props.formData, (newVal) => {
-      form.value = { ...newVal };
-    }, { deep: true });
+watch(() => props.formData, (newVal) => {
+  if (newVal) {
+    form.value = { ...newVal }
+  } else {
+    form.value = {
+      academicYear: null,
+      semester: null,
+      grade: null,
+      classNum: null,
+      className: '',
+      course: '',
+      teacherName: '',
+      teacherId: null
+    }
+  }
+}, { deep: true, immediate: true })
 
 // 关闭对话框处理
 const handleClose = () => {
@@ -204,7 +289,6 @@ const handleSubmit = async () => {
       if (form.value.id) {
         // 更新课程信息
         result = await updateLessonAPI(lessonData)
-        console.log(result);
 
         if(result.code === 200) {
           Message.success('课程信息更新成功')
@@ -214,7 +298,6 @@ const handleSubmit = async () => {
       } else {
         // 添加新课程
         result = await addLessonAPI(lessonData)
-        console.log(result);
 
         if(result.code === 200) {
           Message.success('新课程添加成功')
@@ -228,7 +311,6 @@ const handleSubmit = async () => {
       emit('refresh-data')
       formRef.value.resetFields() // 重置表单
     } catch (error) {
-      console.error('操作失败:', error)
       Message.error('操作失败，请重试')
     } finally {
       loading.value = false
@@ -243,8 +325,8 @@ const openTeacherDialog = () => {
 
 // 处理教师选择
 const handleTeacherSelect = (teacher) => {
-  form.teacherName = teacher.teacherName
-  form.teacherId = teacher.id
+  form.value.teacherName = teacher.teacherName
+  form.value.teacherId = teacher.id
   teacherSelVisible.value = false
 }
 </script>

@@ -1,9 +1,9 @@
 <template>
   <el-dialog
-    title="设置学期初时间"
+    title="确定学年学期"
     :visible="visible"
     @close="handleClose"
-    width="400px"
+    width="800px"
     :close-on-click-modal="false"
   >
     <el-form :model="form" label-width="100px">
@@ -17,7 +17,25 @@
           :editable="false"
         />
       </el-form-item>
+      <el-form-item label="学年">
+        <el-input v-model="form.academicYear" placeholder="请输入学年，如：2023-2024" />
+      </el-form-item>
+      <el-form-item label="学期">
+        <el-select v-model="form.semester" placeholder="请选择学期">
+          <el-option label="第一学期" value="1" />
+          <el-option label="第二学期" value="2" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="是否覆盖">
+        <el-switch
+          v-model="form.isOverwrite"
+          active-text="覆盖"
+          inactive-text="不覆盖"
+        />
+      </el-form-item>
     </el-form>
+
+
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="handleCancel">取 消</el-button>
@@ -28,8 +46,9 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted, watch } from 'vue';
 import { Message } from 'element-ui';
+import { copyLastSemesterSchedule } from '@/api/schedulModule/index';
 
 const props = defineProps({
   visible: {
@@ -38,22 +57,66 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['update:visible', 'confirm']);
+const emit = defineEmits(['update:visible', 'confirm', 'cancel']);
 
 const form = reactive({
-  startDate: ''
+  startDate: '',
+  academicYear: '',
+  semester: '',
+  isOverwrite: false
+});
+
+const lastSemesterData = ref([]);
+const loading = ref(false);
+
+// 设置默认学年和学期
+const setDefaultAcademicYearAndSemester = () => {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1; // getMonth() 返回 0-11
+
+  // 设置学年
+  if (currentMonth >= 2 && currentMonth <= 8) {
+    // 2-8月，使用当前年
+    form.academicYear = `${currentYear - 1}-${currentYear}`;
+    form.semester = '2'; // 第二学期
+  } else {
+    // 9-1月，使用当前年
+    form.academicYear = `${currentYear}-${currentYear + 1}`;
+    form.semester = '1'; // 第一学期
+  }
+};
+
+// 监听弹窗显示状态
+watch(() => props.visible, (newVal) => {
+  if (newVal) {
+    setDefaultAcademicYearAndSemester();
+  }
 });
 
 // 处理关闭
 const handleClose = () => {
+  emit('cancel');
   emit('update:visible', false);
+  resetForm();
+};
+
+// 重置表单
+const resetForm = () => {
   form.startDate = '';
+  form.academicYear = '';
+  form.semester = '';
+  form.isOverwrite = false;
+  lastSemesterData.value = [];
 };
 
 // 处理取消
 const handleCancel = () => {
+  emit('cancel',{
+    isOverwrite: false
+  });
   emit('update:visible', false);
-  form.startDate = '';
+  resetForm();
 };
 
 // 处理确认
@@ -62,9 +125,18 @@ const handleConfirm = () => {
     Message.warning('请选择学期初时间');
     return;
   }
-  emit('confirm', form.startDate);
+  if (!form.academicYear || !form.semester) {
+    Message.warning('请填写学年和学期信息');
+    return;
+  }
+  emit('confirm', {
+    startDate: form.startDate,
+    academicYear: form.academicYear,
+    semester: form.semester,
+    isOverwrite: true
+  });
   emit('update:visible', false);
-  form.startDate = '';
+  resetForm();
 };
 </script>
 
@@ -73,5 +145,15 @@ const handleConfirm = () => {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+}
+
+.last-semester-section {
+  margin-top: 20px;
+  
+  h3 {
+    margin-bottom: 15px;
+    font-size: 16px;
+    color: #303133;
+  }
 }
 </style> 
