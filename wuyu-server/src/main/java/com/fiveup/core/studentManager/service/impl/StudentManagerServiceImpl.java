@@ -8,6 +8,7 @@ import com.fiveup.core.common.exception.ApiException;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fiveup.core.management.model.School;
 import com.fiveup.core.studentManager.entity.StudentManager;
 import com.fiveup.core.studentManager.mapper.StudentManagerMapper;
 import com.fiveup.core.studentManager.pojo.PageBean;
@@ -73,6 +74,7 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
         System.out.println("前端传来每页显示的条数"+studentManagerQuery.getSizeOfPage());
 
         int sizeOfPage = studentManagerQuery.getSizeOfPage() == null ? 10 : studentManagerQuery.getSizeOfPage();
+
         if (studentManagerQuery.getPage() == null) {
             studentManagerQuery.setPage(1);
         }
@@ -110,6 +112,20 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
     }
 
     @Override
+    public List<School> getSchool() {
+        return studentManagerMapper.getSchool();
+    }
+
+    @Override
+    public List<String> getClassName() {
+        return studentManagerMapper.getClassName();
+    }
+
+    @Override
+    public List<Integer> getGrade() {
+        return studentManagerMapper.getGrade();
+    }
+  
     public void export(HttpServletResponse response) {
         List<StudentManager> list = studentManagerMapper.selectList(null);
         try {
