@@ -5,6 +5,7 @@ import com.fiveup.core.management.model.School;
 import com.fiveup.core.studentManager.pojo.Result;
 import com.fiveup.core.studentManager.entity.StudentManager;
 import com.fiveup.core.studentManager.pojo.PageBean;
+import com.fiveup.core.studentManager.pojo.Result;
 import com.fiveup.core.studentManager.pojo.StudentManagerQuery;
 import com.fiveup.core.studentManager.pojo.StudentVO;
 import com.fiveup.core.studentManager.service.StudentManagerService;
