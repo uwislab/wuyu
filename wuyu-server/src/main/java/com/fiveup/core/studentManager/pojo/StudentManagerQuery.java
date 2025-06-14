@@ -9,6 +9,7 @@ public class StudentManagerQuery {
     private String studentName;
     private Integer gender;
     private Integer classId;
+    private String className;
     private Integer gradeId;
     private String parentPhoneNum;
     private Integer deleted;

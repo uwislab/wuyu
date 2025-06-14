@@ -1,15 +1,23 @@
 package com.fiveup.core.studentManager.controller;
 
+import com.fiveup.core.fuScale.develop_09.common.R;
+import com.fiveup.core.management.model.School;
+import com.fiveup.core.studentManager.pojo.Result;
 import com.fiveup.core.studentManager.entity.StudentManager;
 import com.fiveup.core.studentManager.pojo.PageBean;
 import com.fiveup.core.studentManager.pojo.Result;
 import com.fiveup.core.studentManager.pojo.StudentManagerQuery;
+import com.fiveup.core.studentManager.pojo.StudentVO;
 import com.fiveup.core.studentManager.service.StudentManagerService;
+import jnr.ffi.annotations.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("StudentManager")
+@RequestMapping("/StudentManager")
+
 public class StudentManagerController {
     @Autowired
     private StudentManagerService studentManagerService;
@@ -19,7 +27,7 @@ public class StudentManagerController {
      * @param studentManager
      * @return
      */
-    @PostMapping("addStudent")
+    @PostMapping("/addStudent")
     public Result<Void> addStudent(@RequestBody StudentManager studentManager){
         studentManagerService.addStudent(studentManager);
         return Result.SUCCESS;
@@ -30,9 +38,11 @@ public class StudentManagerController {
      * @param studentManagerQuery
      * @return
      */
-    @PostMapping("getStudent")
-    public Result<PageBean<StudentManager>> getStudent(@RequestBody StudentManagerQuery studentManagerQuery){
-        return new Result<>(studentManagerService.getStudent(studentManagerQuery));
+    @PostMapping("/getStudent")
+    public Result<PageBean<StudentVO>> getStudent(@RequestBody StudentManagerQuery studentManagerQuery) {
+        PageBean<StudentVO> pageBean = studentManagerService.getStudentPage(studentManagerQuery);
+
+        return new Result(pageBean);
     }
 
     /**
@@ -54,5 +64,26 @@ public class StudentManagerController {
     public Result<Void> removeStudent(@RequestParam("id") Integer studentId){
         studentManagerService.removeStudent(studentId);
         return Result.SUCCESS;
+    }
+
+    @GetMapping("/getSchool")
+    public Result<List<School>> getSchool() {
+        List<School> list = studentManagerService.getSchool();
+
+        return new Result(list);
+    }
+
+    @GetMapping("/getClassName")
+    public Result<List<String>> getClassName() {
+        List<String> list = studentManagerService.getClassName();
+
+        return new Result(list);
+    }
+
+    @GetMapping("/getGrade")
+    public Result<List<Integer>> getGrade() {
+        List<Integer> list = studentManagerService.getGrade();
+
+        return new Result(list);
     }
 }

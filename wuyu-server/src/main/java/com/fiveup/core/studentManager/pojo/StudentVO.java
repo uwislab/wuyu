@@ -1,20 +1,32 @@
-package com.fiveup.core.studentManager.entity;
+package com.fiveup.core.studentManager.pojo;
 
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+/**
+ * 返回前端数据
+ */
 @Data
-@TableName(value = "basic_student")
-public class StudentManager  {
+public class StudentVO {
+
     private Integer id;
+
     private String studentNum;
+
     private String studentName;
+
     private Integer gender;
-    private Integer classId;
+
+    private String className;
+
     private Integer gradeId;
+
     private String parentPhoneNum;
+
     private Integer deleted;
+
     private Integer isreview;
+
     private Integer isenter;
-    private Integer schoolId;
+
+    private String schoolName;
 }
