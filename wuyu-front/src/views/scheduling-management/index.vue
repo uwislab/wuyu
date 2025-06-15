@@ -272,7 +272,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch,onMounted } from 'vue';
+import { ref, reactive, computed, watch,onMounted,onBeforeMount } from 'vue';
 import { Message,MessageBox} from 'element-ui';
 import {getLessonPageAPI,
         deleteLessonAPI,
@@ -281,7 +281,9 @@ import {getLessonPageAPI,
         downloadModel,
         exportExcel,
         getAcademicAPI,
-        autoCopyLastSemesterSchedule
+        autoCopyLastSemesterSchedule,
+        autoCopyStatus,
+        setIsCurrent
       }
         from '@/api/schedulModule/index'
 import lessonInfoDialog from './components/lessonInfoDialog.vue'
@@ -549,9 +551,7 @@ const handleUpdateLesson = (row) => {
   dialogVisible.value = true
 }
 
-watch(teacherSelVisible, (val) => {
-  if (!val) currentCourse.value = null
-})
+
 
 // 获取表格数据（分页）
 const fetchData = async () => {
@@ -716,27 +716,76 @@ const teacherSelVisible = ref(false);
 // 打开教师选择弹窗
 const openTeacherDialog = (course) => {
   currentCourse.value = course;
+  console.log("currentCourse.value",currentCourse.value)
   teacherSelVisible.value = true;
 };
 
+//watch(teacherSelVisible, (val) => {
+//  if (!val) currentCourse.value = null
+//})
+
+// 获取当前学年学期的所有课程信息
+const getAllCourses = async () => {
+  try {
+    const params = {
+      page: 1,
+      size: 10000, 
+      minGrade: filter.grade || null,
+      maxGrade: filter.grade || null,
+      classNum: null, // 不筛选班级
+      course: null, // 不筛选课程
+      academicYear: null, // 不筛选学年
+      semester: null, // 不筛选学期
+      isCurrent: false || null // 不只获取当前学期的课程
+    }
+
+    const res = await getLessonPageAPI(params)
+    // console.log("getAllCourses：",res.data)
+    if (res.code === 200) {
+      // 返回包含所需字段的课程信息数组
+      return res.data.records.map(course => ({
+        className: course.className,
+        classNum: course.classNum,
+        course: course.course,
+        academicYear: course.academicYear,
+        semester: course.semester,
+        teacherId: course.teacherId,
+        teacherName: course.teacherName,
+        grade: course.grade,
+        id: course.id,
+        isCurrent: course.isCurrent
+      }))
+    } else {
+      throw new Error('API返回状态码非200')
+    }
+  } catch (error) {
+    console.error('获取课程信息失败:', error)
+    return [] // 返回空数组以避免后续处理出错
+  }
+}
+
 // 处理教师选择
 const handleTeacherSelect = async (teacher) => {
-  if (!currentCourse.value) return;
-  // console.log("课程信息",currentCourse.value) 
+  const allCourse = await getAllCourses()
+  console.log("所有课程信息是",allCourse) 
+  // if (!currentCourse.value) return;
+  if (!currentCourse.value || !teacher) return false;
+  console.log("当前选中的课程信息是",currentCourse.value) 
   // 检查教师在本学期，是否已在同一班级，有同样的课程
   // 原则上，一门课程只有一个授课教师；一个授课教师可以承担多门课程。
-  const hasConflict = tableData.value.some(item =>
+  // console.log(allCourse.some(item => item.teacherId === null))
+  const hasConflict = allCourse.some(item =>
     item.teacherId === teacher.id &&
-    item.academicYear === currentCourse.value.academicYear && // 学年
-    item.grade === currentCourse.value.grade &&
+    item.academicYear === currentCourse.value.academicYear &&  // 学年
+    item.semester === currentCourse.value.semester && // 学期
     item.classNum === currentCourse.value.classNum &&
-    item.course === currentCourse.value.course && // 课程名称比较
-    item.id !== currentCourse.value.id &&
-    item.semester === currentCourse.value.semester // 学期
-);
+    item.grade === currentCourse.value.grade &&  // 班级名称
+    (currentCourse.value.course ? currentCourse.value.course : currentCourse.value.label) === item.course && // 课程名称比较
+    item.id === currentCourse.value.id // 排除当前课程自身（如果是修改操作）
+  );
 
   if (hasConflict) {
-    Message.error(`本学期${teacher.teacherName}老师已经在${currentCourse.value.className}分配有课程，不能重复分配`);
+    Message.error(`本学期${teacher.teacherName}老师已经在该班级分配有该课程，不能重复分配`);
     return;
   }
 
@@ -770,19 +819,20 @@ const handleTeacherSelect = async (teacher) => {
     return;
   }
 
-  const { grade, classNum, course, id ,label ,academicYear , semester } = currentCourse.value;
+  const { id, grade, classNum, course, label ,academicYear , semester , isCurrent} = currentCourse.value;
   try {
     const className = currentCourse.value.grade + '年级' + currentCourse.value.classNum + '班'
     const res = await updateLessonAPI({
-      academicYear,
-      semester,
+      id,
       grade,
       classNum,
       className,
-      course:course?course:label,
       teacherName: teacher.teacherName,
       teacherId: teacher.id,
-      id
+      course:course?course:label,
+      academicYear,
+      semester,
+      isCurrent
     });
 
     if (res.code === 200) {
@@ -819,13 +869,12 @@ const handleAutoCopy = async (val) => {
   }
 }
 
-
 // 监听弹窗关闭，重置当前课程
-watch(teacherSelVisible, (val) => {
-  if (!val) {
-    currentCourse.value = null;
-  }
-})
+//watch(teacherSelVisible, (val) => {
+//  if (!val) {
+//    currentCourse.value = null;
+//  }
+//})
 
 // 自动复制设置相关
 const autoCopyEnabled = ref(false)
@@ -841,7 +890,8 @@ const handleAutoCopyClass = async (val) => {
     } else { 
       const res = await autoCopyLastSemesterSchedule({enabled: false}); 
       if (res.code === 200) { 
-        Message.success(`已取消自动复制排课`);
+        console.log(`已取消自动复制排课`)
+        // Message.success(`已取消自动复制排课`);
       } 
     } 
   } catch (error) { 
@@ -849,10 +899,27 @@ const handleAutoCopyClass = async (val) => {
   } 
 }
 
+// 获取开关状态
+const getAutoCopyStatus = async () => {
+  try{
+    const copyStatus = await autoCopyStatus()
+    console.log("copyStatus",copyStatus)
+    if(copyStatus.code === 200){
+      autoCopyEnabled.value = true
+    } else {
+      autoCopyEnabled.value = false
+    }
+  } catch (error) { 
+    console.log('获取开关状态失败')
+    Message.error('获取开关状态失败');
+  } 
+}
+
 onMounted(() => {
   fetchData()
   fetchAllCourses()
   handleAutoCopyClass()
+  getAutoCopyStatus()
 })
 </script>
 

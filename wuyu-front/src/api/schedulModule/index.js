@@ -63,7 +63,6 @@ export function exportExcel(params) {
   })
 }
 
-
 export function addLessonAPI(lesson) {
   return request({
     url: '/lesson/add',
@@ -134,5 +133,22 @@ export function autoCopyLastSemesterSchedule(params) {
     url: '/lesson/auto-copy',
     method: 'get',
     params: params
+  })
+}
+// 开关复制上学期排课
+export function autoCopyStatus() {
+  return request({
+    url: '/lesson/auto-copy-status',
+    method: 'get'
+  })
+}
+
+// 根据学年学期设置isCurrent
+
+export function setIsCurrent(params) {
+  return request({
+    url: '/lesson/set-current',
+    method: 'get',
+    params
   })
 }
