@@ -6,7 +6,6 @@ import com.fiveup.core.teacherworkspace.mapper.TeacherSearchMapper;
 import com.fiveup.core.teacherworkspace.model.Teacher;
 import com.fiveup.core.teacherworkspace.model.vo.PageVo;
 import com.fiveup.core.teacherworkspace.service.TeacherSearchService;
-import com.mybatisflex.core.query.QueryWrapper;
 import org.apache.ibatis.cursor.Cursor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,12 +29,10 @@ public class TeacherSearchServiceImpl implements TeacherSearchService {
         List<Teacher> teacherList = new ArrayList<>();
 
         PageVo<Teacher> pageVo = new PageVo<>();
-        if (AlgorithmUtils.containsChinese(teacherName)) {
+        if (AlgorithmUtils.containsChinese(teacherName))
             teachers = teacherSearchMapper.selectTeacherByChinese(getPattern(teacherName));
-        }
-        else {
-            teachers = teacherSearchMapper.selectCursorByQuery(QueryWrapper.create());
-        }
+        else
+            teachers = teacherSearchMapper.selectAllTeacherByCursor();
         Long recordCnt = 0l;
         for (Teacher t : teachers) {
             t.setPassword("");

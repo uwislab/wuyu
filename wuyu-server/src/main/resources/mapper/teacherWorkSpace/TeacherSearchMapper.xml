@@ -1,13 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.fiveup.core.teacherworkspace.mapper.TeacherSearchMapper">
-<!--    <select id="selectTeacherByChinese" resultType="com.fiveup.core.teacherworkspace.model.Teacher">-->
-<!--        SELECT * FROM basic_teacher WHERE teacher_name like-->
-<!--        <foreach item="item" index="index" collection="list" open="concat('" separator="', '" close="')">-->
-<!--            <choose>-->
-<!--                <when test="item.matches('[\u4e00-\u9fff]+')">#{item}</when>-->
-<!--                <otherwise>%</otherwise>-->
-<!--            </choose>-->
-<!--        </foreach>-->
-<!--    </select>-->
 </mapper>
