@@ -850,8 +850,15 @@ const handleAutoCopy = async (val) => {
 //})
 
 // 自动复制设置相关
-const autoCopyEnabled = ref(false)
+const autoCopyEnabled = ref()
 
+// 开关自动复制 
+const handleAutoCopyClass = async (val) => { 
+  console.log("handleAutoCopyClass",val)
+  try { 
+    if (val) { 
+      const res = await autoCopyLastSemesterSchedule({enabled: true}); 
+      if (res.code === 200) { 
 // 开关自动复制
 const handleAutoCopyClass = async (val) => {
   try {
@@ -878,7 +885,7 @@ const getAutoCopyStatus = async () => {
     const copyStatus = await autoCopyStatus()
     console.log("copyStatus",copyStatus)
     if(copyStatus.code === 200){
-      autoCopyEnabled.value = true
+        autoCopyEnabled.value = copyStatus.data
     } else {
       autoCopyEnabled.value = false
     }
@@ -891,7 +898,6 @@ const getAutoCopyStatus = async () => {
 onMounted(() => {
   fetchData()
   fetchAllCourses()
-  handleAutoCopyClass()
   getAutoCopyStatus()
 })
 </script>
