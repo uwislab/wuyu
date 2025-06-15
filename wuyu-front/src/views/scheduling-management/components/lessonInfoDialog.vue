@@ -311,7 +311,7 @@ const handleSubmit = async () => {
       emit('refresh-data')
       formRef.value.resetFields() // 重置表单
     } catch (error) {
-      Message.error('操作失败，请重试')
+      Message.error(result.message)
     } finally {
       loading.value = false
     }

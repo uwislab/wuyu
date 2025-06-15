@@ -23,7 +23,6 @@ export function importExcel(data) {
     url: '/lesson/excel/try-import',
     method: 'post',
     data: data,
-    // responseType: 'blob',
   })
 }
 
