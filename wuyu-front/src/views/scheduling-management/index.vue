@@ -128,7 +128,7 @@
         </template>
 
         <el-tree
-          :data="filteredCourseTree"
+          :data="courseTree"
           :props="treeProps"
           node-key="id"
           class="custom-tree"
@@ -449,33 +449,6 @@ const transformToTree = (records) => {
 
 const currentCourse = ref(null);
 
-// 课程树过滤
-const filteredCourseTree = computed(() => {
-  if (!filter.grade && !filter.classNum && !filter.course) {
-    return courseTree.value
-  }
-
-  return courseTree.value
-    .filter(gradeNode => {
-      return !filter.grade || gradeNode.gradeValue === filter.grade
-    })
-    .map(gradeNode => ({
-      ...gradeNode,
-      children: gradeNode.children
-        .filter(classNode => {
-          return !filter.classNum || classNode.classNum === filter.classNum
-        })
-        .map(classNode => ({
-          ...classNode,
-          children: classNode.children.filter(course => {
-            return !filter.course || course.label.includes(filter.course)
-          })
-        }))
-        .filter(classNode => classNode.children.length > 0)
-    }))
-    .filter(gradeNode => gradeNode.children.length > 0)
-})
-
 const treeProps = ref({
   children: 'children',
   label: 'label'
@@ -729,7 +702,7 @@ const getAllCourses = async () => {
   try {
     const params = {
       page: 1,
-      size: 10000, 
+      size: 10000,
       minGrade: filter.grade || null,
       maxGrade: filter.grade || null,
       classNum: null, // 不筛选班级
@@ -767,10 +740,10 @@ const getAllCourses = async () => {
 // 处理教师选择
 const handleTeacherSelect = async (teacher) => {
   const allCourse = await getAllCourses()
-  console.log("所有课程信息是",allCourse) 
+  console.log("所有课程信息是",allCourse)
   // if (!currentCourse.value) return;
   if (!currentCourse.value || !teacher) return false;
-  console.log("当前选中的课程信息是",currentCourse.value) 
+  console.log("当前选中的课程信息是",currentCourse.value)
   // 检查教师在本学期，是否已在同一班级，有同样的课程
   // 原则上，一门课程只有一个授课教师；一个授课教师可以承担多门课程。
   // console.log(allCourse.some(item => item.teacherId === null))
@@ -879,24 +852,24 @@ const handleAutoCopy = async (val) => {
 // 自动复制设置相关
 const autoCopyEnabled = ref(false)
 
-// 开关自动复制 
-const handleAutoCopyClass = async (val) => { 
-  try { 
-    if (val) { 
-      const res = await autoCopyLastSemesterSchedule({enabled: true}); 
-      if (res.code === 200) { 
+// 开关自动复制
+const handleAutoCopyClass = async (val) => {
+  try {
+    if (val) {
+      const res = await autoCopyLastSemesterSchedule({enabled: true});
+      if (res.code === 200) {
         Message.success(`开启自动复制排课成功`);
-      } 
-    } else { 
-      const res = await autoCopyLastSemesterSchedule({enabled: false}); 
-      if (res.code === 200) { 
+      }
+    } else {
+      const res = await autoCopyLastSemesterSchedule({enabled: false});
+      if (res.code === 200) {
         console.log(`已取消自动复制排课`)
         // Message.success(`已取消自动复制排课`);
-      } 
-    } 
-  } catch (error) { 
+      }
+    }
+  } catch (error) {
     Message.error('复制上学期排课失败');
-  } 
+  }
 }
 
 // 获取开关状态
@@ -909,10 +882,10 @@ const getAutoCopyStatus = async () => {
     } else {
       autoCopyEnabled.value = false
     }
-  } catch (error) { 
+  } catch (error) {
     console.log('获取开关状态失败')
     Message.error('获取开关状态失败');
-  } 
+  }
 }
 
 onMounted(() => {
