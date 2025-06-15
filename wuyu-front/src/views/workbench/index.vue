@@ -48,7 +48,113 @@
 
 </template>
 
+<script>
+import { getNoticeList } from "@/api/notice";
+import Todo from "@/views/dashboard/admin/components/TodoList/Todo.vue";
 
+export default {
+  components: {Todo},
+  data() {
+    return {
+      notifications: [],
+      searchQuery: '',
+      dialogVisible: false,
+      currentAnnouncement: {},
+      pageNum: 1, // 当前页码
+      pageSize: 10, // 每页大小
+      total: 0, // 总记录数
+      contentPreviewLimit: 20 // 公告内容预览字数限制
+    };
+  },
+
+  computed: {
+  },
+
+  watch: {
+    searchQuery() {
+      this.pageNum = 1; // 搜索时重置页码
+      this.load();
+    },
+    pageNum() {
+      this.load();
+    },
+    pageSize() {
+      this.load();
+    }
+  },
+
+  mounted() {
+    this.load();
+  },
+
+  methods: {
+    getCurrentUserId() { //获得用户id
+      try {
+        const userInfoString = localStorage.getItem("UserInfo");
+        if (userInfoString) {
+          const userInfo = JSON.parse(userInfoString);
+          return userInfo.id;
+        }
+      } catch (e) {
+        console.error("从 localStorage 解析 UserInfo 失败", e);
+      }
+      return null;
+    },
+
+    load() {
+      const userId = this.getCurrentUserId();
+      if (!userId) {
+        this.$message.error("无法获取用户ID，请重新登录");
+        return;
+      }
+      // 获取用户身份ID
+      let identityId = null;
+      try {
+        const userInfoString = localStorage.getItem("UserInfo");
+        if (userInfoString) {
+          const userInfo = JSON.parse(userInfoString);
+          identityId = userInfo.identity;
+        }
+      } catch (e) {
+        console.error("从 localStorage 解析 UserInfo 失败", e);
+      }
+
+      const query = { //构建query查询条件
+        userId: userId,
+        keyword: this.searchQuery,
+        pageNum: this.pageNum,
+        pageSize: this.pageSize,
+        identityId: identityId // 添加身份ID到查询参数
+      };
+
+      getNoticeList(query).then(res => { //页面加载时请求公告数据
+        if (res.code === 200) {
+          console.log('工作台页面返回数据：', res.data);
+          this.notifications = res.data.records;
+          this.total = parseInt(res.data.total);
+          console.log('设置的总条数：', this.total);
+        } else {
+          this.$message.error("获取公告列表失败");
+        }
+      }).catch(error => {
+        console.error("获取公告列表请求失败:", error);
+        this.$message.error("获取公告列表请求失败");
+      });
+    },
+
+    getPreviewContent(content) {
+      if (content.length > this.contentPreviewLimit) {
+        return content.substring(0, this.contentPreviewLimit);
+      }
+      return content;
+    },
+
+    shouldShowMoreLink(content) {
+      return content.length > this.contentPreviewLimit;
+    }
+  }
+};
+</script>
 
 <style lang="scss" scoped>
 .container {
