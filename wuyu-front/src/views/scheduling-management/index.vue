@@ -272,7 +272,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch,onMounted } from 'vue';
+import { ref, reactive, computed, watch,onMounted,onBeforeMount } from 'vue';
 import { Message,MessageBox} from 'element-ui';
 import {getLessonPageAPI,
         deleteLessonAPI,
@@ -890,17 +890,17 @@ const getAutoCopyStatus = async () => {
   try{
     const copyStatus = await autoCopyStatus()
     console.log("copyStatus",copyStatus)
-    if(copyStatus){
-      autoCopyEnabled = copyStatus
+    if(copyStatus.code === 200){
+      autoCopyEnabled.value = true
+    } else {
+      autoCopyEnabled.value = false
     }
   } catch (error) { 
+    console.log('获取开关状态失败')
     Message.error('获取开关状态失败');
   } 
 }
 
-// onBeforeMount(() => {
-//   getAutoCopyStatus();
-// })
 onMounted(() => {
   fetchData()
   fetchAllCourses()
