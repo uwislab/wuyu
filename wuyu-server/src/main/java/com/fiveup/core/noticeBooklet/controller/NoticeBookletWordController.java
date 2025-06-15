@@ -32,7 +32,7 @@ public class NoticeBookletWordController {
      * @param studentId 学号
      * @return 响应结果
      */
-    @PostMapping("/generate")
+    @GetMapping("/generate")
     public void generateWord(@RequestParam Integer studentId, HttpServletResponse response){
         try {
             // 查询通知册内容
