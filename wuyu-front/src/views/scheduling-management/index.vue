@@ -671,22 +671,36 @@ const handleExport = async () =>{
     const res = await exportExcel({
       page: pagination.page,
       size: pagination.size,
+      minGrade: filter.grade,
+      maxGrade: filter.grade,
+      classNum: filter.classNum,
+      course: filter.course,
+      academicYear: filter.academicYear,
+      semester: filter.semester,
     })
-    const url = window.URL.createObjectURL(new Blob([res.data],{type:"application/vnd.ms-excel;charset=utf-8"}))
-    const link = document.createElement('a')
-    document.body.appendChild(link);
-    link.style.display = 'none'
-    link.href = url
-    link.setAttribute('download','排课信息.xls')
-    link.click()
-    // 清除
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-    Message.success({
-      message: '导出成功！',
+    if(res.data.size === 52) {
+      Message.error({
+      message: '导出失败，请重试,'+ (res.message || '未知错误'),
       duration: 3000,
       showClose: true
     });
+    }else{
+      const url = window.URL.createObjectURL(new Blob([res.data],{type:"application/vnd.ms-excel;charset=utf-8"}))
+      const link = document.createElement('a')
+      document.body.appendChild(link);
+      link.style.display = 'none'
+      link.href = url
+      link.setAttribute('download','排课信息.xls')
+      link.click()
+      // 清除
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      Message.success({
+        message: '导出成功！',
+        duration: 3000,
+        showClose: true
+      });
+    }
   } catch (error){
     Message.error({
       message: '导出失败，请重试'+ (error.message || '未知错误'),
