@@ -14,13 +14,13 @@
         left join fiveup.di_studentplancomment dc on dc.p_id = dp.p_id
         <where>
             <if test="studentId != null">
-                s.student_id=#{studentId}
+                and s.student_id=#{studentId}
             </if>
             <if test="classId != null">
-                s.student_class_number= #{classId}
+                and s.student_class_number= #{classId}
             </if>
             <if test="gradeId != null">
-                s.student_grade= #{gradeId}
+                and s.student_grade= #{gradeId}
             </if>
         </where>
         order by student_id DESC;

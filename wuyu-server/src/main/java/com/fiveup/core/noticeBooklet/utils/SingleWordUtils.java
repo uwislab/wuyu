@@ -41,7 +41,7 @@ public class SingleWordUtils {
             }
 
             // 设置响应头，让浏览器下载文件
-            response.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+            response.setContentType("application/octet-stream");
             response.setHeader("Content-Disposition", "attachment; filename=generated-document.docx");
 
             // 输出到响应流
