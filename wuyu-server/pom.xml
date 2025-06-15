@@ -33,19 +33,6 @@
             <version>2.5.1</version>
         </dependency>
 
-        <!--- 引入依赖：mybatis-flex-->
-        <dependency>
-            <groupId>com.mybatis-flex</groupId>
-            <artifactId>mybatis-flex-spring-boot-starter</artifactId>
-            <version>1.10.9</version>
-        </dependency>
-        <dependency>
-            <groupId>com.mybatis-flex</groupId>
-            <artifactId>mybatis-flex-processor</artifactId>
-            <version>1.10.9</version>
-            <scope>provided</scope>
-        </dependency>
-        <!--- 引入依赖：mybatis-flex-->
 
         <dependency>
             <groupId>com.auth0</groupId>

@@ -22,12 +22,6 @@ class TeacherSearchServiceImplTest {
     public void test() {
         TeacherSearchServiceImpl teacherSearchService1 = (TeacherSearchServiceImpl) teacherSearchService;
         System.out.println(teacherSearchService1.searchTeacher("张", 10L, 1L));
-
-//        System.out.println(AlgorithmUtils.isSubsequenceContainChinese("zhangsan", "张三"));
-//        System.out.println(AlgorithmUtils.isSubsequenceContainChinese("zs", "张三"));
-//        System.out.println(AlgorithmUtils.isSubsequenceContainChinese("张san", "张三"));
-//        System.out.println(AlgorithmUtils.isSubsequenceContainChinese("sg", "张三"));
-//        System.out.println(AlgorithmUtils.isSubsequenceContainChinese("js", "John Shelby"));
     }
 
 }
