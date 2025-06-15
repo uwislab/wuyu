@@ -117,4 +117,10 @@ public class LessonController {
             return CommonResult.failed(e.getMessage());
         }
     }
+
+    @GetMapping("/auto-copy-status")
+    @ApiOperation("获取自动复制开关状态")
+    public CommonResult<Boolean> getAutoCopyStatus() {
+        return CommonResult.success(scheduleConfig.isAutoCopyEnabled());
+    }
 }
