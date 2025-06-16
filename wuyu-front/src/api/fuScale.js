@@ -65,7 +65,7 @@ export function insertFuScale(scaleInfo) {
   })
 }
 
-
+//获取年级数据
 export function getGradeScore(shuju) {
     return request({
       url: `/GradeScore/getGradeScore`,
@@ -75,6 +75,29 @@ export function getGradeScore(shuju) {
       }
     })
  }
+
+ //获取年级平均数据
+export function gradeScore(grade) {
+  return request({
+    url: `/diagnose/grade/average/scores`,
+    method: 'get',
+    params: {
+      grade: grade
+    }
+  })
+}
+
+ //获取班级平均数据
+ export function gradeclassScore(grade, sclass) {
+  return request({
+    url: '/diagnose/class/average/scores',
+    method: 'get',
+    params: {
+      grade,
+      sclass
+    }
+  })
+}
 
 export function getFuScaleId() {
   return request({

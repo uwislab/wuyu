@@ -15,6 +15,9 @@ public interface studentscoreMapper {
     /*查询本次班级成绩*/
     @Select("select ds.s_deyu,ds.s_zhiyu,ds.s_tiyu,ds.s_meiyu,ds.s_laoyu from di_student s join di_studentscore ds on ds.student_id=s.student_id where s.student_grade=#{grade} and s.student_class_number=#{sclass} order by ds.s_exdate desc limit 5")
     public List<student_score> SelectScoreByClass(int grade,int sclass);
+
+    @Select("select ds.s_deyu,ds.s_zhiyu,ds.s_tiyu,ds.s_meiyu,ds.s_laoyu from di_student s join di_studentscore ds on ds.student_id=s.student_id where s.student_grade=#{grade} and s.student_class_number=#{sclass} order by ds.s_exdate desc")
+    public List<student_score> SelectScoreByClassNew(int grade,int sclass);
     /*查询本次年级成绩*/
     @Select("select ds.s_deyu,ds.s_zhiyu,ds.s_tiyu,ds.s_meiyu,ds.s_laoyu from di_student s join di_studentscore ds on ds.student_id=s.student_id where s.student_grade=#{grade} order by ds.s_exdate desc limit 10")
     public List<student_score> SelectScoreByGrade(int grade);
