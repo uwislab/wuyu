@@ -104,10 +104,10 @@
 			<div class="statistics-header">
 				<h3>课程成绩统计</h3>
 				<el-select v-model="selectedCourse" placeholder="请选择课程" @change="handleCourseChange" style="width: 200px;">
-					<el-option
-						v-for="item in courseOptions"
-						:key="item.value"
-						:label="item.label"
+					<el-option 
+						v-for="item in courseOptions" 
+						:key="item.value" 
+						:label="item.label" 
 						:value="item.value">
 					</el-option>
 				</el-select>
@@ -174,7 +174,7 @@ export default {
 			list: [],
 			list_user_course_teacher: [],
 			deleteIds: [],
-
+			
 			// 成绩统计相关数据
 			selectedCourse: '',
 			courseOptions: [],
@@ -199,7 +199,7 @@ export default {
 				this.total = Number(res.data.total);
 				console.log("数据总数:" + this.total)
 				this.list = res.data.data;
-
+				
 				// 查询条件变化后，重新计算统计数据
 				this.calculateCourseScoreStatistics();
 			})
@@ -255,21 +255,21 @@ export default {
 		closeModal() {
 			this.showModal = false;
 		},
-
+		
 		// 获取所有课程成绩数据（包括所有分页）
 		async getAllCourseScoreData() {
 			try {
 				// 保存当前分页设置
 				const currentPage = this.query.page;
 				const currentPageSize = this.query.pageSize;
-
+				
 				// 计算总页数
 				const totalPages = Math.ceil(this.total / currentPageSize);
 				let allData = [];
-
+				
 				// 创建一个临时的查询对象，避免影响当前页面显示
 				const tempQuery = { ...this.query };
-
+				
 				// 获取所有页的数据
 				for (let page = 1; page <= totalPages; page++) {
 					const formData = new FormData();
@@ -280,13 +280,13 @@ export default {
 					formData.append('studentName', tempQuery.studentName);
 					formData.append('page', page);
 					formData.append('pageSize', currentPageSize);
-
+					
 					const res = await getCourseScore(formData);
 					if (res.code === 200 && res.data.data) {
 						allData = allData.concat(res.data.data);
 					}
 				}
-
+				
 				return allData;
 			} catch (error) {
 				console.error('获取所有课程成绩数据出错:', error);
@@ -294,18 +294,18 @@ export default {
 				return [];
 			}
 		},
-
+		
 		// 计算课程成绩统计数据
 		async calculateCourseScoreStatistics() {
 			try {
 				// 获取所有课程成绩数据
 				const allData = await this.getAllCourseScoreData();
-
+				
 				if (allData.length === 0) {
 					this.$message.warning('没有可用的课程成绩数据');
 					return;
 				}
-
+				
 				// 按课程名称分组
 				const courseGroups = {};
 				allData.forEach(item => {
@@ -314,18 +314,18 @@ export default {
 					}
 					courseGroups[item.courseName].push(item);
 				});
-
+				
 				// 计算每个课程的成绩分布
 				const statisticsData = [];
 				for (const courseName in courseGroups) {
 					const scores = courseGroups[courseName].map(item => parseFloat(item.score));
-
+					
 					const bucket_0_59 = scores.filter(score => score >= 0 && score < 60).length;
 					const bucket_60_69 = scores.filter(score => score >= 60 && score < 70).length;
 					const bucket_70_79 = scores.filter(score => score >= 70 && score < 80).length;
 					const bucket_80_89 = scores.filter(score => score >= 80 && score < 90).length;
 					const bucket_90_100 = scores.filter(score => score >= 90 && score <= 100).length;
-
+					
 					statisticsData.push({
 						courseName,
 						bucket_0_59,
@@ -335,15 +335,15 @@ export default {
 						bucket_90_100
 					});
 				}
-
+				
 				this.statisticsData = statisticsData;
-
+				
 				// 处理课程选项
 				this.courseOptions = this.statisticsData.map(item => ({
 					value: item.courseName,
 					label: item.courseName
 				}));
-
+				
 				// 默认选择第一个课程
 				if (this.courseOptions.length > 0 && !this.selectedCourse) {
 					this.selectedCourse = this.courseOptions[0].value;
@@ -356,13 +356,13 @@ export default {
 				this.$message.error('计算课程成绩统计数据出错');
 			}
 		},
-
+		
 		// 处理课程选择变化
 		handleCourseChange(value) {
 			this.selectedCourse = value;
 			this.updateChart();
 		},
-
+		
 		// 初始化图表
 		initChart() {
 			// 确保DOM已经渲染
@@ -375,15 +375,15 @@ export default {
 				}
 			});
 		},
-
+		
 		// 更新图表数据
 		updateChart() {
 			if (!this.chart || !this.selectedCourse) return;
-
+			
 			// 查找选中课程的数据
 			const courseData = this.statisticsData.find(item => item.courseName === this.selectedCourse);
 			if (!courseData) return;
-
+			
 			// 准备图表数据
 			const option = {
 				title: {
@@ -434,7 +434,7 @@ export default {
 					}
 				]
 			};
-
+			
 			// 设置图表选项并渲染
 			this.chart.setOption(option);
 		},
@@ -628,7 +628,7 @@ export default {
 		setTimeout(() => {
 			this.open_tip();
 		}, 1000)
-
+		
 		// 计算课程成绩统计数据
 		setTimeout(() => {
 			this.calculateCourseScoreStatistics();
@@ -637,7 +637,7 @@ export default {
 	mounted() {
 		// 初始化图表
 		this.initChart();
-
+		
 		// 监听窗口大小变化，重新调整图表大小
 		window.addEventListener('resize', () => {
 			if (this.chart) {
@@ -651,7 +651,7 @@ export default {
 			this.chart.dispose();
 			this.chart = null;
 		}
-
+		
 		// 移除窗口大小变化监听
 		window.removeEventListener('resize', () => {
 			if (this.chart) {

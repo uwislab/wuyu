@@ -63,7 +63,7 @@ export default {
     return {
       // 颜色列表
       colorList: ['#1b6cd2', '#B5C334', '#FCCE10', 'rgba(144,26,194,0.74)', '#27727B', '#901AC2BC'],
-
+      
       // 年级图表相关数据
       gradeChart: null,
       gradeData: {},
@@ -76,7 +76,7 @@ export default {
         { value: '5', label: '五年级' },
         { value: '6', label: '六年级' }
       ],
-
+ 
       // 班级图表相关数据
       classChart: null,
       classData: {},
@@ -89,7 +89,7 @@ export default {
         { value: '4', label: '4班' },
         { value: '5', label: '5班' }
       ],
-
+      
       // 学生图表相关数据
       studentChart: null,
       studentData: [],
@@ -102,11 +102,11 @@ export default {
     this.initGradeChart();
     this.initClassChart();
     this.initStudentChart();
-
+    
     // 获取初始数据
     this.getGradeData();
     this.getClassData();
-
+    
     // 监听窗口大小变化，重绘图表
     window.addEventListener('resize', this.handleResize);
   },
@@ -117,7 +117,7 @@ export default {
       if (this.classChart) this.classChart.resize();
       if (this.studentChart) this.studentChart.resize();
     },
-
+    
     // 年级名称转换
     getGradeName(grade) {
       const gradeMap = {
@@ -130,22 +130,22 @@ export default {
       };
       return gradeMap[grade] || 'Unknown';
     },
-
+    
     // 初始化年级图表
     initGradeChart() {
       this.gradeChart = echarts.init(document.getElementById('gradeChart'));
     },
-
+    
     // 初始化班级图表
     initClassChart() {
       this.classChart = echarts.init(document.getElementById('classChart'));
     },
-
+    
     // 初始化学生图表
     initStudentChart() {
       this.studentChart = echarts.init(document.getElementById('studentChart'));
     },
-
+    
     // 获取年级数据
     getGradeData() {
       api.getWydc({ grade: this.selectedGrade }).then(res => {
@@ -156,7 +156,7 @@ export default {
         this.$message.error('获取年级数据失败');
       });
     },
-
+    
     // 获取班级数据
     getClassData() {
       api.getClassAverageScores({
@@ -170,14 +170,14 @@ export default {
         this.$message.error('获取班级数据失败');
       });
     },
-
+    
     // 获取学生数据
     getStudentData() {
       if (!this.studentName && !this.studentId) {
         this.$message.warning('请输入学生姓名或学号');
         return;
       }
-
+      
       api.getStudentScore({
         name: this.studentName,
         id: this.studentId
@@ -189,11 +189,11 @@ export default {
         this.$message.error('获取学生数据失败');
       });
     },
-
+    
     // 更新年级图表
     updateGradeChart() {
       if (!this.gradeChart || !this.gradeData) return;
-
+      
       let list = [];
       // 只添加当前选择的年级数据
       let data = {
@@ -201,7 +201,7 @@ export default {
         name: this.getGradeName(this.selectedGrade)
       };
       list.push(data);
-
+      
       const option = {
         title: {
           text: `${this.getGradeName(this.selectedGrade)}五育成绩`,
@@ -247,14 +247,14 @@ export default {
           }
         ]
       };
-
+      
       this.gradeChart.setOption(option);
     },
-
+    
     // 更新班级图表
     updateClassChart() {
       if (!this.classChart || !this.classData) return;
-
+      
       const option = {
         title: {
           text: `${this.getGradeName(this.selectedClassGrade)}${this.selectedClass}班五育成绩`,
@@ -310,14 +310,14 @@ export default {
           }
         ]
       };
-
+      
       this.classChart.setOption(option);
     },
-
+    
     // 更新学生图表
     updateStudentChart() {
       if (!this.studentChart || !this.studentData || this.studentData.length === 0) return;
-
+      
       const studentInfo = this.studentData[0];
       const option = {
         title: {
@@ -374,22 +374,22 @@ export default {
           }
         ]
       };
-
+      
       this.studentChart.setOption(option);
     },
-
+    
     // 年级选择变化处理
     handleGradeChange(value) {
       this.selectedGrade = value;
       this.getGradeData();
     },
-
+    
     // 班级年级选择变化处理
     handleClassGradeChange(value) {
       this.selectedClassGrade = value;
       this.getClassData();
     },
-
+    
     // 班级选择变化处理
     handleClassChange(value) {
       this.selectedClass = value;
@@ -400,7 +400,7 @@ export default {
   beforeDestroy() {
     // 移除窗口大小变化监听
     window.removeEventListener('resize', this.handleResize);
-
+    
     // 销毁图表实例
     if (this.gradeChart) {
       this.gradeChart.dispose();
