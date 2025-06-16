@@ -47,6 +47,9 @@ service.interceptors.request.use(
 // response interceptor
 service.interceptors.response.use(
   (response) => {
+    if (response.config.responseType === 'blob') {
+      return response; // 保持响应结构完整
+    }
     const res = response.data;
     return res;
   },
