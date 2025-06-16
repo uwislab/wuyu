@@ -25,7 +25,7 @@
         <el-button style="margin-left: 5px" type="success" @click="downloadTemplate">下载模板</el-button>
         <!-- 新增导入 Excel 按钮 -->
         <el-upload
-          :action="baseUrl + '/teacher/importExcel'"
+          :action="`http://us.uwis.cn:9080/teacher/importExcel`"
           :show-file-list="false"
           accept=".xlsx,.xls"
           :before-upload="beforeImportUpload"
