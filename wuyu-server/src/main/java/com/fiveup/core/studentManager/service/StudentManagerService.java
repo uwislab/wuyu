@@ -12,7 +12,7 @@ import com.fiveup.core.studentManager.pojo.StudentVO;
 
 import java.util.List;
 
-public interface StudentManagerService extends IService<StudentManager> {
+public interface StudentManagerService {
     void addStudent(StudentManager studentManager);
 
     //分页查询学生
