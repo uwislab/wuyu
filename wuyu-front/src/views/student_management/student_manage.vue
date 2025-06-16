@@ -19,10 +19,19 @@
           </el-select>
         </el-col>
         <el-col :span="4">
-          <el-input v-model="searchQuery.classId" placeholder="班级" size="medium" />
+          <el-select v-model="searchQuery.className" placeholder="班级" size="medium">
+            <el-option v-for="classItem in classInfo" :key="classItem" :label="classItem" :value="classItem" />
+          </el-select>
         </el-col>
         <el-col :span="4">
-          <el-input v-model="searchQuery.gradeId" placeholder="年级" size="medium" />
+          <el-select v-model="searchQuery.gradeId" placeholder="年级" size="medium">
+            <el-option v-for="grade in gradeInfo" :key="grade" :label="grade" :value="grade" />
+          </el-select>
+        </el-col>
+        <el-col :span="4">
+          <el-select v-model="searchQuery.schoolId" placeholder="学校" size="medium">
+            <el-option v-for="school in schoolInfo" :key="school.id" :label="school.schoolName" :value="school.id" />
+          </el-select>
         </el-col>
         <el-col :span="1.5">
           <el-button type="primary" @click="searchUsers">搜索</el-button>
@@ -33,10 +42,6 @@
         <el-col :span="1.5">
           <el-button type="success" @click="openAddUserDialog">添加学生</el-button>
         </el-col>
-        <!-- Excel操作按钮 -->
-        <!-- <el-col :span="1.5">
-          <el-button type="primary" @click="dialogVisible = true">导入Excel</el-button>
-        </el-col> -->
         
       </el-row>
       <!-- 导入excel -->
@@ -51,6 +56,7 @@
           drag action=""
           :auto-upload="false"
           :on-change="handleFileChange"
+          limit="1"
           accept=".xlsx,.xls"
           >
           <i class="el-icon-upload"></i>
@@ -60,7 +66,7 @@
         </span>
         <span slot="footer" class="dialog-footer">
           <el-button @click="cancelExcel">取 消</el-button>
-        <el-button type="primary" @click="handleUpload">确 定</el-button>
+          <el-button type="primary" @click="handleUpload">确 定</el-button>
         </span>
       </el-dialog>
 
@@ -69,8 +75,9 @@
         <el-table-column label="学号" prop="studentNum" />
         <el-table-column label="学生姓名" prop="studentName" />
         <el-table-column label="性别" :formatter="formatGender" />
-        <el-table-column label="班级" prop="classId" />
+        <el-table-column label="班级" prop="className" />
         <el-table-column label="年级" prop="gradeId"/>
+        <el-table-column label="学校" prop="schoolName" />
         <el-table-column label="家长电话" prop="parentPhoneNum"/>
         <el-table-column label="操作">
           <template #default="{ row }">
@@ -152,20 +159,22 @@
               :value="option.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="班级" prop="classId">
-          <el-input v-model="newUser.classId" />
-        </el-form-item>
-        <el-form-item label="年级" prop="gradeId">
-          <el-input v-model="newUser.gradeId" />
+        <el-form-item  label="家长手机号" prop="parentPhoneNum">
+          <el-input v-model="newUser.parentPhoneNum"/>
         </el-form-item>
         <el-form-item label="年级">
           <el-select v-model="newUser.gradeId" placeholder="选择年级" @change="onGradeChange">
-            <el-option v-for="grade in grades" :key="grade.id" :label="grade.gradeName" :value="grade.id" />
+            <el-option v-for="grade in gradeInfo" :key="grade" :label="grade" :value="grade" />
           </el-select>
         </el-form-item>
         <el-form-item label="班级">
-          <el-select v-model="newUser.classId" placeholder="选择班级">
-            <el-option v-for="classItem in classes" :key="classItem.id" :label="classItem.className" :value="classItem.id" />
+          <el-select v-model="newUser.className" placeholder="选择班级">
+            <el-option v-for="className in classInfo" :key="className" :label="cclassName" :value="className" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="学校">
+          <el-select v-model="newUser.schoolId" placeholder="选择学校">
+            <el-option v-for="schoolItem in schoolInfo" :key="schoolItem.schoolName" :label="schoolItem.schoolName" :value="schoolItem.id" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -192,25 +201,28 @@ import { StudentManagerUrl } from "@/api/baseapi"; // 引入 StudentManagerUrl
 import XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import * as echarts from "echarts";
-import { StudentManagerUrl } from "@/api/baseapi";
 
 export default {
   data() {
     return {
+      // 统计数据
+      statisticData: {},
+      // 图表实例
+      genderChart: null,
+      gradeChart: null,
+      schoolChart: null,
       dialogVisible:false,
       uploadFile: null,
       // 学生信息
       newUser: {
         studentNum: "",
         studentName: "",
-        gender: "",
-        classId: "",
+        className: "",
         gradeId:"",
         parentPhoneNum: "",
         gender: 1,
         schoolId: "",
-        gradeId: "",
-        classId: "",
+        deleted: 0,
         isreview: 0,
         isenter: 0
       },
@@ -247,6 +259,7 @@ export default {
         gender: "",
         gradeId: "",
         classId: "",
+        className: "",
         schoolId: "",
         sizeOfPage: 15,
         page: 1
@@ -254,7 +267,7 @@ export default {
       users: {
         data: [],
         sizeOfPage: 10,
-        pages: 1,
+        page: 1,
         totalNum: 0,
         isLast: false
       },
@@ -273,9 +286,9 @@ export default {
         { label: "教师", value: 2 },
         { label: "管理员", value: 3 },
       ],
-      school: [],
-      grade: [],
-      class: [],
+      schoolInfro: [],
+      gradeInfo: [],
+      classInfo: [],
       // Excel导入相关
       importDialogVisible: false,  // 导入进度弹窗
       importProgress: 0,           // 导入进度
@@ -313,6 +326,7 @@ export default {
     },
     // 导入excel
     async handleUpload() {
+      console.log('handleUpload');
       if (!this.uploadFile) {
         this.$message.warning('请先选择文件')
         return
@@ -321,7 +335,7 @@ export default {
       formData.append('file', this.uploadFile)
       try {
         const res = await axios.post('http://localhost:9080/studentExcel/import', formData)
-        console.log('2222',res.data.code);
+        console.log(res);
         if (res.data.code ===200) {
           this.$message.success('上传成功')
           this.dialogVisible = false
@@ -334,6 +348,7 @@ export default {
         this.$message.error('上传失败：' + (error.message || '未知错误'))
       }
     },
+    
     cancelExcel() {
       this.uploadFile = null
       this.dialogVisible = false
@@ -346,15 +361,7 @@ export default {
         })
         .catch(_ => {});
     },
-      // 统计数据
-      statisticData: {},
-      // 图表实例
-      genderChart: null,
-      gradeChart: null,
-      schoolChart: null
-    };
-  },
-  methods: {
+      
     // 表单验证并保存
     validateAndSaveUser() {
         this.$refs.form.validate((valid) => {
@@ -375,7 +382,7 @@ export default {
       
       addUser() {
         console.log('请求地址:', StudentManagerUrl);
-        axios.post(`${StudentManagerUrl}StudentManager/addStudent`, this.newUser)
+        axios.post(`${StudentManagerUrl}/StudentManager/addStudent`, this.newUser)
           .then(response => {
             if (response.data.code === 200) {
               this.$message.success('添加学生成功');
@@ -392,7 +399,7 @@ export default {
       },
 
       updateUser() {
-        axios.post(`${StudentManagerUrl}StudentManager/updateStudent`, this.newUser)
+        axios.post(`${StudentManagerUrl}/StudentManager/updateStudent`, this.newUser)
           .then(response => {
             if (response.data.code === 200) {
               this.$message.success('编辑学生成功');
@@ -407,9 +414,9 @@ export default {
             this.$message.error('编辑学生时发生错误');
           });
       },
-      fetchSchools() {
+    fetchSchools() {
       axios
-        .get(`${StudentManagerUrl}/StudentManager/getStudent`)
+        .get(`${StudentManagerUrl}/StudentManager/getSchool`)
         .then((response) => {
           this.schools = response.data;
         })
@@ -458,28 +465,7 @@ export default {
       // 清理
       document.body.removeChild(form);
     },
-    saveUser() {
-      // 验证用户名和手机号的唯一性
-      const isDuplicateUsername = this.allUsers.some(
-        (user) =>
-          user.username === this.newUser.username &&
-          (!this.editingUser || user.id !== this.editingUserId) // 排除当前编辑的用户
-      );
 
-      const isDuplicatePhoneNumber = this.allUsers.some(
-        (user) =>
-          user.phoneNumber === this.newUser.phoneNumber &&
-          (!this.editingUser || user.id !== this.editingUserId) // 排除当前编辑的用户
-      );
-
-      if (isDuplicateUsername) {
-        this.$message.error("用户名已存在，请重新输入！");
-        return;
-      }
-      if (isDuplicatePhoneNumber) {
-        this.$message.error("手机号已存在，请重新输入！");
-        return;
-        
     // 学校变更事件
     onSchoolChange(schoolId) {
       if (schoolId) {
@@ -507,13 +493,13 @@ export default {
       axios
         .post(`${StudentManagerUrl}/StudentManager/getStudent`, {
           page: this.users.page,
-          sizeOfPage: this.users.sizeOfPage,
-          studentNum: this.searchQuery.studentNum,
-          studentName: this.searchQuery.studentName,
-          gender: this.searchQuery.gender ? parseInt(this.searchQuery.gender) : null,
-          classId: this.searchQuery.classId ? parseInt(this.searchQuery.classId) : null,
-          gradeId: this.searchQuery.gradeId ? parseInt(this.searchQuery.gradeId) : null,
-          schoolId: this.searchQuery.schoolId ? parseInt(this.searchQuery.schoolId) : null
+            sizeOfPage: this.users.sizeOfPage,
+            studentNum:this.searchQuery.studentNum,
+            studentName:this.searchQuery.studentName,
+            gender:this.searchQuery.gender,
+            className:this.searchQuery.className,
+            gradeId:this.searchQuery.gradeId,
+            schoolId:this.searchQuery.schoolId,
         })
         .then(response => {
           this.users = response.data.data;
@@ -716,41 +702,42 @@ export default {
     
     // 删除学生
     async confirmDeleteUser(id) {
-  try {
-    // 修改提示信息，与逻辑删除保持一致
-    await this.$confirm(
-      "此操作将删除该学生信息, 是否继续?",
-      "提示",
-      {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
+    try {
+      // 修改提示信息，与逻辑删除保持一致
+      await this.$confirm(
+        "此操作将删除该学生信息, 是否继续?",
+        "提示",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
 
+        }
+      );
+    
+      // 修改API调用，与后端保持一致
+      await this.removeStudent(id);
+      
+      // 删除成功，显示成功消息
+      this.$message.success("学生删除成功");
+      
+      // 刷新学生列表
+      this.fetchStudentManager();
+    } catch (error) {
+      // 用户取消删除或删除操作失败
+      if (error !== "cancel") {
+        // 非用户取消的情况，显示错误消息
+        this.$message.error("删除学生失败，请稍后重试");
+        console.error("删除学生失败:", error);
       }
-    );
-    
-    // 修改API调用，与后端保持一致
-    await this.removeStudent(id);
-    
-    // 删除成功，显示成功消息
-    this.$message.success("学生删除成功");
-    
-    // 刷新学生列表
-    this.fetchStudentManager();
-  } catch (error) {
-    // 用户取消删除或删除操作失败
-    if (error !== "cancel") {
-      // 非用户取消的情况，显示错误消息
-      this.$message.error("删除学生失败，请稍后重试");
-      console.error("删除学生失败:", error);
     }
-  }
-},
+  },
 
-// 新增或修改API调用方法，确保与后端接口匹配
+  // 新增或修改API调用方法，确保与后端接口匹配
     removeStudent(studentId) {
+      console.log(studentId)
     // 修正API路径，确保与后端接口匹配
-      return axios.get(`${StudentManagerUrl}StudentManager/removeStudent`, {
+      return axios.get(`${StudentManagerUrl}/StudentManager/removeStudent`, {
         params: {
           id: studentId // 确保参数名与后端@RequestParam("id")一致
         }
@@ -790,21 +777,6 @@ export default {
       
       this.showAddUserDialog = true;
     },
-    // 更新学生信息
-    updateStudent() {
-      axios
-        .put(`${StudentManagerUrl}/StudentManager/update`, this.newUser)
-        .then(() => {
-          this.$message.success("学生信息更新成功！");
-          this.fetchStudentManager();
-          this.fetchStatisticData(); // 更新统计数据
-          this.closeAddUserDialog();
-        })
-        .catch(error => {
-          console.error("更新学生失败：", error);
-          this.$message.error("更新学生失败，请重试！");
-        });
-    },
 
     // 搜索学生
     searchUsers() {
@@ -841,12 +813,16 @@ export default {
           studentNum: "",
           studentName: "",
           gender: 1,
-          classId: "",
+          className: "",
           gradeId: "",
           parentPhoneNum: "",
-          identity: 3,
           schoolId: "",
         };
+
+        this.newUser.className = this.classInfo[0]; // 默认选择第一个班级
+        this.newUser.gradeId = this.gradeInfo[0]; // 默认选择第一个年级
+        this.newUser.schoolId = this.schoolInfo[0].id; // 默认选择第一个学校
+
         this.showAddUserDialog = true;
       },
       closeAddUserDialog() {
@@ -872,6 +848,40 @@ export default {
       this.fetchStudentManager();
     },
 
+    //获取学校信息列表
+  fetchSchoolInfo() {
+      axios
+        .get(`${StudentManagerUrl}/StudentManager/getSchool`)
+        .then((response) => {
+          this.schoolInfo = response.data.data;
+        })
+        .catch(error => {
+          console.error("获取学校列表失败：", error);
+        });
+  },
+  //获取班级列表
+  fetchClassInfo() {
+      axios
+        .get(`${StudentManagerUrl}/StudentManager/getClassName`)
+        .then((response) => {
+          this.classInfo = response.data.data;
+        })
+        .catch(error => {
+          console.error("获取班级列表失败：", error);
+        });
+  },
+  //获取年级列表
+  fetchGradeInfo() {
+      axios
+        .get(`${StudentManagerUrl}/StudentManager/getGrade`)
+        .then((response) => {
+          this.gradeInfo = response.data.data;
+        })
+        .catch(error => {
+          console.error("获取年级列表失败：", error);
+        });
+  },
+
     // 窗口大小变化时重绘图表
     resizeCharts() {
       this.genderChart?.resize();
@@ -880,8 +890,10 @@ export default {
     }
   },
   mounted() {
-    this.fetchSchools();
     this.fetchStudentManager();
+    this.fetchSchoolInfo();
+    this.fetchClassInfo();
+    this.fetchGradeInfo();
     this.fetchStatisticData();
     
     // 监听窗口大小变化
