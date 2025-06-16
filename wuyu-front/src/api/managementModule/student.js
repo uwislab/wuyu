@@ -1,7 +1,7 @@
 import request from "@/utils/request";
 import student from "../student";
 
-import { baseUrl } from "../baseapi";
+// import { baseUrl } from "../baseapi";
 // 导出班级学生数据
 export function getStudentsInClass(params) {
   let xhr = new XMLHttpRequest();
@@ -85,7 +85,7 @@ export function getAllStudent(){
   return request({
     url:'/api/student/getAllStudent',
     method:'get',
-    baseURL: `${baseUrl}`,
+    // baseURL: `${baseUrl}`,
   })
 }
 //批量删除

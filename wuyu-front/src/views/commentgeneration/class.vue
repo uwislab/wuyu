@@ -1,3 +1,12 @@
+<!--
+ * @Author: hezeliangfj
+ * @Date: 2025-06-13 09:30:51
+ * @LastEditors: hezeliangfj
+ * @LastEditTime: 2025-06-13 10:38:31
+ * @version: 0.0.1
+ * @FilePath: \wuyu-front\src\views\commentgeneration\class.vue
+ * @Descripttion: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+-->
 <template>
     <div>
         <div class="search">
@@ -8,7 +17,7 @@
 
         </div>
         <el-row >
-            <el-table 
+            <el-table
                 :data="studensList"
                 style="width: 100%">
                 <el-table-column
@@ -42,7 +51,7 @@
                     label="劳">
                 </el-table-column>
             </el-table>
-            <el-pagination 
+            <el-pagination
                 @current-change="handleCurrentChange"
                 :current-page.sync="currentPage"
                 :page-size="pageSize"
