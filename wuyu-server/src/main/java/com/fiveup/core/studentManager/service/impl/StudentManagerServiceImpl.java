@@ -129,7 +129,9 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
     }
   
     public void export(HttpServletResponse response) {
-        List<StudentManager> list = studentManagerMapper.selectList(null);
+        QueryWrapper<StudentManager> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("deleted",0);
+        List<StudentManager> list = studentManagerMapper.selectList(queryWrapper);
         try {
             ClassPathResource resource = new ClassPathResource("templates/studentInput.xlsx");
             InputStream in = resource.getInputStream();
@@ -214,8 +216,9 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
                 XSSFSheet sheet = workbook.getSheetAt(0);
                 List<StudentManager> list = new ArrayList<>();
                 Set<String> set=new HashSet<>();//学号
-                StudentManager studentManager = new StudentManager();
+               
                 for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                    StudentManager studentManager = new StudentManager();
                     XSSFRow row = sheet.getRow(i);
                     String f=new String();
                     if (row != null) {

@@ -15,10 +15,10 @@ import java.util.List;
 import java.util.Set;
 
 public interface StudentManagerMapper extends BaseMapper<StudentManager> {
-    @Select("select distinct (student_num) from basic_student")
+    @Select("select distinct (student_num) from basic_student where deleted=0")
     Set<String> selectnum();
 
-    @Select("select concat(grade,'#',class) from basic_class group by class,grade;")
+    @Select("select concat(grade,'#',class) from basic_class where deleted=0 group by class,grade;")
     Set<String> selectclassgrade();
 
     //分页查询学生
