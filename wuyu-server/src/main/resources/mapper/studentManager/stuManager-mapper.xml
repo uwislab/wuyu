@@ -41,6 +41,7 @@
             <if test="className != null and className !=''">
                 and bc.class_name = #{className}
             </if>
+            and bs.deleted = 0
         </where>
     </select>
 </mapper>
