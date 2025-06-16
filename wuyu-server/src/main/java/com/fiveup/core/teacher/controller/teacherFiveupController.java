@@ -195,7 +195,7 @@ public class teacherFiveupController {
 
     //excel导入
     @PostMapping("/importExcel")
-    public Boolean importExcel(MultipartFile file) throws IOException {
+    public CommonResponse<Boolean> importExcel(MultipartFile file) throws IOException {
         InputStream inputStream = file.getInputStream();
         ExcelReader reader = ExcelUtil.getReader(inputStream);
 
@@ -212,12 +212,24 @@ public class teacherFiveupController {
 //            user.setTitle(row.get(2).toString());
 //            user.setContent(row.get(3).toString());
 //            user.setAuthor(row.get(4).toString());
+            teacher.setTeacherName(row.get(1).toString());
+            teacher.setGender(Integer.parseInt(row.get(2).toString()));
+            teacher.setPhoneNum(row.get(3).toString());
+            teacher.setPosition(row.get(4).toString());
+            teacher.setTitle(row.get(5).toString());
+            teacher.setRole(row.get(6).toString());
+            teacher.setUsername(row.get(7).toString());
+            teacher.setPassword(row.get(8).toString());
+            teacher.setPoliticalAppearance(row.get(9).toString());
+            teacher.setBirthPlace(row.get(10).toString());
+            teacher.setAge(Integer.parseInt(row.get(11).toString()));
+            teacher.setInfo(row.get(12).toString());
 
             users.add(teacher);
         }
         //将excel导入的数据保存到数据库
         teacherService.saveBatch(users);
-        return true;
+        return CommonResponse.ok(true);
     }
 
     /**
