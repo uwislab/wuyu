@@ -314,7 +314,7 @@ export default {
       this.inputStatus = true
     },
     getGradeAndPosition() {
-      axios.get(baseUrl + '/api/teacherQuery/getFormObject').then(res => {
+      axios.get('http://us.uwis.cn:9080/api/teacherQuery/getFormObject').then(res => {
         if (res.data.code === 200) {
           // this.gradeList = res.data.data.gradeList;
           console.log(res.data.data.gradeList)
@@ -468,7 +468,7 @@ export default {
         return;
       }
       // 将 schoolId 作为参数传递给导出接口
-      window.open(`${baseUrl}/teacher/exportExcel?schoolId=${userInfo.schoolId}`);
+      window.open(`http://us.uwis.cn:9080/teacher/exportExcel?schoolId=${userInfo.schoolId}`);
     },
     // importExcel(){
     //     this.$message.success("导入成功");
@@ -477,7 +477,7 @@ export default {
     downloadTemplate() {
       try {
         // 使用正确的端口号
-        const downloadUrl = `${baseUrl}/teacher/downloadTemplate`;
+        const downloadUrl = `http://us.uwis.cn:9080/teacher/downloadTemplate`;
 
         // 创建一个临时的 a 标签用于下载
         const link = document.createElement('a');
