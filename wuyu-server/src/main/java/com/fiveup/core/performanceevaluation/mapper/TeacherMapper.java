@@ -35,4 +35,7 @@ public interface TeacherMapper {
     Teacher selectByName(String name);
 
     List<Integer> selectOtherTeacher(String name);
+
+    @Select("SELECT * FROM basic_teacher WHERE teacher_name = #{name} and id = #{id}")
+    Teacher getTeach(Long id, String name);
 }
