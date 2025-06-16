@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
-
+import org.apache.ibatis.annotations.Param;
 /**
  * @author shilin
  * @date 2022/9/19
@@ -58,7 +58,7 @@ public class FuScoreController {
 
 
     //！！！添加的
-    // 根据学生姓名或学号查询分数
+    // 根据学生姓名或学号查询分数fdsafdafdasfasdfasdf
     @GetMapping("/getScoreByInfo")
     public List<StudentFuScore> getScoreByInfo(@RequestParam String info) {
         return studentFuScoreService.getScoreByInfo(info);
@@ -144,6 +144,24 @@ public class FuScoreController {
         List<StudentFuScore> studentFuScore = studentFuScoreService.getStudentsFuScore(studentName, studentIdInt);
         return CommonResponse.ok(studentFuScore);
     }
+
+    //查询学生学期的五育成绩数据
+    @GetMapping("/getStudentSemesterScores")
+    public StudentSemesterScore getStudentSemesterScores(
+            @RequestParam("studentId") Integer studentId,
+            @RequestParam("studentName") String studentName,
+            @RequestParam("semester") String semester) {
+        return studentFuScoreService.getStudentSemesterScores(studentId, studentName, semester);
+    }
+
+    //查询学生学期的五育成绩数据
+    @GetMapping("/studentScoreSemester")
+    public List<StuSemesterTotalScore> getStuSemester(
+            @RequestParam("studentId") Integer studentId,
+            @RequestParam("studentName") String studentName) {
+        return studentFuScoreService.getStuSemester(studentId, studentName);
+    }
+
 
     // 2.根据学号查询学生的详细信息
     @GetMapping("/getStudentInfo")
@@ -332,6 +350,14 @@ public class FuScoreController {
         }
     }
 
+    @GetMapping("/student/search")
+    public List<StudentInfo> searchStudent(@RequestParam("keyword") String keyword) {
+        return studentFuScoreService.searchStudents(keyword);
+    }
 
+    @GetMapping("/student/semesters")
+    public List<StudentSemesterDto> getStudentSemesters(@RequestParam("studentId") Integer studentId) {
+        return studentFuScoreService.getStudentSemesters(studentId);
+    }
 
 }
