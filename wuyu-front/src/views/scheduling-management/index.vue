@@ -852,13 +852,6 @@ const handleAutoCopy = async (val) => {
 // 自动复制设置相关
 const autoCopyEnabled = ref()
 
-// 开关自动复制 
-const handleAutoCopyClass = async (val) => { 
-  console.log("handleAutoCopyClass",val)
-  try { 
-    if (val) { 
-      const res = await autoCopyLastSemesterSchedule({enabled: true}); 
-      if (res.code === 200) { 
 // 开关自动复制
 const handleAutoCopyClass = async (val) => {
   try {
