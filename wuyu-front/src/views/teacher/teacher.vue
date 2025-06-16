@@ -25,7 +25,7 @@
         <el-button style="margin-left: 5px" type="success" @click="downloadTemplate">下载模板</el-button>
         <!-- 新增导入 Excel 按钮 -->
         <el-upload
-          action="http://localhost:9085/teacher/importExcel"
+          :action="baseUrl + '/teacher/importExcel'"
           :show-file-list="false"
           accept=".xlsx,.xls"
           :before-upload="beforeImportUpload"
@@ -468,7 +468,7 @@ export default {
         return;
       }
       // 将 schoolId 作为参数传递给导出接口
-      window.open(`http://localhost:9085/teacher/exportExcel?schoolId=${userInfo.schoolId}`);
+      window.open(`${baseUrl}/teacher/exportExcel?schoolId=${userInfo.schoolId}`);
     },
     // importExcel(){
     //     this.$message.success("导入成功");
@@ -477,7 +477,7 @@ export default {
     downloadTemplate() {
       try {
         // 使用正确的端口号
-        const downloadUrl = 'http://localhost:9085/teacher/downloadTemplate';
+        const downloadUrl = `${baseUrl}/teacher/downloadTemplate`;
 
         // 创建一个临时的 a 标签用于下载
         const link = document.createElement('a');
