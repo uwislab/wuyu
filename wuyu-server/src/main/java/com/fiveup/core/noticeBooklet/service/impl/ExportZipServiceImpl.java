@@ -15,6 +15,7 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+//你好、测试
 public class ExportZipServiceImpl implements ExportZipService {
     private final NoticeBookletService noticeBookletService;
     /**

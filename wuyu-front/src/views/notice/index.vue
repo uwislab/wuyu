@@ -2,7 +2,7 @@
  * @Author: hezeliangfj
  * @Date: 2025-06-14 12:54:59
  * @LastEditors: hezeliangfj
- * @LastEditTime: 2025-06-15 22:21:45
+ * @LastEditTime: 2025-06-17 14:34:56
  * @version: 0.0.1
  * @FilePath: \wuyu-front\src\views\notice\index.vue
  * @Descripttion: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
@@ -152,6 +152,7 @@
 <script>
 import { getStudent, exportZip,noticeBooklet,exportBooklet,previewNoticeBooklet,exportNoticeBooklet } from '@/api/notice.js'
 import { showLoading, closeLoading } from '@/utils/loading'
+// import {}
 import axios from 'axios'
 // import { create } from 'sortablejs';
 export default {
@@ -174,6 +175,7 @@ export default {
       classes: [],
       gradeId: null,
       classId: null,
+      apiBaseUrl: process.env.VUE_APP_DEVELOP06_API,
       // 查询
       query: {
         "pageSize": 10,
@@ -300,7 +302,7 @@ export default {
         const queryString = Object.keys(params)
           .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
           .join('&')
-        const downloadUrl = `/api/noticeBooklet/word/generate?${queryString}`
+        const downloadUrl = `${this.apiBaseUrl}/noticeBooklet/word/generate?${queryString}`
 
         // 发起下载请求
         const response = await fetch(downloadUrl, {
@@ -356,8 +358,9 @@ export default {
         const queryString = Object.keys(params)
           .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
           .join('&')
-        const downloadUrl = `/api/export/zip?${queryString}`
+        const downloadUrl = `${this.apiBaseUrl}/export/zip?${queryString}`
         console.log('开始下载，URL:', downloadUrl)
+
         // 发起下载请求
         const response = await fetch(downloadUrl, {
           method: 'GET',
