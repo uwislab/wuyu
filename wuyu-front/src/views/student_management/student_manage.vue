@@ -334,7 +334,7 @@ export default {
       const formData = new FormData()
       formData.append('file', this.uploadFile)
       try {
-        const res = await axios.post('http://localhost:9080/studentExcel/import', formData)
+        const res = await axios.post(`${baseUrl}/studentExcel/import`, formData)
         console.log(res);
         if (res.data.code ===200) {
           this.$message.success('上传成功')
