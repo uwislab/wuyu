@@ -197,7 +197,7 @@
 
 <script>
 import axios from "axios";
-import { StudentManagerUrl } from "@/api/baseapi"; // 引入 StudentManagerUrl
+import { baseUrl } from "@/api/baseapi"; // 引入 baseUrl
 import XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import * as echarts from "echarts";
@@ -313,7 +313,7 @@ export default {
     exportExcel() {
       // 创建表单
       const form = document.createElement('form');
-      form.action = `${StudentManagerUrl}/studentExcel/export`;
+      form.action = `${baseUrl}/studentExcel/export`;
       form.method = 'GET';
       form.style.display = 'none';
       
@@ -381,8 +381,8 @@ export default {
       },
       
       addUser() {
-        console.log('请求地址:', StudentManagerUrl);
-        axios.post(`${StudentManagerUrl}/StudentManager/addStudent`, this.newUser)
+        console.log('请求地址:', baseUrl);
+        axios.post(`${baseUrl}/StudentManager/addStudent`, this.newUser)
           .then(response => {
             if (response.data.code === 200) {
               this.$message.success('添加学生成功');
@@ -399,7 +399,7 @@ export default {
       },
 
       updateUser() {
-        axios.post(`${StudentManagerUrl}/StudentManager/updateStudent`, this.newUser)
+        axios.post(`${baseUrl}/StudentManager/updateStudent`, this.newUser)
           .then(response => {
             if (response.data.code === 200) {
               this.$message.success('编辑学生成功');
@@ -416,7 +416,7 @@ export default {
       },
     fetchSchools() {
       axios
-        .get(`${StudentManagerUrl}/StudentManager/getSchool`)
+        .get(`${baseUrl}/StudentManager/getSchool`)
         .then((response) => {
           this.schools = response.data;
         })
@@ -428,7 +428,7 @@ export default {
     // 获取年级列表
     fetchGrades(schoolId) {
       axios
-        .get(`${StudentManagerUrl}/webUser/grades?schoolId=${schoolId}`)
+        .get(`${baseUrl}/webUser/grades?schoolId=${schoolId}`)
         .then(response => {
           this.grades = response.data;
           // 重置年级选择后，清空班级选择
@@ -443,7 +443,7 @@ export default {
     // 获取班级列表
     fetchClasses(gradeId) {
       axios
-        .get(`${StudentManagerUrl}/studentManager/addStudent`)
+        .get(`${baseUrl}/studentManager/addStudent`)
         .then((response) => {
           this.allUsers = response.data; // 假设接口返回的数据为用户列表
         })
@@ -451,20 +451,20 @@ export default {
           console.error("获取班级列表失败：", error);
         });
     },
-    exportExcel() {
-      // 创建表单
-      const form = document.createElement('form');
-      form.action = `${StudentManagerUrl}/studentExcel/export`;
-      form.method = 'GET';
-      form.style.display = 'none';
+    // exportExcel() {
+    //   // 创建表单
+    //   const form = document.createElement('form');
+    //   form.action = `${baseUrl}/studentExcel/export`;
+    //   form.method = 'GET';
+    //   form.style.display = 'none';
       
-      // 添加到文档并提交
-      document.body.appendChild(form);
-      form.submit();
+    //   // 添加到文档并提交
+    //   document.body.appendChild(form);
+    //   form.submit();
       
-      // 清理
-      document.body.removeChild(form);
-    },
+    //   // 清理
+    //   document.body.removeChild(form);
+    // },
 
     // 学校变更事件
     onSchoolChange(schoolId) {
@@ -491,7 +491,7 @@ export default {
     // 获取学生列表
     fetchStudentManager() {
       axios
-        .post(`${StudentManagerUrl}/StudentManager/getStudent`, {
+        .post(`${baseUrl}/StudentManager/getStudent`, {
           page: this.users.page,
             sizeOfPage: this.users.sizeOfPage,
             studentNum:this.searchQuery.studentNum,
@@ -503,7 +503,7 @@ export default {
         })
         .then(response => {
           this.users = response.data.data;
-          this.totalStudents = this.users.totalNum;
+          
         })
         .catch(error => {
           console.error("获取用户列表出错：", error);
@@ -513,7 +513,7 @@ export default {
     // 获取统计数据
     fetchStatisticData() {
       axios
-        .get(`${StudentManagerUrl}/api/statistics/student`)
+        .get(`${baseUrl}/api/statistics/student`)
         .then(res => {
           this.statisticData = res.data;
           this.totalStudents = 
@@ -737,7 +737,7 @@ export default {
     removeStudent(studentId) {
       console.log(studentId)
     // 修正API路径，确保与后端接口匹配
-      return axios.get(`${StudentManagerUrl}/StudentManager/removeStudent`, {
+      return axios.get(`${baseUrl}/StudentManager/removeStudent`, {
         params: {
           id: studentId // 确保参数名与后端@RequestParam("id")一致
         }
@@ -825,9 +825,9 @@ export default {
 
         this.showAddUserDialog = true;
       },
-      closeAddUserDialog() {
-        this.showAddUserDialog = false;
-      },
+      // closeAddUserDialog() {
+      //   this.showAddUserDialog = false;
+      // },
     genderFormatter(row) {
       return this.genderOptions.find(option => option.value === row.gender)?.label || "";
     },
@@ -851,7 +851,7 @@ export default {
     //获取学校信息列表
   fetchSchoolInfo() {
       axios
-        .get(`${StudentManagerUrl}/StudentManager/getSchool`)
+        .get(`${baseUrl}/StudentManager/getSchool`)
         .then((response) => {
           this.schoolInfo = response.data.data;
         })
@@ -862,7 +862,7 @@ export default {
   //获取班级列表
   fetchClassInfo() {
       axios
-        .get(`${StudentManagerUrl}/StudentManager/getClassName`)
+        .get(`${baseUrl}/StudentManager/getClassName`)
         .then((response) => {
           this.classInfo = response.data.data;
         })
@@ -873,7 +873,7 @@ export default {
   //获取年级列表
   fetchGradeInfo() {
       axios
-        .get(`${StudentManagerUrl}/StudentManager/getGrade`)
+        .get(`${baseUrl}/StudentManager/getGrade`)
         .then((response) => {
           this.gradeInfo = response.data.data;
         })
@@ -898,6 +898,8 @@ export default {
     
     // 监听窗口大小变化
     window.addEventListener("resize", this.resizeCharts);
+
+    this.totalStudents = this.users.totalNum; // 初始化总学生数
   },
   beforeDestroy() {
     // 移除事件监听
