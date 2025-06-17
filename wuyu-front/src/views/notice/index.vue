@@ -2,7 +2,7 @@
  * @Author: hezeliangfj
  * @Date: 2025-06-14 12:54:59
  * @LastEditors: hezeliangfj
- * @LastEditTime: 2025-06-17 14:34:56
+ * @LastEditTime: 2025-06-17 20:53:50
  * @version: 0.0.1
  * @FilePath: \wuyu-front\src\views\notice\index.vue
  * @Descripttion: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
@@ -346,63 +346,47 @@ export default {
     // 批量导出
     async handleExportBatch() {
       try {
-        showLoading('批量导出中，请稍候...')
+        showLoading('批量导出中，请稍候...');
         const params = {
           gradeId: this.gradeId
-        }
+        };
         if (this.classId && !isNaN(this.classId)) {
-          params.classId = Number(this.classId)
+          params.classId = Number(this.classId);
         }
 
         // 构建查询字符串
         const queryString = Object.keys(params)
           .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
-          .join('&')
-        const downloadUrl = `${this.apiBaseUrl}/export/zip?${queryString}`
-        console.log('开始下载，URL:', downloadUrl)
+          .join('&');
+        const downloadUrl = `${this.apiBaseUrl}/export/zip?${queryString}`;
+        // console.log('开始下载，URL:', downloadUrl,'22222',this.totalCount);
 
-        // 发起下载请求
-        const response = await fetch(downloadUrl, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/octet-stream'
-          }
-        })
+        // 创建隐藏的 iframe 触发下载
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = downloadUrl;
+        document.body.appendChild(iframe);
 
-        if (!response.ok) {
-          throw new Error(`下载失败，服务器返回状态码: ${response.status}`)
-        }
+        // 使用 Promise 动态等待下载完成（最多等待 5 秒）
+        const downloadTimeout = new Promise((resolve) => {
+          setTimeout(() => {
+            document.body.removeChild(iframe);
+            resolve();
+          }, this.totalCount*5000); // 设置最大等待时间（可根据实际文件大小调整）
+        });
 
-        const arrayBuffer = await response.arrayBuffer()
-        if (!arrayBuffer || arrayBuffer.byteLength === 0) {
-          throw new Error('下载的文件为空')
-        }
+        // 等待下载完成或超时
+        await downloadTimeout;
 
-        if (arrayBuffer.byteLength < 100) {
-          throw new Error('下载的文件太小，可能已损坏')
-        }
-
-        const blob = new Blob([arrayBuffer], { type: 'application/zip' })
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.style.display = 'none'
-        a.href = url
-        a.download = `${this.gradeId}年级${this.classId ? this.classId + '班' : ''}的通知册.zip`
-        document.body.appendChild(a)
-        a.click()
-
-        setTimeout(() => {
-          window.URL.revokeObjectURL(url)
-          document.body.removeChild(a)
-          closeLoading()
-          this.$message.success('批量导出成功')
-          this.dialogVisible = false
-        }, 1000)
+        closeLoading();
+        this.$message.success('批量导出成功');
+        this.dialogVisible = false;
 
       } catch (error) {
-        console.error('批量导出失败:', error)
-        closeLoading()
-        this.$message.error('批量导出失败：' + (error.message || '未知错误'))
+        console.error('批量导出失败:', error);
+        closeLoading();
+        this.$message.error('批量导出失败：' + (error.message || '未知错误'));
+        document.body.removeChild(iframe); // 确保移除 iframe
       }
     },
     // 预览下载
