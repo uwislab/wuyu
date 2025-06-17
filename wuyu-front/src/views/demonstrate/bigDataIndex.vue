@@ -941,6 +941,14 @@ export default {
   html {
     font-size: 42px !important;
   }
+  .mainbox {
+    flex-direction: column;
+  }
+
+  .item {
+    width: 100%;
+    margin-bottom: 0.1875rem;
+  }
 }
 
 @media screen and (min-width: 1920px) {
