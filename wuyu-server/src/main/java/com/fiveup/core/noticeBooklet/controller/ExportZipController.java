@@ -2,17 +2,16 @@ package com.fiveup.core.noticeBooklet.controller;
 
 import com.fiveup.core.noticeBooklet.service.ExportZipService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/export")
 @RequiredArgsConstructor
+@CrossOrigin
 public class ExportZipController {
     private final ExportZipService exportZipService;
     /**
