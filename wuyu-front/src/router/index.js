@@ -837,7 +837,19 @@ export const asyncRoutes = [
       },
     ],
   },
-
+   // 通知册
+   {
+    path: '/notice',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/notice/index'),
+        name: 'Notice',
+        meta: { title: '通知册', icon: 'el-icon-menu' }
+      }
+    ]
+  },
   {
     path: "/demonstrate",
     component: Layout,
@@ -853,8 +865,8 @@ export const asyncRoutes = [
       {
         path: "wydc",
         component: () => import("@/views/demonstrate/wydc"),
-        name: "五育达成",
-        meta: { title: "五育达成", role: [0,4] },
+        name: "五育雷达图",
+        meta: { title: "五育雷达图", role: [0,4] },
       },
       {
         path: "njqk",
@@ -892,6 +904,18 @@ export const asyncRoutes = [
         component: () => import("@/views/demonstrate/grade"),
         name: "年级成绩展示",
         meta: { title: "年级成绩展示", role: [0,4] },
+      },
+      {
+        path: "studentGradeChange",
+        component: () => import("@/views/demonstrate/studentGradeChange"),
+        name: "五育成绩展示",
+        meta: { title: "五育成绩展示", role: [0,4] },
+      },
+      {
+        path: "average-education-achievement",
+        component: () => import("@/views/demonstrate/average-education-achievement"),
+        name: "平均五育成绩展示",
+        meta: { title: "平均五育成绩展示", role: [0,4] },
       },
     ],
   },

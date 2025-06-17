@@ -57,18 +57,44 @@ public class NoticeBooklet {
     private Integer sLaoyu;
 
     /**
-     * 评语
+     * 计划德育分
      */
-    private String remark;
+    private Integer pDeyu;
 
     /**
-     * 建议
+     * 计划智育分
      */
-    private String suggest;
+    private Integer pZhiyu;
+
+    /**
+     * 计划体育分
+     */
+    private Integer pTiyu;
+
+    /**
+     * 计划美育分
+     */
+    private Integer pMeiyu;
+
+    /**
+     * 计划劳育分
+     */
+    private Integer pLaoyu;
+
 
     /**
      * 假期要求
      */
-    private String holiday;
+    private String pPlan;
+
+    /**
+     * 建议
+     */
+    private String comment;
+
+    /**
+     * 评语
+     */
+    private String remark;
 
 }
