@@ -2,7 +2,7 @@
  * @Author: hezeliangfj
  * @Date: 2025-06-14 12:54:59
  * @LastEditors: hezeliangfj
- * @LastEditTime: 2025-06-17 14:27:28
+ * @LastEditTime: 2025-06-17 14:34:56
  * @version: 0.0.1
  * @FilePath: \wuyu-front\src\views\notice\index.vue
  * @Descripttion: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
@@ -343,6 +343,7 @@ export default {
         this.$message.error('导出失败：' + (error.message || '未知错误'))
       }
     },
+    // 批量导出
     async handleExportBatch() {
       try {
         showLoading('批量导出中，请稍候...')
