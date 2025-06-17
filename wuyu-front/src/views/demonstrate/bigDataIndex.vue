@@ -231,6 +231,24 @@ export default {
     this.initXYGREcharts();
   },
   methods: {
+    toggleFullscreen() {
+      if (!screenfull.enabled) {
+        this.$message({
+          message: '您的浏览器不支持全屏功能',
+          type: 'warning'
+        });
+        return;
+      }
+      screenfull.toggle(this.$refs.myContent);
+    },
+    handleFullscreenChange() {
+      // 处理全屏状态变化的逻辑
+      if (screenfull.isFullscreen) {
+        // 进入全屏状态
+      } else {
+        // 退出全屏状态
+      }
+    },
     timeFormate(timeStamp) { //显示当前时间
       let newDate = new Date(timeStamp);
       let year = newDate.getFullYear();
