@@ -217,6 +217,10 @@ export default {
     })
   },
   mounted() {
+    this.init();
+    if (screenfull.enabled) {
+      screenfull.on('change', this.handleFullscreenChange);
+    };
     this.getWeather();
     this.timer = setInterval(() => {
       this.getWeather();
