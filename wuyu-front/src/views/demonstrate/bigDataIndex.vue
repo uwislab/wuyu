@@ -6,7 +6,7 @@
           <img :src="imgSrc">
           <span class="tem">{{ weatcherData.tem }}°C</span>
           <span class="wea">{{ weatcherData.wea }}</span>
-          <button @click="click">全屏</button>
+          <button @click="toggleFullscreen">全屏</button>
         </div>
         <h2>五育中控平台</h2>
         <div class="showTime">
