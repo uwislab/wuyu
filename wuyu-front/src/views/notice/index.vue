@@ -358,7 +358,7 @@ export default {
         const queryString = Object.keys(params)
           .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
           .join('&')
-        const downloadUrl = `/api/export/zip?${queryString}`
+        const downloadUrl = `${this.apiBaseUrl}/export/zip?${queryString}`
         console.log('开始下载，URL:', downloadUrl)
 
         // 发起下载请求
