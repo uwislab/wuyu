@@ -342,7 +342,7 @@ export default {
           this.uploadFile = null
           this.fetchStudentManager() // 刷新数据
         } else {
-          this.$message.error('上传失败')
+          this.$message.error('上传失败' + res.data.message)
         }
       } catch (error) {
         this.$message.error('上传失败：' + (error.message || '未知错误'))
