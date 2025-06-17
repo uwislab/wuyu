@@ -25,7 +25,7 @@ public class PanelTest {
     @Test
     public void testCalc() {
         // 测试学号
-        List<NoticeBooklet> noticeBooklet1 = noticeBookletService.getNoticeBooklet(2018083062, null, null, true);
+        List<NoticeBooklet> noticeBooklet1 = noticeBookletService.getNoticeBooklet(2017083062, null, null, true);
         // 测试班级
         List<NoticeBooklet> noticeBooklet2 = noticeBookletService.getNoticeBooklet(null, 1, null, true);
         // 测试年级
