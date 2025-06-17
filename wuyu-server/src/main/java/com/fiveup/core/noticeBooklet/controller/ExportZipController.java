@@ -10,7 +10,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/export")
 @RequiredArgsConstructor
-@CrossOrigin
 public class ExportZipController {
     private final ExportZipService exportZipService;
     /**
