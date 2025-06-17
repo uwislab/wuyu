@@ -166,7 +166,6 @@ export default {
         "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimg.jj20.com%2Fup%2Fallimg%2F1114%2F102920105033%2F201029105033-1-1200.jpg&refer=http%3A%2F%2Fimg.jj20.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1656687720&t=b8754d6573884c844088a92959416fcf"
       ],
 
-
       isFullscreen: false,
       nowTime: '',
       week: '',
@@ -513,7 +512,7 @@ export default {
       myChart.setOption(option)
       this.chartList.push(myChart)
     },
-    click() {
+    click() {  // 修改部分：添加点击事件处理函数
       if (!screenfull.enabled) {
         this.$message({
           message: 'you browser can not work',
@@ -523,7 +522,7 @@ export default {
       }
       screenfull.toggle(this.$refs.myContent)
     },
-    change() {
+    change() {  // 修改部分：添加全屏状态变化处理函数
       this.isFullscreen = screenfull.isFullscreen
     },
     init() {
@@ -531,7 +530,7 @@ export default {
         screenfull.on('change', this.change)
       }
     },
-    destroy() {
+    destroy() {  // 修改部分：销毁全屏监听
       if (screenfull.enabled) {
         screenfull.off('change', this.change)
       }
@@ -546,6 +545,7 @@ export default {
   beforeDestroy() {
     clearInterval(this.timer);
     this.destroyChart();
+    this.destroy(); // 修改部分：销毁全屏监听
   },
 }
 </script>
