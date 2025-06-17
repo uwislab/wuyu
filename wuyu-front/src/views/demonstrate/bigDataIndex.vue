@@ -534,7 +534,7 @@ export default {
       myChart.setOption(option)
       this.chartList.push(myChart)
     },
-    click() {  // 修改部分：添加点击事件处理函数
+    click() {
       if (!screenfull.enabled) {
         this.$message({
           message: 'you browser can not work',
@@ -544,7 +544,7 @@ export default {
       }
       screenfull.toggle(this.$refs.myContent)
     },
-    change() {  // 修改部分：添加全屏状态变化处理函数
+    change() {
       this.isFullscreen = screenfull.isFullscreen
     },
     init() {
@@ -552,7 +552,7 @@ export default {
         screenfull.on('change', this.change)
       }
     },
-    destroy() {  // 修改部分：销毁全屏监听
+    destroy() {
       if (screenfull.enabled) {
         screenfull.off('change', this.change)
       }
@@ -567,7 +567,9 @@ export default {
   beforeDestroy() {
     clearInterval(this.timer);
     this.destroyChart();
-    this.destroy(); // 修改部分：销毁全屏监听
+    if (screenfull.enabled) {
+      screenfull.off('change', this.handleFullscreenChange);
+    }
   },
 }
 </script>
