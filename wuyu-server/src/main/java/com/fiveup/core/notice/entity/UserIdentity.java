@@ -1,4 +1,4 @@
-package com.fiveup.core.notice.enetity;
+package com.fiveup.core.notice.entity;
 
 import lombok.Data;
 
