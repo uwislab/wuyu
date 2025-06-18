@@ -71,4 +71,8 @@ public interface TeacherWorkspaceMapper {
             "from basic_class, basic_student " +
             "where monitor_id=#{teacherId} and basic_student.class_id = basic_class.id GROUP BY basic_class.id")
     ClassBasicInfo getClassBasicInfo(Long teacher_id);
+
+    // 按 ID 和 Name 查询教师是否存在
+    @Select("SELECT COUNT(1) FROM basic_teacher WHERE id = #{id} AND teacher_name = #{teacherName}")
+    boolean existsTeacher(@Param("id") Long id, @Param("teacherName") String teacherName);
 }
