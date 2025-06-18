@@ -543,7 +543,7 @@ export default {
         chart.dispose()
       })
       this.chartList = []
-    }
+    },
     // 修改部分：重新渲染图表的方法
     resizeCharts() {
       this.chartList.forEach(chart => {
