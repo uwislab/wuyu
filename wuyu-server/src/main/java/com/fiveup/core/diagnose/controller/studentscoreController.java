@@ -120,7 +120,7 @@ public class studentscoreController {
 
         return result;
     }
-    
+
     @GetMapping("/avgFiveScore")
     @ResponseBody
     public CommonResponse<Map<String, Float>> getFiveAverageScores(@RequestParam("grade") Integer grade, Integer clazz) {

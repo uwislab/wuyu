@@ -46,6 +46,7 @@ module.exports = {
       },
     },
     port: port,
+    host: '0.0.0.0',
     open: true,
     overlay: {
       warnings: false,

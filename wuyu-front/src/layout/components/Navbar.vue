@@ -107,11 +107,12 @@ export default {
     }
   },
   created(){
-    // 尝试解决username空值异常
-    this.username = this.$route.query.loginForm.username?this.$route.query.loginForm.username:'null';
-    this.password = this.$route.query.loginForm.password;
-    console.log("navbar的info："+userInfo.username);
-    console.log("navbar的query："+this.$route.query)
+    // 从 localStorage 获取用户信息
+    const userInfo = JSON.parse(localStorage.getItem('UserInfo') || '{}');
+    this.username = userInfo.username || '';
+    this.password = userInfo.password || '';
+    console.log("navbar的info：" + this.username);
+    console.log("navbar的query：" + this.$route.query);
     this.selectedAvatar = localStorage.getItem('selectedAvatar') || require('@/assets/img/header_avatar_1.png');
   },
   mounted() {
