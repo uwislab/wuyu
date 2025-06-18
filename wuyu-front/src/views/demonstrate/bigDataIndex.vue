@@ -597,13 +597,6 @@ export default {
         font-size: 0.25rem;
         color: rgba(126, 240, 255, .7);
 
-        /* 修改 增加触摸目标大小 */
-        button {
-          min-width: 48px;
-          min-height: 48px;
-          padding: 0.1rem 0.2rem;
-        }
-
         img {
           width: .45rem;
         }
