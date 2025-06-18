@@ -62,8 +62,8 @@
           </div>
 
           <!-- 班级风采轮播图 -->
-          <section class="map">
-            <h3 style="color: white;text-align: center">班级风采</h3>
+          <div class="map">
+            <h3 style="color: white;text-align: center;font-size: 0.45rem;">班级风采</h3>
             <el-carousel :autoplay="true" indicator-position="none" :interval="4000" height="230px">
               <el-carousel-item v-for="(index, i) in 3" :key="i">
                 <div class="panel">
@@ -73,7 +73,7 @@
             </el-carousel>
 
             <!-- 五育标兵轮播图 -->
-            <h3 style="color: white;text-align: center">五育标兵</h3>
+            <h3 style="color: white;text-align: center;font-size: 0.45rem;">五育标兵</h3>
             <el-carousel :autoplay="true" indicator-position="none" :interval="5000" arrow="always" height="250px">
               <el-carousel-item v-for="(index, i) in 5" :key="i">
                 <div class="panel">
@@ -81,7 +81,8 @@
                 </div>
               </el-carousel-item>
             </el-carousel>
-          </section>
+          </div>
+
         </div>
 
         <div class="item right">
@@ -118,8 +119,7 @@ import screenfull from 'screenfull'
 export default {
   name: 'Brand',
   components: {
-    countTo,
-    Aside
+    countTo
   },
   data() {
     return {
@@ -933,15 +933,23 @@ export default {
     flex-direction: column;
   }
 
+  .map h3 {
+    font-size: 0.2rem;
+  }
+
   .item {
     flex: auto;
     margin-bottom: 0.125rem;
   }
+
 }
 
 @media screen and (min-width: 1920px) {
   html {
     font-size: 80px !important;
+  }
+  .map h3 {
+    font-size: 0.2rem;
   }
 }
 
@@ -949,6 +957,9 @@ export default {
 @media screen and (max-width: 768px) {
   body {
     font-size: 0.18rem;
+  }
+  .map h3 {
+    font-size: 0.2rem;
   }
 }
 
@@ -965,6 +976,9 @@ export default {
     width: 45%; /* 调整元素宽度 */
     margin-bottom: 0.2rem;
   }
+  .map h3 {
+    font-size: 0.2rem;
+  }
 }
 
 /* 修改：增加 1440px 到 1680px 屏幕尺寸的适配 */
@@ -980,6 +994,9 @@ export default {
     width: 30%; /* 调整元素宽度 */
     margin-bottom: 0.25rem;
   }
+  .map h3 {
+    font-size: 0.2rem;
+  }
 }
 
 /* 修改：增加 1680px 到 1920px 屏幕尺寸的适配 */
@@ -994,6 +1011,9 @@ export default {
   .item {
     width: 25%; /* 调整元素宽度 */
     margin-bottom: 0.3rem;
+  }
+  .map h3 {
+    font-size: 0.2rem;
   }
 }
 </style>
