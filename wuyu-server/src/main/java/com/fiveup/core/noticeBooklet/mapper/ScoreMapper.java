@@ -3,6 +3,7 @@ package com.fiveup.core.noticeBooklet.mapper;
 import com.fiveup.core.noticeBooklet.domain.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.security.core.parameters.P;
 
 import java.util.List;
 
@@ -68,7 +69,7 @@ public interface ScoreMapper {
      *
      * @param noticeBooklet 包含学生成绩
      */
-    void modifyStudentScore(NoticeBooklet noticeBooklet);
+    void modifyStudentScore(@Param("noticeBooklet") NoticeBooklet noticeBooklet);
 
     /**
      * 获取学生成绩
@@ -83,7 +84,7 @@ public interface ScoreMapper {
      *
      * @param studentScore 学生成绩
      */
-    void addStudentScore(DiStudentScore studentScore);
+    void addStudentScore(@Param("studentScore") DiStudentScore studentScore);
 
     /**
      * 修改学生成绩
@@ -106,14 +107,14 @@ public interface ScoreMapper {
      *
      * @param studentPlan 学生计划
      */
-    void addStudentPlan(DiStudentPlan studentPlan);
+    void addStudentPlan(@Param("studentPlan") DiStudentPlan studentPlan);
 
     /**
      * 修改学生计划
      *
      * @param studentPlan 学生计划
      */
-    void modifyStudentPlan(DiStudentPlan studentPlan);
+    void modifyStudentPlan(@Param("studentPlan") DiStudentPlan studentPlan);
 
     /**
      * 获取学生计划评论
@@ -128,12 +129,12 @@ public interface ScoreMapper {
      *
      * @param studentPlanComment 学生计划评论
      */
-    void addStudentPlanComment(DiStudentPlanComment studentPlanComment);
+    void addStudentPlanComment(@Param("studentPlanComment") DiStudentPlanComment studentPlanComment);
 
     /**
      * 修改学生计划评论
      *
      * @param studentPlanComment 学生计划评论
      */
-    void modifyStudentPlanComment(DiStudentPlanComment studentPlanComment);
+    void modifyStudentPlanComment(@Param("studentPlanComment") DiStudentPlanComment studentPlanComment);
 }
