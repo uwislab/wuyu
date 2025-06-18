@@ -165,7 +165,8 @@ export default {
         "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimg.jj20.com%2Fup%2Fallimg%2F1113%2F060120105F7%2F200601105F7-3-1200.jpg&refer=http%3A%2F%2Fimg.jj20.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1656687720&t=867c801f0911ed362a3d06f2c1fff054",
         "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimg.jj20.com%2Fup%2Fallimg%2F1114%2F102920105033%2F201029105033-1-1200.jpg&refer=http%3A%2F%2Fimg.jj20.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1656687720&t=b8754d6573884c844088a92959416fcf"
       ],
-
+      // 存储当前窗口宽度
+      windowWidth: window.innerWidth,
       isFullscreen: false,
       nowTime: '',
       week: '',
@@ -217,6 +218,8 @@ export default {
     })
   },
   mounted() {
+    // 初始化字体大小
+    this.setRootFontSize();
     this.getWeather();
     this.timer = setInterval(() => {
       this.getWeather();
@@ -227,9 +230,33 @@ export default {
     this.initXYGREcharts();
     // 修改部分：监听窗口大小变化，重新渲染图表
     window.addEventListener('resize', this.resizeCharts);
+    window.addEventListener('resize', this.handleWindowResize);
     this.resizeCharts();
   },
   methods: {
+    // 修改： 处理窗口变化大小
+    handleWindowResize() {
+      // 更新窗口宽度
+      this.windowWidth = window.innerWidth;
+      // 重新设置根元素字体大小
+      this.setRootFontSize();
+    },
+    setRootFontSize() {
+      let fontSize;
+      if (this.windowWidth <= 1024) {
+        fontSize = 42;
+      } else if (this.windowWidth >= 1920) {
+        fontSize = 80;
+      } else if (this.windowWidth >= 1280 && this.windowWidth <= 1440) {
+        fontSize = 50;
+      } else if (this.windowWidth >= 1440 && this.windowWidth <= 1680) {
+        fontSize = 56;
+      } else if (this.windowWidth >= 1680 && this.windowWidth <= 1920) {
+        fontSize = 64;
+      }
+      // 修改：动态设置根元素字体大小
+      document.documentElement.style.fontSize = `${fontSize}px`;
+    },
     timeFormate(timeStamp) { //显示当前时间
       let newDate = new Date(timeStamp);
       let year = newDate.getFullYear();
@@ -558,7 +585,7 @@ export default {
     this.destroyChart();
     // 修改部分：移除窗口大小变化监听
     window.removeEventListener('resize', this.resizeCharts);
-
+    window.removeEventListener('resize', this.handleWindowResize);
   },
 }
 </script>
@@ -954,6 +981,51 @@ export default {
 @media screen and (max-width: 768px) {
   body {
     font-size: 0.18rem;
+  }
+}
+
+/* 修改：增加 1280px 到 1440px 屏幕尺寸的适配 */
+@media screen and (min-width: 1280px) and (max-width: 1440px) {
+  html {
+    font-size: 50px !important;
+  }
+  .mainbox {
+    /* 可以根据实际需求调整布局 */
+    justify-content: space-around;
+  }
+  .item {
+    width: 45%; /* 调整元素宽度 */
+    margin-bottom: 0.2rem;
+  }
+}
+
+/* 修改：增加 1440px 到 1680px 屏幕尺寸的适配 */
+@media screen and (min-width: 1440px) and (max-width: 1680px) {
+  html {
+    font-size: 56px !important;
+  }
+  .mainbox {
+    /* 可以根据实际需求调整布局 */
+    justify-content: space-between;
+  }
+  .item {
+    width: 30%; /* 调整元素宽度 */
+    margin-bottom: 0.25rem;
+  }
+}
+
+/* 修改：增加 1680px 到 1920px 屏幕尺寸的适配 */
+@media screen and (min-width: 1680px) and (max-width: 1920px) {
+  html {
+    font-size: 64px !important;
+  }
+  .mainbox {
+    /* 可以根据实际需求调整布局 */
+    justify-content: center;
+  }
+  .item {
+    width: 25%; /* 调整元素宽度 */
+    margin-bottom: 0.3rem;
   }
 }
 </style>
