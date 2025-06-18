@@ -173,8 +173,8 @@ export default {
     async getIdentityOptions() {//需要注释的地方
       try {
         const res = await getIdentityIds();
-        if (res.length>0) {
-          this.identityOptions = res;
+        if (res.data.length>0) {
+          this.identityOptions = res.data;
           // 如果表单的 identityId 为空，则默认选中第一个选项
           if (this.identityOptions.length > 0 && this.form.identityId === null) {
             this.form.identityId = this.identityOptions[0].identityId;
