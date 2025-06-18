@@ -319,6 +319,7 @@ export default {
       myChart.setOption(option)
       this.chartList.push(myChart)
     },
+    // 修改initXYBJEcharts和initXYGREcharts方法，确保正确绑定this
     initXYBJEcharts() {
       api.getXYClass()
         .then(function (res) {
@@ -363,7 +364,7 @@ export default {
             };
             const myChart = echarts.init(document.querySelector("#xybjChart" + (i + 1)));
             myChart.setOption(option);
-            window.addEventListener("resize", function () {
+            window.addEventListener("resize",  () => {
               myChart.resize();
             });
             this.chartList.push(myChart)
