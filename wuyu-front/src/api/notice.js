@@ -18,7 +18,7 @@ export function exportZip(params) {
     url: '/export/zip',
     method: 'get',
     params,
-    responseType: 'blob' // 仍需要获取blob确保文件有效性
+    // responseType: 'blob' // 仍需要获取blob确保文件有效性
   });
 }
 // 获取通知册内容

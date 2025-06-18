@@ -366,7 +366,6 @@ export default {
         iframe.style.display = 'none';
         iframe.src = downloadUrl;
         document.body.appendChild(iframe);
-
         // 使用 Promise 动态等待下载完成（最多等待 5 秒）
         const downloadTimeout = new Promise((resolve) => {
           setTimeout(() => {
