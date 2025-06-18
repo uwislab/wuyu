@@ -1,6 +1,7 @@
 <template>
   <div class="brand-container" ref="myContent">
     <div class="wrap">
+      <!-- 页面头部 -->
       <header>
         <div class="weather">
           <img :src="imgSrc">
@@ -18,7 +19,9 @@
         </div>
       </header>
 
+      <!-- 主要内容区域 -->
       <section class="mainbox">
+<!--        左侧区域-->
         <div class="item left">
           <div class="panel">
             <h2>德育各年级变化</h2>
@@ -37,6 +40,7 @@
           </div>
         </div>
 
+        <!-- 中间区域 -->
         <div class="item center">
           <div class="resume">
             <div class="resume-hd">
@@ -56,65 +60,28 @@
               </ul>
             </div>
           </div>
-          <div class="map">
-            <!--
-            <div class="map1"></div>
-            <div class="map2"></div>
-            <div class="map3"></div>
--->
 
+          <!-- 班级风采轮播图 -->
+          <section class="map">
             <h3 style="color: white;text-align: center">班级风采</h3>
             <el-carousel :autoplay="true" indicator-position="none" :interval="4000" height="230px">
-              <el-carousel-item>
+              <el-carousel-item v-for="(index, i) in 3" :key="i">
                 <div class="panel">
-                  <div class="echart" id="xybjChart1" :style="myChartStyle"></div>
-                </div>
-              </el-carousel-item>
-              <el-carousel-item>
-                <div class="panel">
-                  <div class="echart" id="xybjChart2" :style="myChartStyle"></div>
-                </div>
-              </el-carousel-item>
-              <el-carousel-item>
-                <div class="panel">
-                  <div class="echart" id="xybjChart3" :style="myChartStyle"></div>
+                  <div class="echart" :id="'xybjChart' + (i + 1)" :style="myChartStyle"></div>
                 </div>
               </el-carousel-item>
             </el-carousel>
+
+            <!-- 五育标兵轮播图 -->
             <h3 style="color: white;text-align: center">五育标兵</h3>
             <el-carousel :autoplay="true" indicator-position="none" :interval="5000" arrow="always" height="250px">
-              <el-carousel-item>
+              <el-carousel-item v-for="(index, i) in 5" :key="i">
                 <div class="panel">
-                  <div class="echart" id="xygrChart1" :style="myChartStyle"></div>
-                </div>
-              </el-carousel-item>
-              <el-carousel-item>
-                <div class="panel">
-                  <div class="echart" id="xygrChart2" :style="myChartStyle"></div>
-                </div>
-              </el-carousel-item>
-              <el-carousel-item>
-                <div class="panel">
-                  <div class="echart" id="xygrChart3" :style="myChartStyle"></div>
-                </div>
-              </el-carousel-item>
-              <el-carousel-item>
-                <div class="panel">
-                  <div class="echart" id="xygrChart4" :style="myChartStyle"></div>
-                </div>
-              </el-carousel-item>
-              <el-carousel-item>
-                <div class="panel">
-                  <div class="echart" id="xygrChart5" :style="myChartStyle"></div>、
-                </div>
-              </el-carousel-item>
-              <el-carousel-item>
-                <div class="panel">
-                  <div class="echart" id="xygrChart6" :style="myChartStyle"></div>
+                  <div class="echart" :id="'xygrChart' + (i + 1)" :style="myChartStyle"></div>
                 </div>
               </el-carousel-item>
             </el-carousel>
-          </div>
+          </section>
         </div>
 
         <div class="item right">
@@ -151,7 +118,8 @@ import screenfull from 'screenfull'
 export default {
   name: 'Brand',
   components: {
-    countTo
+    countTo,
+    Aside
   },
   data() {
     return {
