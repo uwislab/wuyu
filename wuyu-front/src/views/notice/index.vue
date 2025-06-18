@@ -1,5 +1,14 @@
 <!--
  * @Author: hezeliangfj
+ * @Date: 2025-06-17 14:57:41
+ * @LastEditors: hezeliangfj
+ * @LastEditTime: 2025-06-18 20:46:45
+ * @version: 0.0.1
+ * @FilePath: \wuyu-front\src\views\notice\index.vue
+ * @Descripttion: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+-->
+<!--
+ * @Author: hezeliangfj
  * @Date: 2025-06-14 12:54:59
  * @LastEditors: hezeliangfj
  * @LastEditTime: 2025-06-18 16:17:58
@@ -29,7 +38,7 @@
           </el-option>
         </el-select>
       </div> -->
-      <SearchBar @update:list="handleListUpdate" />
+      <SearchBar @update:list="handleListUpdate" ref="searchBar" />
       <div class="right-actions">
         <el-button type="primary" @click="dialogVisible=true">批量导出<i class="el-icon-tickets"></i></el-button>
       </div>
@@ -45,12 +54,21 @@
       :total-count="totalCount"
       ref="noticeDialogs"
     />
+    <!-- 预览弹框 -->
+    <PreviewDialog
+      :dialog-visible.sync="previewDialogVisible"
+      :content.sync="previewContent"
+      :student-info="currentStudent"
+      ref="previewDialog"
+      @close="handlePreviewClose"
+    />
     <!-- 编辑弹框 -->
     <EditModal
       :edit-dialog-visible.sync="editDialogVisible"
       :edit-form.sync="editForm"
       @close="handleEditClose"
       @save="handleEditSave"
+      @refresh-data="handleRefreshData"
     />
     <div class="table-container">
       <el-table :data="paginatedList" style="width: 100%" id="dataTable" border stripe>
@@ -127,7 +145,7 @@
         <el-table-column label="操作" align="center" width="300px">
           <template slot-scope="scope">
             <el-button type="success" @click="handleEdit(scope.row)">编辑<i class="el-icon-edit-outline"></i></el-button>
-            <el-button type="success" @click="$refs.noticeDialogs.handlepreview(scope.row)">预览<i class="el-icon-tickets"></i></el-button>
+            <el-button type="success" @click="handlePreview(scope.row)">预览<i class="el-icon-tickets"></i></el-button>
             <el-button type="primary" @click="handleExport(scope.row)">导出<i class="el-icon-tickets"></i></el-button>
           </template>
         </el-table-column>
@@ -146,9 +164,10 @@
 <script>
 import { getStudent, exportZip,noticeBooklet,exportBooklet,exportNoticeBooklet } from '@/api/notice.js'
 import { showLoading, closeLoading } from '@/utils/loading'
-import NoticeDialogs from './components/dialogs.vue'
+import NoticeDialogs from './components/batchdialogs.vue'
 import EditModal from './components/editmodal.vue'
 import SearchBar from './components/search.vue'
+import PreviewDialog from './components/previewdialog.vue'
 // import {}
 import axios from 'axios'
 // import { create } from 'sortablejs';
@@ -165,7 +184,8 @@ export default {
   components: {
     NoticeDialogs,
     EditModal,
-    SearchBar
+    SearchBar,
+    PreviewDialog
   },
   data() {
     return {
@@ -204,6 +224,10 @@ export default {
       // 编辑弹框相关
       editDialogVisible: false,
       editForm: {},
+      // 预览弹框相关
+      previewDialogVisible: false,
+      previewContent: '',
+      currentStudent: null,
     }
   },
   computed: {
@@ -360,10 +384,26 @@ export default {
       // 示例：console.log('保存', form)
       this.editDialogVisible = false;
       // 可选：刷新数据
+    },
+    // 预览学生通知册
+    async handlePreview(row) {
+      this.currentStudent = row;
+      await this.$refs.previewDialog.previewStudentNotice(row);
+    },
+    // 关闭预览
+    handlePreviewClose() {
+      this.previewDialogVisible = false;
+      this.previewContent = '';
+      this.currentStudent = null;
+    },
+    // 刷新表格数据
+    async handleRefreshData() {
+      // 重新获取数据
+      await this.$refs.searchBar.fetchNoticeBooklet();
     }
   },
   created() {
-    this.fetchCourse()
+    // this.fetchCourse()
     this.fetchNoticeBooklet()
   }
 }

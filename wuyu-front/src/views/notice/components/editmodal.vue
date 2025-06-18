@@ -2,14 +2,14 @@
  * @Author: hezeliangfj
  * @Date: 2025-06-18 15:35:11
  * @LastEditors: hezeliangfj
- * @LastEditTime: 2025-06-18 16:45:33
+ * @LastEditTime: 2025-06-18 22:04:36
  * @version: 0.0.1
  * @FilePath: \wuyu-front\src\views\notice\components\editmodal.vue
  * @Descripttion: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
 <template>
   <el-dialog
-    title="编辑学生信息"
+    :title="`修改${editForm.studentName || ''}同学的信息`"
     :visible.sync="editDialogVisible"
     width="50%" :close-on-click-modal="false"
     :before-close="handleEditClose"
@@ -118,12 +118,16 @@ export default {
         if(res.code ===200 ) {
           closeLoading();
           this.$message.success('修改成功');
+          // 修改成功后触发刷新事件
+          this.$emit('refresh-data');
+          // 关闭弹框
+          this.$emit('close');
         } else {
           this.$message.error('修改失败，请重新修改');
         }
       } catch(error) {
         console.error('修改失败:', error)
-        // this.$message.error('修改失败，请重新修改');
+        this.$message.error('修改失败，请重新修改');
       } finally {
         closeLoading()
       }
