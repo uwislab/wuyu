@@ -20,9 +20,10 @@ public interface NoticeBookletService {
      * @param classId 班级id
      * @param gradeId 年级id
      * @param isRemark 是否通过大模型获取评价
+     * @param findKey 搜索关键字
      * @return 通知册
      */
-    List<NoticeBooklet> getNoticeBooklet(Integer studentId, Integer classId, Integer gradeId, boolean isRemark);
+    List<NoticeBooklet> getNoticeBooklet(Integer studentId, Integer classId, Integer gradeId, boolean isRemark, String findKey);
 
     /**
      * 获取所有学生学号、(班级,年级)、年级

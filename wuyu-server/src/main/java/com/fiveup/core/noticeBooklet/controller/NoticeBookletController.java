@@ -33,6 +33,8 @@ public class NoticeBookletController {
      * @param studentNum 学号
      * @param classId    班级id
      * @param gradeId    年级id
+     * @param isRemark   是否获取评价
+     * @param findKey    模糊查询
      * @return 通知册列表
      */
     @GetMapping("/get")
@@ -40,9 +42,10 @@ public class NoticeBookletController {
             @RequestParam(required = false) Integer studentNum
             , @RequestParam(required = false) Integer classId
             , @RequestParam(required = false) Integer gradeId
-            , @RequestParam(required = false) boolean isRemark){
+            , @RequestParam(required = false) boolean isRemark,
+            @RequestParam(required = false) String findKey) {
         // 调用服务层方法获取通知册内容
-        List<NoticeBooklet> noticeBooklets = noticeBookletService.getNoticeBooklet(studentNum, classId, gradeId, isRemark);
+        List<NoticeBooklet> noticeBooklets = noticeBookletService.getNoticeBooklet(studentNum, classId, gradeId, isRemark, findKey);
         return CommonResponse.ok(noticeBooklets);
     }
 
@@ -52,7 +55,7 @@ public class NoticeBookletController {
      * @return 所有学生信息
      */
     @GetMapping("/getAllStudentAndClassAndGrade")
-    public CommonResponse<StudentVO> getAllStudent(){
+    public CommonResponse<StudentVO> getAllStudent() {
         StudentVO noticeBooklets = noticeBookletService.getAllStudent();
         return CommonResponse.ok(noticeBooklets);
     }
