@@ -7,11 +7,16 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/export")
 @RequiredArgsConstructor
 public class ExportZipController {
+
+    // 注入服务
     private final ExportZipService exportZipService;
+
+
     /**
      * 生成多个Word文件并打包为ZIP
      * @param response HTTP响应对象

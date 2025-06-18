@@ -2,15 +2,16 @@
  * @Author: hezeliangfj
  * @Date: 2025-06-14 12:54:59
  * @LastEditors: hezeliangfj
- * @LastEditTime: 2025-06-17 20:53:50
+ * @LastEditTime: 2025-06-18 16:17:58
  * @version: 0.0.1
  * @FilePath: \wuyu-front\src\views\notice\index.vue
  * @Descripttion: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
 <template>
   <div>
+    <!-- <SearchBar @update:list="handleListUpdate" /> -->
     <div class="filter-container">
-      <div class="left-filters">
+      <!-- <div class="left-filters">
         <el-select v-model="gradeId" placeholder="请选择年级" style="width:150px">
           <el-option
             v-for="item in grades"
@@ -27,38 +28,30 @@
             :value="item">
           </el-option>
         </el-select>
-      </div>
+      </div> -->
+      <SearchBar @update:list="handleListUpdate" />
       <div class="right-actions">
         <el-button type="primary" @click="dialogVisible=true">批量导出<i class="el-icon-tickets"></i></el-button>
       </div>
     </div>
-    <el-dialog :close-on-click-modal="false"
-      title="批量导出"
-      :visible.sync="dialogVisible"
-      width="30%"
-      :before-close="handleClose">
-      <!-- <span v-if="selectedStudents.length > 0">
-        是否导出选中的 {{ selectedStudents.length }} 名学生（{{ selectedStudents.map(s => s.studentName).join('、') }}）的通知册信息
-      </span> -->
-      <span>
-        是否导出{{ gradeId ? gradeId + '年级' : '' }}{{ classId ? classId + '班' : '' }}的所有学生的通知册信息
-      </span>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="handleExportBatch">确 定</el-button>
-      </span>
-    </el-dialog>
-    <el-dialog
-      title="预览通知册"
-      :visible.sync="dialogVisiblepreview"
-      width="60%"
-      :before-close="handleClose"
-      >
-      <span v-html="content"></span>
-      <span slot="footer" class="dialog-footer">
-      <el-button type="primary" @click="cleanpreview">确 定</el-button>
-      </span>
-    </el-dialog>
+    <!-- 引入dialogs组件 -->
+    <NoticeDialogs
+      :dialog-visible.sync="dialogVisible"
+      :dialog-visiblepreview.sync="dialogVisiblepreview"
+      :grade-id="gradeId"
+      :class-id="classId"
+      :content.sync="content"
+      :api-base-url="apiBaseUrl"
+      :total-count="totalCount"
+      ref="noticeDialogs"
+    />
+    <!-- 编辑弹框 -->
+    <EditModal
+      :edit-dialog-visible.sync="editDialogVisible"
+      :edit-form.sync="editForm"
+      @close="handleEditClose"
+      @save="handleEditSave"
+    />
     <div class="table-container">
       <el-table :data="paginatedList" style="width: 100%" id="dataTable" border stripe>
         <!-- <el-table-column fixed type="selection" tooltip-effect="dark" width='40'>
@@ -131,9 +124,10 @@
             </template>
           </el-table-column>
         </el-table-column>
-        <el-table-column label="操作" align="center" width="200px">
+        <el-table-column label="操作" align="center" width="300px">
           <template slot-scope="scope">
-            <el-button type="success" @click="handlepreview(scope.row)">预览<i class="el-icon-tickets"></i></el-button>
+            <el-button type="success" @click="handleEdit(scope.row)">编辑<i class="el-icon-edit-outline"></i></el-button>
+            <el-button type="success" @click="$refs.noticeDialogs.handlepreview(scope.row)">预览<i class="el-icon-tickets"></i></el-button>
             <el-button type="primary" @click="handleExport(scope.row)">导出<i class="el-icon-tickets"></i></el-button>
           </template>
         </el-table-column>
@@ -150,8 +144,11 @@
 </template>
 
 <script>
-import { getStudent, exportZip,noticeBooklet,exportBooklet,previewNoticeBooklet,exportNoticeBooklet } from '@/api/notice.js'
+import { getStudent, exportZip,noticeBooklet,exportBooklet,exportNoticeBooklet } from '@/api/notice.js'
 import { showLoading, closeLoading } from '@/utils/loading'
+import NoticeDialogs from './components/dialogs.vue'
+import EditModal from './components/editmodal.vue'
+import SearchBar from './components/search.vue'
 // import {}
 import axios from 'axios'
 // import { create } from 'sortablejs';
@@ -165,6 +162,11 @@ export default {
   //     return this.permission_routes
   //   }
   // },
+  components: {
+    NoticeDialogs,
+    EditModal,
+    SearchBar
+  },
   data() {
     return {
       dialogVisible: false,
@@ -191,7 +193,6 @@ export default {
       },
       // 数据
       total: 0,//数据总数
-      list: [],
       list_user_course_teacher: [],
       deleteIds: [],
       selectedStudents: [], // 存储选中的学生信息
@@ -200,43 +201,44 @@ export default {
       },
       uploadFile: null,
       content: '',
-      downloadStatus: false, // 添加下载状态标志
+      // 编辑弹框相关
+      editDialogVisible: false,
+      editForm: {},
     }
   },
   computed: {
-    filteredClasses() {
-      if (!this.gradeId) return []
-      const uniqueClasses = new Set()
-      this.classNames.forEach(item => {
-        if (item[1] === this.gradeId) {
-          uniqueClasses.add(item[0])
-        }
-      })
-      return Array.from(uniqueClasses).sort((a, b) => a - b)
-    },
-    // 过滤后的数据
-    filteredList() {
-      let result = [...this.list]
+    // filteredClasses() {
+    //   if (!this.gradeId) return []
+    //   const uniqueClasses = new Set()
+    //   this.classNames.forEach(item => {
+    //     if (item[1] === this.gradeId) {
+    //       uniqueClasses.add(item[0])
+    //     }
+    //   })
+    //   return Array.from(uniqueClasses).sort((a, b) => a - b)
+    // },
+    // // 过滤后的数据
+    // filteredList() {
+    //   let result = [...this.list]
 
-      // 根据年级和班级筛选
-      if (this.gradeId) {
-        result = result.filter(item => item.studentGrade === this.gradeId)
-      }
-      if (this.classId) {
-        result = result.filter(item => item.studentClassNumber === this.classId)
-      }
+    //   // 根据年级和班级筛选
+    //   if (this.gradeId) {
+    //     result = result.filter(item => item.studentGrade === this.gradeId)
+    //   }
+    //   if (this.classId) {
+    //     result = result.filter(item => item.studentClassNumber === this.classId)
+    //   }
 
-      return result
-    },
+    //   return result
+    // },
     // 分页后的数据
     paginatedList() {
       const start = (this.query.page - 1) * this.query.pageSize
       const end = start + this.query.pageSize
-      return this.filteredList.slice(start, end)
+      return this.list.slice(start, end)
     },
-    // 总数据量
     totalCount() {
-      return this.filteredList.length
+      return this.list.length
     }
   },
   watch: {
@@ -252,36 +254,26 @@ export default {
       handler() {
         this.query.page = 1 // 重置页码
       }
-    },
-    downloadStatus(newVal) {
-      if (newVal) {
-        // 下载完成后的处理
-        setTimeout(() => {
-          closeLoading()
-          this.$message.success('批量导出成功')
-          this.dialogVisible = false
-          this.downloadStatus = false // 重置状态
-        }, 1000)
-      }
     }
   },
   methods: {
-    handleClose () {
-      this.dialogVisible = false
-      this.dialogVisiblepreview = false
-    },
-    async fetchCourse() {
-      const params = {}
-      const res = await getStudent(params)
-      this.grades = res.data.grades
-      this.classNames = res.data.classNames
-    },
-    async fetchNoticeBooklet() {
-      const params = {
-        isRemark: false
-      }
-      const res = await noticeBooklet({params})
-      this.list = res.data
+    // async fetchCourse() {
+    //   const params = {}
+    //   const res = await getStudent(params)
+    //   this.grades = res.data.grades
+    //   this.classNames = res.data.classNames
+    // },
+    // async fetchNoticeBooklet() {
+    //   const params = {
+    //     isRemark: false
+    //   }
+    //   const res = await noticeBooklet({params})
+    //   this.list = res.data
+    handleListUpdate(newList, gradeId, classId) {
+      this.list = newList
+      this.gradeId = gradeId
+      this.classId = classId
+      this.query.page = 1 // 切换筛选时重置为第一页
     },
     handleSizeChange(pageSize) {
       this.query.pageSize = pageSize
@@ -320,7 +312,6 @@ export default {
         if (!arrayBuffer || arrayBuffer.byteLength === 0) {
           throw new Error('下载的文件为空')
         }
-
         const blob = new Blob([arrayBuffer], { type: 'application/octet-stream' })
         const url = window.URL.createObjectURL(blob)
         const a = document.createElement('a')
@@ -343,75 +334,6 @@ export default {
         this.$message.error('导出失败：' + (error.message || '未知错误'))
       }
     },
-    // 批量导出
-    async handleExportBatch() {
-      try {
-        showLoading('批量导出中，请稍候...');
-        const params = {
-          gradeId: this.gradeId
-        };
-        if (this.classId && !isNaN(this.classId)) {
-          params.classId = Number(this.classId);
-        }
-
-        // 构建查询字符串
-        const queryString = Object.keys(params)
-          .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
-          .join('&');
-        const downloadUrl = `${this.apiBaseUrl}/export/zip?${queryString}`;
-        // console.log('开始下载，URL:', downloadUrl,'22222',this.totalCount);
-
-        // 创建隐藏的 iframe 触发下载
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.src = downloadUrl;
-        document.body.appendChild(iframe);
-        // 使用 Promise 动态等待下载完成（最多等待 5 秒）
-        const downloadTimeout = new Promise((resolve) => {
-          setTimeout(() => {
-            document.body.removeChild(iframe);
-            resolve();
-          }, this.totalCount*5000); // 设置最大等待时间（可根据实际文件大小调整）
-        });
-
-        // 等待下载完成或超时
-        await downloadTimeout;
-
-        closeLoading();
-        this.$message.success('批量导出成功');
-        this.dialogVisible = false;
-
-      } catch (error) {
-        console.error('批量导出失败:', error);
-        closeLoading();
-        this.$message.error('批量导出失败：' + (error.message || '未知错误'));
-        document.body.removeChild(iframe); // 确保移除 iframe
-      }
-    },
-    // 预览下载
-    async handlepreview(row) {
-      try {
-        showLoading('预览生成中，请稍候...')
-        const params = {
-          studentId: row.studentId,
-        }
-        const res = await previewNoticeBooklet({ params })
-        if (res.code === 200) {
-          this.dialogVisiblepreview = true
-          this.content = res.data
-        } else {
-          this.$message.error('预览数据获取失败')
-        }
-      } catch (error) {
-        console.error('预览失败:', error)
-      } finally {
-        closeLoading()
-      }
-    },
-    cleanpreview() {
-      this.dialogVisiblepreview = false;
-      this.content = ""; // 清除预览内容
-    },
     handleFileChange(file) {
       this.uploadFile = file.raw
     },
@@ -425,6 +347,19 @@ export default {
         studentName: item.studentName
       }))
       // console.log('选中的学生：', this.selectedStudents)
+    },
+    handleEdit(row) {
+      this.editForm = { ...row };
+      this.editDialogVisible = true;
+    },
+    handleEditClose() {
+      this.editDialogVisible = false;
+    },
+    handleEditSave(form) {
+      // 这里可以调用保存API或emit事件
+      // 示例：console.log('保存', form)
+      this.editDialogVisible = false;
+      // 可选：刷新数据
     }
   },
   created() {
@@ -456,5 +391,7 @@ export default {
   // padding: 20px;
   background-color: #fff;
   border-radius: 4px;
+  // overflow-y: auto;   // 关键
+  overflow-y: hidden !important;
 }
 </style>

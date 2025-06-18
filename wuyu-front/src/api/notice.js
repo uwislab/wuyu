@@ -2,7 +2,7 @@
  * @Author: hezeliangfj
  * @Date: 2025-06-14 13:33:22
  * @LastEditors: hezeliangfj
- * @LastEditTime: 2025-06-15 18:29:49
+ * @LastEditTime: 2025-06-18 14:59:55
  * @version: 0.0.1
  * @FilePath: \wuyu-front\src\api\notice.js
  * @Descripttion: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
@@ -12,6 +12,31 @@ import request from '@/utils/request'
 export function getStudent(data) {
   return request.get('/noticeBooklet/getAllStudentAndClassAndGrade',data)
 }
+
+// 获取通知册内容
+export function noticeBooklet (data) {
+  return request.get('/noticeBooklet/get',data)
+}
+
+// 模糊查询学生信息
+export function noticeBookletStudent (data) {
+  return request.get('/noticeBooklet/getAllStudentAndClassAndGrade',data)
+}
+
+// 修改学生信息
+export function noticeBookletModify (data) {
+  return request.put('/noticeBooklet/modify',data)
+}
+
+// 导出通知册
+export function exportNoticeBooklet (data) {
+  return request.post('/noticeBooklet/word/generate',data)
+}
+
+// 预览通知册
+export function previewNoticeBooklet (data) {
+  return request.get('/noticeBooklet/word/generateHTML', data)
+}
 // 批量导出通知册
 export function exportZip(params) {
   return request({
@@ -20,10 +45,6 @@ export function exportZip(params) {
     params,
     // responseType: 'blob' // 仍需要获取blob确保文件有效性
   });
-}
-// 获取通知册内容
-export function noticeBooklet (data) {
-  return request.get('/noticeBooklet/get',data)
 }
 // 导出通知册
 //  feature-06-lsy
@@ -38,15 +59,6 @@ export function noticeBooklet (data) {
 //     params: { studentId } // 参数通过URL query传递
 //   })
 // }
-// 导出通知册
-export function exportNoticeBooklet (data) {
-  return request.post('/noticeBooklet/word/generate',data)
-}
-
-// 预览通知册
-export function previewNoticeBooklet (data) {
-  return request.get('/noticeBooklet/word/generateHTML', data)
-}
 export function exportBooklet(data) {
   return request({
     url: '/noticeBooklet/word/generate',
