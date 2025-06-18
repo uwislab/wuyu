@@ -52,7 +52,7 @@ public class NoticeBookletServiceImpl implements NoticeBookletService {
      */
     @Override
     public List<NoticeBooklet> getNoticeBooklet(Integer studentId, Integer classId, Integer gradeId, boolean isRemark, String findKey) {
-        List<NoticeBooklet> noticeBookletList = scoreMapper.getNoticeBooklet(studentId, classId, gradeId);
+        List<NoticeBooklet> noticeBookletList = scoreMapper.getNoticeBooklet(studentId, classId, gradeId, findKey);
         if (noticeBookletList.isEmpty()) {
             return Collections.emptyList();
         }
