@@ -45,6 +45,7 @@
       :total-count="totalCount"
       ref="noticeDialogs"
     />
+    <PreviewDialog/>
     <!-- 编辑弹框 -->
     <EditModal
       :edit-dialog-visible.sync="editDialogVisible"
@@ -149,6 +150,7 @@ import { showLoading, closeLoading } from '@/utils/loading'
 import NoticeDialogs from './components/dialogs.vue'
 import EditModal from './components/editmodal.vue'
 import SearchBar from './components/search.vue'
+import PreviewDialog from './components/previewdialog.vue'
 // import {}
 import axios from 'axios'
 // import { create } from 'sortablejs';
@@ -165,7 +167,8 @@ export default {
   components: {
     NoticeDialogs,
     EditModal,
-    SearchBar
+    SearchBar,
+    PreviewDialog
   },
   data() {
     return {
@@ -363,7 +366,7 @@ export default {
     }
   },
   created() {
-    this.fetchCourse()
+    // this.fetchCourse()
     this.fetchNoticeBooklet()
   }
 }
