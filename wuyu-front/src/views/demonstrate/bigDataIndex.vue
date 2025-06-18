@@ -926,9 +926,7 @@ export default {
 }
 
 @media screen and (max-width: 1024px) {
-  html {
-    font-size: 42px !important;
-  }
+
   .mainbox {
     flex-direction: column;
   }
