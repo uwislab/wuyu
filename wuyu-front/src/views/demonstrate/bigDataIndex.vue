@@ -225,6 +225,9 @@ export default {
     this.nowTimes();
     this.initXYBJEcharts();
     this.initXYGREcharts();
+    // 修改部分：监听窗口大小变化，重新渲染图表
+    window.addEventListener('resize', this.resizeCharts);
+    this.resizeCharts();
   },
   methods: {
     timeFormate(timeStamp) { //显示当前时间
@@ -541,10 +544,19 @@ export default {
       })
       this.chartList = []
     }
+    // 修改部分：重新渲染图表的方法
+    resizeCharts() {
+      this.chartList.forEach(chart => {
+        chart.resize();
+      });
+    }
   },
   beforeDestroy() {
     clearInterval(this.timer);
     this.destroyChart();
+    // 修改部分：移除窗口大小变化监听
+    window.removeEventListener('resize', this.resizeCharts);
+
   },
 }
 </script>
@@ -915,6 +927,14 @@ export default {
 @media screen and (max-width: 1024px) {
   html {
     font-size: 42px !important;
+  }
+  .mainbox {
+    flex-direction: column;
+  }
+
+  .item {
+    flex: auto;
+    margin-bottom: 0.125rem;
   }
 }
 
