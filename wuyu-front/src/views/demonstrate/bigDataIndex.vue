@@ -6,7 +6,7 @@
           <img :src="imgSrc">
           <span class="tem">{{ weatcherData.tem }}°C</span>
           <span class="wea">{{ weatcherData.wea }}</span>
-          <button @click="toggleFullscreen">全屏</button>
+          <button @click="click">全屏</button>
         </div>
         <h2>五育中控平台</h2>
         <div class="showTime">
@@ -217,10 +217,6 @@ export default {
     })
   },
   mounted() {
-    this.init();
-    if (screenfull.enabled) {
-      screenfull.on('change', this.handleFullscreenChange);
-    };
     this.getWeather();
     this.timer = setInterval(() => {
       this.getWeather();
@@ -231,24 +227,6 @@ export default {
     this.initXYGREcharts();
   },
   methods: {
-    toggleFullscreen() {
-      if (!screenfull.enabled) {
-        this.$message({
-          message: '您的浏览器不支持全屏功能',
-          type: 'warning'
-        });
-        return;
-      }
-      screenfull.toggle(this.$refs.myContent);
-    },
-    handleFullscreenChange() {
-      // 处理全屏状态变化的逻辑
-      if (screenfull.isFullscreen) {
-        // 进入全屏状态
-      } else {
-        // 退出全屏状态
-      }
-    },
     timeFormate(timeStamp) { //显示当前时间
       let newDate = new Date(timeStamp);
       let year = newDate.getFullYear();
@@ -567,9 +545,6 @@ export default {
   beforeDestroy() {
     clearInterval(this.timer);
     this.destroyChart();
-    if (screenfull.enabled) {
-      screenfull.off('change', this.handleFullscreenChange);
-    }
   },
 }
 </script>
@@ -940,14 +915,6 @@ export default {
 @media screen and (max-width: 1024px) {
   html {
     font-size: 42px !important;
-  }
-  .mainbox {
-    flex-direction: column;
-  }
-
-  .item {
-    width: 100%;
-    margin-bottom: 0.1875rem;
   }
 }
 
