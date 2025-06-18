@@ -130,6 +130,14 @@ public class ExportZipServiceImpl implements ExportZipService {
 
             //zip文件名字
             String zipName = gradeId + "年级" + classId + "班" + "学生通知册";
+            //如果班级编号或者年级为空
+            if(gradeId == null){
+                zipName = classId + "班" + "学生通知册";
+            }
+            //如果班级编号或者年级为空
+            if(classId == null){
+                zipName = gradeId + "年级" + "学生通知册";
+            }
             //生成zip文件
             ZipUtils.saveZip(wordPath,zipPath,zipName,response);
         } catch (Exception e) {
