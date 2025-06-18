@@ -2,7 +2,7 @@
  * @Author: hezeliangfj
  * @Date: 2025-06-18 11:23:01
  * @LastEditors: hezeliangfj
- * @LastEditTime: 2025-06-18 15:20:14
+ * @LastEditTime: 2025-06-18 17:21:29
  * @version: 0.0.1
  * @FilePath: \wuyu-front\src\views\notice\components\dialogs.vue
  * @Descripttion: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
@@ -26,15 +26,16 @@
     </el-dialog>
     <!-- 预览通知册对话框 -->
     <el-dialog
-      title="预览通知册"
+      :title="`预览${previewStudentName || ''}同学的通知册`"
       :visible.sync="dialogVisiblepreview"
-      width="50%"
+      width="50%" :close-on-click-modal="false"
       :before-close="handleClose"
       class="preview-dialog">
       <!-- <span>{{content}}</span> -->
       <!-- <div class="preview-content" v-html="content"></div> -->
       <iframe :srcdoc="content" style="width:100%;height:600px;border:none;"></iframe>
       <span slot="footer" class="dialog-footer">
+        <el-button type="success" @click="doprint">导出pdf</el-button>
         <el-button type="primary" @click="cleanpreview">确 定</el-button>
       </span>
     </el-dialog>
@@ -42,23 +43,22 @@
     <el-dialog
       title="编辑学生信息"
       :visible.sync="editDialogVisible"
-      width="50%"
+      width="50%" :close-on-click-modal="false"
       :before-close="handleEditClose"
       class="edit-dialog">
       <el-form :model="editForm" label-width="100px">
         <el-form-item label="姓名">
-          <el-input v-model="editForm.studentName" disabled></el-input>
+          <el-input v-model="editForm.studentName" disabled style="width:200px"></el-input>
         </el-form-item>
         <el-form-item label="学号">
-          <el-input v-model="editForm.studentId" disabled></el-input>
+          <el-input v-model="editForm.studentId" disabled style="width:200px"></el-input>
         </el-form-item>
         <el-form-item label="年级">
-          <el-input v-model="editForm.studentGrade" disabled></el-input>
+          <el-input :value="editForm.studentGrade ? editForm.studentGrade + '年级' : ''" disabled style="width:200px"></el-input>
         </el-form-item>
         <el-form-item label="班级">
-          <el-input v-model="editForm.studentClassNumber" disabled></el-input>
+          <el-input :value="editForm.studentClassNumber ? editForm.studentClassNumber + '班' : ''" disabled style="width:200px"></el-input>
         </el-form-item>
-
         <el-form-item label="德育">
           <div class="wuyu-row">
             <span class="wuyu-sub-label">实际</span>
@@ -99,7 +99,9 @@
             <el-input v-model="editForm.plaoyu" size="small" class="wuyu-input"></el-input>
           </div>
         </el-form-item>
-
+        <el-form-item label="假期计划">
+          <el-input type="textarea" v-model="editForm.pplan"></el-input>
+        </el-form-item>
         <el-form-item label="班主任建议">
           <el-input type="textarea" v-model="editForm.comment"></el-input>
         </el-form-item>
@@ -114,7 +116,8 @@
 
 <script>
 import { showLoading, closeLoading } from '@/utils/loading'
-import { previewNoticeBooklet,noticeBookletModify } from '@/api/notice.js'
+import { previewNoticeBooklet,noticeBookletModify } from '@/api/notice'
+import html2pdf from 'html2pdf.js'
 export default {
   name: 'NoticeDialogs',
   props: {
@@ -164,7 +167,8 @@ export default {
         classId: NaN,
         gradeId: NaN
         // 其它字段
-      }
+      },
+      previewStudentName: ''
     }
   },
   watch: {
@@ -245,6 +249,7 @@ export default {
           html = html.replace(/<head>/i, '<head><style>.content-section{text-indent:2em;}</style>');
           this.$emit('update:dialogVisiblepreview', true)
           this.$emit('update:content', html)
+          this.previewStudentName = row.studentName;
         } else {
           this.$message.error('预览数据获取失败')
         }
@@ -266,6 +271,51 @@ export default {
       // 这里可以emit事件给父组件，或直接保存
       this.$emit('edit-save', this.editForm);
       this.editDialogVisible = false;
+    },
+    // 导出pdf版本的通知册
+    // doprint() {
+    //   const iframe = this.$el.querySelector('iframe');
+    //   if (iframe && iframe.contentWindow) {
+    //     const doc = iframe.contentDocument || iframe.contentWindow.document;
+    //     const oldTitle = doc.title;
+    //     doc.title = `${this.previewStudentName}同学的通知册`;
+    //     iframe.contentWindow.focus();
+    //     iframe.contentWindow.print();
+    //     setTimeout(() => {
+    //       doc.title = oldTitle;
+    //     }, 1000);
+    //   }
+    // }
+    doprint() {
+      const iframe = this.$el.querySelector('iframe');
+      if (iframe && iframe.contentWindow) {
+        showLoading('正在导出PDF，请稍候...');
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        let styleHtml = '';
+        doc.querySelectorAll('style').forEach(style => {
+          styleHtml += style.outerHTML;
+        });
+        const bodyHtml = doc.body ? doc.body.innerHTML : '';
+        const container = document.createElement('div');
+        container.style.padding = '0 20px';
+        container.innerHTML = styleHtml + bodyHtml;
+        document.body.appendChild(container);
+        html2pdf()
+          .set({
+            filename: `${this.previewStudentName}同学的通知册.pdf`,
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+          })
+          .from(container)
+          .save()
+          .then(() => {
+            document.body.removeChild(container);
+            closeLoading();
+          })
+          .catch(() => {
+            closeLoading();
+          });
+      }
     }
   }
 }
@@ -367,5 +417,10 @@ export default {
 .wuyu-input {
   width: 80px;
   margin-right: 16px;
+}
+::v-deep .el-dialog__title {
+  display: inline-block;
+  width: 100%;
+  text-align: center;
 }
 </style>
