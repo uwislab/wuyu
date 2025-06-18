@@ -54,14 +54,15 @@
       :total-count="totalCount"
       ref="noticeDialogs"
     />
-    <!-- 预览弹框 -->
     <PreviewDialog
-      :dialog-visible.sync="previewDialogVisible"
-      :content.sync="previewContent"
-      :student-info="currentStudent"
-      ref="previewDialog"
-      @close="handlePreviewClose"
-    />
+      :dialog-visible.sync="dialogVisible"
+      :dialog-visiblepreview.sync="dialogVisiblepreview"
+      :grade-id="gradeId"
+      :class-id="classId"
+      :content.sync="content"
+      :api-base-url="apiBaseUrl"
+      :total-count="totalCount"
+      ref="noticeDialogs"/>
     <!-- 编辑弹框 -->
     <EditModal
       :edit-dialog-visible.sync="editDialogVisible"
