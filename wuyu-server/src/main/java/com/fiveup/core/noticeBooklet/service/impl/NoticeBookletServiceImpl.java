@@ -165,7 +165,7 @@ public class NoticeBookletServiceImpl implements NoticeBookletService {
                 scoreMapper.addStudentScore(studentScore);
             } else {
                 // 修改
-                scoreMapper.modifyStudentScoreByStudentId(diStudentScore.getId() ,studentScore);
+                scoreMapper.modifyStudentScoreByStudentId(diStudentScore.getId(), studentScore);
             }
             DiStudentPlan diStudentPlan = scoreMapper.getStudentPlan(noticeBooklet.getStudentId());
             DiStudentPlan studentPlan = BeanUtil.copyProperties(noticeBooklet, DiStudentPlan.class);
