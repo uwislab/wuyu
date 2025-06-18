@@ -31,4 +31,12 @@ public interface NoticeBookletService {
      * @return 所有学生信息
      */
     StudentVO getAllStudent();
+
+    /**
+     * 修改通知册内容
+     *
+     * @param noticeBooklet 通知册内容
+     * @return 修改成功
+     */
+    void modifyNoticeBooklet(NoticeBooklet noticeBooklet);
 }

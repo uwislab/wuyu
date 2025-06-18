@@ -1,21 +1,24 @@
 package com.fiveup.core.noticeBooklet.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import com.fiveup.core.common.exception.ApiException;
 import com.fiveup.core.common.exception.GlobalExceptionHandler;
-import com.fiveup.core.noticeBooklet.domain.NoticeBooklet;
-import com.fiveup.core.noticeBooklet.domain.Student;
+import com.fiveup.core.noticeBooklet.domain.*;
 import com.fiveup.core.noticeBooklet.domain.vo.StudentVO;
 import com.fiveup.core.noticeBooklet.mapper.ScoreMapper;
 import com.fiveup.core.noticeBooklet.service.CommentGenerationService;
 import com.fiveup.core.noticeBooklet.service.NoticeBookletService;
-import com.alibaba.dashscope.exception.ApiException;
 import com.alibaba.dashscope.exception.InputRequiredException;
 import com.alibaba.dashscope.exception.NoApiKeyException;
+import com.fiveup.core.overallOperation.domain.StudentScore;
 import com.github.pagehelper.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -111,13 +114,85 @@ public class NoticeBookletServiceImpl implements NoticeBookletService {
         Set<int[]> classSet = new HashSet<>();
         Set<Integer> gradeSet = new HashSet<>();
         for (Student student : studentList) {
+            // 添加学号
             studentIDSet.add(student.getStudentId());
+            // 添加班级
             classSet.add(new int[]{student.getStudentClassNumber(), student.getStudentGrade()});
+            // 添加年级
             gradeSet.add(student.getStudentGrade());
         }
         result.setStudentIds(studentIDSet);
         result.setClassNames(classSet);
         result.setGrades(gradeSet);
         return result;
+    }
+
+
+    /**
+     * 修改通知册内容
+     *
+     * @param noticeBooklet 通知册内容
+     * @return 修改成功
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void modifyNoticeBooklet(NoticeBooklet noticeBooklet) {
+        // 检查参数
+        boolean isEmpty = noticeBooklet.getStudentId() == null
+                || StringUtil.isEmpty(noticeBooklet.getStudentName())
+                || noticeBooklet.getStudentClassNumber() == null
+                || noticeBooklet.getStudentGrade() == null;
+        if (isEmpty) {
+            throw new ApiException("学号、学生姓名、班级、年级等必要参数不能为空");
+        }
+        // 获取该同学的信息
+        NoticeBooklet noticeBookletOld = scoreMapper.getNoticeBookletByStudentId(noticeBooklet.getStudentId());
+        if (noticeBookletOld == null) {
+            throw new ApiException("该同学不存在");
+        }
+        // 不能同时修改一个同学
+        // 使用锁来控制, 细粒度锁
+        Object lock = remarkMap.computeIfAbsent(noticeBooklet.getStudentId() + "_lock", k -> new Object().toString());
+        // 修改通知册内容
+        synchronized (lock) {
+            // 去除该同学的评价
+            remarkMap.remove(noticeBooklet.getStudentId() + DELIMITER + noticeBookletOld.getStudentName() + DELIMITER + noticeBookletOld.getStudentClassNumber() + DELIMITER + noticeBookletOld.getStudentGrade());
+            // 获取该学生成绩，判断新增还是修改
+            DiStudentScore diStudentScore = scoreMapper.getStudentScore(noticeBooklet.getStudentId());
+            DiStudentScore studentScore = BeanUtil.copyProperties(noticeBooklet, DiStudentScore.class);
+            if (diStudentScore == null || diStudentScore.getId() == null) {
+                // 新增
+                scoreMapper.addStudentScore(studentScore);
+            } else {
+                // 修改
+                scoreMapper.modifyStudentScoreByStudentId(diStudentScore.getId() ,studentScore);
+            }
+            DiStudentPlan diStudentPlan = scoreMapper.getStudentPlan(noticeBooklet.getStudentId());
+            DiStudentPlan studentPlan = BeanUtil.copyProperties(noticeBooklet, DiStudentPlan.class);
+            studentPlan.setPId(noticeBooklet.getStudentId());
+            if (diStudentPlan == null) {
+                // 新增
+                scoreMapper.addStudentPlan(studentPlan);
+            } else {
+                // 修改
+                scoreMapper.modifyStudentPlan(studentPlan);
+            }
+            DiStudentPlanComment diStudentPlanComment = scoreMapper.getStudentPlanComment(noticeBooklet.getStudentId());
+            DiStudentPlanComment studentPlanComment = new DiStudentPlanComment();
+            studentPlanComment.setPId(noticeBooklet.getStudentId());
+            studentPlanComment.setComment(noticeBooklet.getComment());
+            if (diStudentPlanComment == null || diStudentPlanComment.getId() == null) {
+                // 新增
+                studentPlanComment.setCreateTime(LocalDate.now());
+                studentPlanComment.setUpdateTime(LocalDate.now());
+                scoreMapper.addStudentPlanComment(studentPlanComment);
+            } else {
+                // 修改
+                studentPlanComment.setId(diStudentPlanComment.getId());
+                studentPlanComment.setUpdateTime(LocalDate.now());
+                scoreMapper.modifyStudentPlanComment(studentPlanComment);
+            }
+        }
+//        log.info("修改通知册内容成功：, studentID: {}", noticeBooklet.getStudentId());
     }
 }

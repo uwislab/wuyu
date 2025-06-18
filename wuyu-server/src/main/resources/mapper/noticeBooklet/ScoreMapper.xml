@@ -2,6 +2,123 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.fiveup.core.noticeBooklet.mapper.ScoreMapper">
+    <insert id="addStudentScore">
+        insert into fiveup.di_studentscore(student_id,
+                                           s_deyu,
+                                           s_zhiyu,
+                                           s_tiyu,
+                                           s_meiyu,
+                                           s_laoyu,
+                                           s_exdate)
+        values (#{studentId},
+                #{sDeyu},
+                #{sZhiyu},
+                #{sTiyu},
+                #{sMeiyu},
+                #{sLaoyu},
+                #{sExdate})
+    </insert>
+    <insert id="addStudentPlan">
+        insert into fiveup.di_studentplan(p_id,
+                                         p_deyu,
+                                         p_zhiyu,
+                                         p_tiyu,
+                                         p_meiyu,
+                                         p_laoyu,
+                                         p_plan)
+        values (#{pId},
+                #{pDeyu},
+                #{pZhiyu},
+                #{pTiyu},
+                #{pMeiyu},
+                #{pLaoyu},
+                #{pPlan})
+    </insert>
+    <insert id="addStudentPlanComment">
+        insert into fiveup.di_studentplancomment(p_id,
+                                                 comment,
+                                                 create_time,
+                                                 update_time)
+        values (#{pId},
+                #{comment},
+                #{createTime},
+                #{updateTime})
+    </insert>
+    <update id="modifyStudentScore">
+        update fiveup.di_studentscore
+        set s_deyu=#{sDeyu},
+            s_zhiyu=#{sZhiyu},
+            s_tiyu=#{sTiyu},
+            s_meiyu=#{sMeiyu},
+            s_laoyu=#{sLaoyu},
+            s_exdate= #{sExdate}
+        where student_id=#{studentId}
+    </update>
+    <update id="modifyStudentScoreByStudentId">
+        update fiveup.di_student
+        <set>
+            <if test="sDeyu != null">
+                s_deyu = #{sDeyu},
+            </if>
+            <if test="sZhiyu != null">
+                s_zhiyu = #{sZhiyu},
+            </if>
+            <if test="sTiyu != null">
+                s_tiyu = #{sTiyu},
+            </if>
+            <if test="sMeiyu != null">
+                s_meiyu = #{sMeiyu},
+            </if>
+            <if test="sLaoyu != null">
+                s_laoyu = #{sLaoyu},
+            </if>
+            <if test="sExdate != null">
+                s_exdate = #{sExdate}
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    <update id="modifyStudentPlan">
+        update fiveup.di_studentplan
+        <set>
+            <if test="pDeyu != null">
+                p_deyu = #{pDeyu},
+            </if>
+            <if test="pZhiyu != null">
+                p_zhiyu = #{pZhiyu},
+            </if>
+            <if test="pTiyu != null">
+                p_tiyu = #{pTiyu},
+            </if>
+            <if test="pMeiyu != null">
+                p_meiyu = #{pMeiyu},
+            </if>
+            <if test="pLaoyu != null">
+                p_laoyu = #{pLaoyu},
+            </if>
+            <if test="pPlan != null and pPlan != ''">
+                p_plan = #{pPlan},
+            </if>
+        </set>
+        where p_id= #{pId}
+    </update>
+    <update id="modifyStudentPlanComment">
+        update fiveup.di_studentplancomment
+        <set>
+            <if test="pId != null">
+                p_id = #{pId},
+            </if>
+            <if test="comment != null">
+                comment = #{comment},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime}
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+
     <delete id="deleteNoticeBooklet">
         delete from fiveup.di_studentplan
                where p_id=#{studentId}
@@ -68,7 +185,7 @@
         ss.s_zhiyu,
         ss.s_tiyu,
         ss.s_meiyu,
-        ss.s_laoyu,
+        ss.s_laoyu
         from fiveup.di_student s
             left join fiveup.di_studentscore ss on s.student_id =ss.student_id
     </select>
@@ -121,5 +238,38 @@
                  left join fiveup.di_studentplancomment dc on dc.p_id = dp.p_id
         where s.student_grade = #{gradeId}
         order by student_id DESC;
+    </select>
+
+    <select id="getStudentScore" resultType="com.fiveup.core.noticeBooklet.domain.DiStudentScore">
+        select id,
+               student_id,
+               s_deyu,
+               s_zhiyu,
+               s_tiyu,
+               s_meiyu,
+               s_laoyu,
+               s_exdate
+        from fiveup.di_studentscore
+        where student_id = #{studentId}
+    </select>
+    <select id="getStudentPlan" resultType="com.fiveup.core.noticeBooklet.domain.DiStudentPlan">
+        select p_id,
+               p_deyu,
+               p_zhiyu,
+               p_tiyu,
+               p_meiyu,
+               p_laoyu,
+               p_plan
+        from fiveup.di_studentplan
+        where p_id = #{studentId}
+    </select>
+    <select id="getStudentPlanComment" resultType="com.fiveup.core.noticeBooklet.domain.DiStudentPlanComment">
+        select id,
+               p_id,
+               comment,
+               create_time,
+               update_time
+        from fiveup.di_studentplancomment
+        where p_id = #{studentId}
     </select>
 </mapper>

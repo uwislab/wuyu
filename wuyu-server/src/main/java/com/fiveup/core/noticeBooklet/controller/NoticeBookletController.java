@@ -5,11 +5,8 @@ import com.fiveup.core.noticeBooklet.domain.vo.StudentVO;
 import com.fiveup.core.noticeBooklet.service.NoticeBookletService;
 import com.fiveup.core.management.common.CommonResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -58,5 +55,19 @@ public class NoticeBookletController {
     public CommonResponse<StudentVO> getAllStudent() {
         StudentVO noticeBooklets = noticeBookletService.getAllStudent();
         return CommonResponse.ok(noticeBooklets);
+    }
+
+    /**
+     * 修改通知册内容
+     *
+     * @param noticeBooklet 通知册内容
+     * @return 修改成功
+     */
+    @PutMapping("/modify")
+    public CommonResponse<String> modifyNoticeBooklet(@RequestBody @Validated NoticeBooklet noticeBooklet) {
+        // 修改通知册内容，调用服务层方法
+        // 会改动学生的成绩、假期要求等
+        noticeBookletService.modifyNoticeBooklet(noticeBooklet);
+        return CommonResponse.ok("修改成功");
     }
 }
