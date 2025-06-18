@@ -8,7 +8,8 @@ public interface ExportZipService {
     /**
      * 生成多个Word文件并打包为ZIP
      * @param response HTTP响应对象
-     * @param ids 多个通知册的id集合
+     * @param classId 班级
+     * @param gradeId 年级
      */
     public void exportMultipleWords(HttpServletResponse response, Integer classId, Integer gradeId);
 }

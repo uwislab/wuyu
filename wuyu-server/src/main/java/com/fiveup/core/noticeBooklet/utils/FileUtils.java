@@ -46,17 +46,25 @@ public class FileUtils {
         try {
             // 以流的形式下载文件。
             InputStream fis = new BufferedInputStream(new FileInputStream(file.getPath()));
+            // 获取文件名
             byte[] buffer = new byte[fis.available()];
+            // fis.read(buffer);
             fis.read(buffer);
             fis.close();
             // 清空response
             response.reset();
+            // 设置response的Header
             OutputStream toClient = new BufferedOutputStream(response.getOutputStream());
+            // contentType
             response.setContentType("application/octet-stream");
+
             //如果输出的是中文名的文件，在此处就要用URLEncoder.encode方法进行处理
             response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(file.getName(), "UTF-8"));
+            //创建输入流
             toClient.write(buffer);
+            //关闭输入流
             toClient.flush();
+            //关闭输出流
             toClient.close();
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -77,22 +85,23 @@ public class FileUtils {
             System.out.print("The dir are not exists!");
             return false;
         }
-        String[] content = file.list();//取得当前目录下所有文件和文件夹
+        //取得当前目录下所有文件和文件夹
+        String[] content = file.list();
         for(String name : content){
             File temp = new File(path, name);
             //判断是否是目录
             if(temp.isDirectory()){
-                deleteDir(temp.getAbsolutePath());//递归调用，删除目录里的内容
-                temp.delete();//删除空目录
+                //递归调用，删除目录里的内容
+                deleteDir(temp.getAbsolutePath());
+                //删除空目录
+                temp.delete();
             }else{
-                if(!temp.delete()){//直接删除文件
+                //直接删除文件
+                if(!temp.delete()){
                     System.out.print("The dir are not exists!");
                 }
             }
         }
         return true;
     }
-
-
-
 }

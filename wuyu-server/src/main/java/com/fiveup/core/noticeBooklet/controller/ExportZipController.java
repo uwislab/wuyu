@@ -12,7 +12,11 @@ import java.util.List;
 @RequestMapping("/export")
 @RequiredArgsConstructor
 public class ExportZipController {
+
+    // 注入服务
     private final ExportZipService exportZipService;
+
+
     /**
      * 生成多个Word文件并打包为ZIP
      * @param response HTTP响应对象
