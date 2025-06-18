@@ -39,7 +39,7 @@ public  class AIUtil {
         // 配置请求参数（从环境变量获取API Key）
         GenerationParam param = GenerationParam.builder()
                 .apiKey("sk-55857d789fc247778029c76f2227a4d0")
-                .model("qwen-plus") // 使用您验证过的模型名称
+                .model("qwen-turbo") // 使用您验证过的模型名称
                 .messages(Arrays.asList(systemMsg, userMsg)) // 添加系统消息
                 .resultFormat(GenerationParam.ResultFormat.MESSAGE)
                 .build();

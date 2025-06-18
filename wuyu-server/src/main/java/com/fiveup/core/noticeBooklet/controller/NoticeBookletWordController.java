@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/noticeBooklet/word")
 public class NoticeBookletWordController {
@@ -32,11 +33,11 @@ public class NoticeBookletWordController {
      * @param studentId 学号
      * @return 响应结果
      */
-    @PostMapping("/generate")
+    @GetMapping("/generate")
     public void generateWord(@RequestParam Integer studentId, HttpServletResponse response){
         try {
             // 查询通知册内容
-            List<NoticeBooklet> noticeBooklets = noticeBookletService.getNoticeBooklet(studentId, null, null,true);
+            List<NoticeBooklet> noticeBooklets = noticeBookletService.getNoticeBooklet(studentId, null, null,true, null);
             if (noticeBooklets != null && !noticeBooklets.isEmpty()) {
                     // 生成Word文件
                     noticeBookletWordService.generateWord(noticeBooklets.get(0),response);
@@ -49,7 +50,7 @@ public class NoticeBookletWordController {
     @GetMapping("/generateHTML")
     public CommonResponse<String> generateHTML(@RequestParam Integer studentId) throws IOException {
             // 查询通知册内容
-            List<NoticeBooklet> noticeBooklets = noticeBookletService.getNoticeBooklet(studentId, null, null,true);
+            List<NoticeBooklet> noticeBooklets = noticeBookletService.getNoticeBooklet(studentId, null, null,true, null);
             if(noticeBooklets.isEmpty()) {
                 return CommonResponse.fail(500, "未找到通知册内容");
             }
