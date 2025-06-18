@@ -10,13 +10,13 @@
                                            s_meiyu,
                                            s_laoyu,
                                            s_exdate)
-        values (#{studentId},
-                #{sDeyu},
-                #{sZhiyu},
-                #{sTiyu},
-                #{sMeiyu},
-                #{sLaoyu},
-                #{sExdate})
+        values (#{studentScore.studentId},
+                #{studentScore.sDeyu},
+                #{studentScore.sZhiyu},
+                #{studentScore.sTiyu},
+                #{studentScore.sMeiyu},
+                #{studentScore.sLaoyu},
+                #{studentScore.sExdate})
     </insert>
     <insert id="addStudentPlan">
         insert into fiveup.di_studentplan(p_id,
@@ -26,102 +26,103 @@
                                          p_meiyu,
                                          p_laoyu,
                                          p_plan)
-        values (#{pId},
-                #{pDeyu},
-                #{pZhiyu},
-                #{pTiyu},
-                #{pMeiyu},
-                #{pLaoyu},
-                #{pPlan})
+        values (#{studentPlan.pId},
+                #{studentPlan.pDeyu},
+                #{studentPlan.pZhiyu},
+                #{studentPlan.pTiyu},
+                #{studentPlan.pMeiyu},
+                #{studentPlan.pLaoyu},
+                #{studentPlan.pPlan})
     </insert>
     <insert id="addStudentPlanComment">
         insert into fiveup.di_studentplancomment(p_id,
                                                  comment,
                                                  create_time,
                                                  update_time)
-        values (#{pId},
-                #{comment},
-                #{createTime},
-                #{updateTime})
+        values (#{studentPlanComment.pId},
+                #{studentPlanComment.comment},
+                #{studentPlanComment.createTime},
+                #{studentPlanComment.updateTime})
     </insert>
     <update id="modifyStudentScore">
         update fiveup.di_studentscore
-        set s_deyu=#{sDeyu},
-            s_zhiyu=#{sZhiyu},
-            s_tiyu=#{sTiyu},
-            s_meiyu=#{sMeiyu},
-            s_laoyu=#{sLaoyu},
-            s_exdate= #{sExdate}
-        where student_id=#{studentId}
+        set s_deyu=#{noticeBooklet.sDeyu},
+            s_zhiyu=#{noticeBooklet.sZhiyu},
+            s_tiyu=#{noticeBooklet.sTiyu},
+            s_meiyu=#{noticeBooklet.sMeiyu},
+            s_laoyu=#{noticeBooklet.sLaoyu},
+            s_exdate= #{noticeBooklet.sExdate}
+        where student_id = #{noticeBooklet.studentId}
     </update>
     <update id="modifyStudentScoreByStudentId">
-        update fiveup.di_student
+        update fiveup.di_studentscore
         <set>
-            <if test="sDeyu != null">
-                s_deyu = #{sDeyu},
+            <if test="studentScore.sDeyu != null">
+                s_deyu = #{studentScore.sDeyu},
             </if>
-            <if test="sZhiyu != null">
-                s_zhiyu = #{sZhiyu},
+            <if test="studentScore.sZhiyu != null">
+                s_zhiyu = #{studentScore.sZhiyu},
             </if>
-            <if test="sTiyu != null">
-                s_tiyu = #{sTiyu},
+            <if test="studentScore.sTiyu != null">
+                s_tiyu = #{studentScore.sTiyu},
             </if>
-            <if test="sMeiyu != null">
-                s_meiyu = #{sMeiyu},
+            <if test="studentScore.sMeiyu != null">
+                s_meiyu = #{studentScore.sMeiyu},
             </if>
-            <if test="sLaoyu != null">
-                s_laoyu = #{sLaoyu},
+            <if test="studentScore.sLaoyu != null">
+                s_laoyu = #{studentScore.sLaoyu},
             </if>
-            <if test="sExdate != null">
-                s_exdate = #{sExdate}
+            <if test="studentScore.sExdate != null">
+                s_exdate = #{studentScore.sExdate}
             </if>
         </set>
-        where id = #{id}
+        where id = #{studentScore.id}
     </update>
     <update id="modifyStudentPlan">
         update fiveup.di_studentplan
         <set>
-            <if test="pDeyu != null">
-                p_deyu = #{pDeyu},
+            <if test="studentPlan.pDeyu != null">
+                p_deyu = #{studentPlan.pDeyu},
             </if>
-            <if test="pZhiyu != null">
-                p_zhiyu = #{pZhiyu},
+            <if test="studentPlan.pZhiyu != null">
+                p_zhiyu = #{studentPlan.pZhiyu},
             </if>
-            <if test="pTiyu != null">
-                p_tiyu = #{pTiyu},
+            <if test="studentPlan.pTiyu != null">
+                p_tiyu = #{studentPlan.pTiyu},
             </if>
-            <if test="pMeiyu != null">
-                p_meiyu = #{pMeiyu},
+            <if test="studentPlan.pMeiyu != null">
+                p_meiyu = #{studentPlan.pMeiyu},
             </if>
-            <if test="pLaoyu != null">
-                p_laoyu = #{pLaoyu},
+            <if test="studentPlan.pLaoyu != null">
+                p_laoyu = #{studentPlan.pLaoyu},
             </if>
-            <if test="pPlan != null and pPlan != ''">
-                p_plan = #{pPlan},
+            <if test="studentPlan.pPlan != null and studentPlan.pPlan != ''">
+                p_plan = #{studentPlan.pPlan},
             </if>
         </set>
-        where p_id= #{pId}
+        where p_id= #{studentPlan.pId}
     </update>
     <update id="modifyStudentPlanComment">
         update fiveup.di_studentplancomment
         <set>
-            <if test="pId != null">
-                p_id = #{pId},
+            <if test="studentPlanComment.pId != null">
+                p_id = #{studentPlanComment.pId},
             </if>
-            <if test="comment != null">
-                comment = #{comment},
+            <if test="studentPlanComment.comment != null">
+                comment = #{studentPlanComment.comment},
             </if>
-            <if test="updateTime != null">
-                update_time = #{updateTime}
+            <if test="studentPlanComment.updateTime != null">
+                update_time = #{studentPlanComment.updateTime}
             </if>
         </set>
-        where id = #{id}
+        where id = #{studentPlanComment.id}
     </update>
 
 
     <delete id="deleteNoticeBooklet">
-        delete from fiveup.di_studentplan
-               where p_id=#{studentId}
+        delete
+        from fiveup.di_studentscore
+        where student_id = #{studentId}
     </delete>
 
     <select id="getNoticeBooklet" resultType="com.fiveup.core.noticeBooklet.domain.NoticeBooklet">
@@ -188,6 +189,7 @@
         ss.s_laoyu
         from fiveup.di_student s
             left join fiveup.di_studentscore ss on s.student_id =ss.student_id
+        where s.student_id = #{studentId}
     </select>
 
     <select id="getNoticeBookletByClassNumAndGradeId" resultType="com.fiveup.core.noticeBooklet.domain.NoticeBooklet">
