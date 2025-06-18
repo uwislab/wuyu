@@ -22,17 +22,17 @@
         <div class="item left">
           <div class="panel">
             <h2>德育各年级变化</h2>
-            <div id="id0" style="width: 350px;height: 200px"></div>
+            <div id="id0"></div>
             <!--            <div class="panel-footer"></div>-->
           </div>
           <div class="panel">
             <h2>智育各年级变化</h2>
-            <div id="id1" style="width: 350px;height: 200px"></div>
+            <div id="id1"></div>
             <!--            <div class="panel-footer"></div>-->
           </div>
           <div class="panel">
             <h2>体育各年级变化</h2>
-            <div id="id2" style="width: 350px;height: 200px"></div>
+            <div id="id2"></div>
             <!--            <div class="panel-footer"></div>-->
           </div>
         </div>
@@ -120,17 +120,17 @@
         <div class="item right">
           <div class="panel">
             <h2>美育各年级变化</h2>
-            <div id="id3" style="width: 350px;height: 200px"></div>
+            <div id="id3"></div>
             <!--            <div class="panel-footer"></div>-->
           </div>
           <div class="panel">
             <h2>劳育各年级变化</h2>
-            <div id="id4" style="width: 350px;height: 200px"></div>
+            <div id="id4"></div>
             <!--            <div class="panel-footer"></div>-->
           </div>
           <div class="panel">
             <h2>燃尽图展示</h2>
-            <div id="id5" style="width: 350px;height: 200px"></div>
+            <div id="id5"></div>
             <!--            <div class="panel-footer"></div>-->
           </div>
         </div>
@@ -528,6 +528,7 @@ export default {
     },
     change() {
       this.isFullscreen = screenfull.isFullscreen
+
     },
     init() {
       if (screenfull.enabled) {
@@ -595,6 +596,13 @@ export default {
         top: 0.35rem;
         font-size: 0.25rem;
         color: rgba(126, 240, 255, .7);
+
+        /* 修改 增加触摸目标大小 */
+        button {
+          min-width: 48px;
+          min-height: 48px;
+          padding: 0.1rem 0.2rem;
+        }
 
         img {
           width: .45rem;
@@ -806,6 +814,11 @@ export default {
           background: rgba(255, 255, 255, 0.04) url(../../assets/img/brand/line.png);
           padding: 0 0.1875rem 0;
           margin-bottom: 0.1875rem;
+
+          div {
+            width: 5.4rem;
+            height: 3.2rem
+          }
 
           &:before {
             position: absolute;
