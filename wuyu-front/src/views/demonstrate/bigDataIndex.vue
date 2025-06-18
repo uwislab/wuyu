@@ -808,6 +808,7 @@ export default {
           padding: 0 0.1875rem 0;
           margin-bottom: 0.1875rem;
 
+          //修改 6个图表整体样式
           div {
             width: 5.4rem;
             height: 3.2rem
@@ -946,6 +947,13 @@ export default {
 @media screen and (min-width: 1920px) {
   html {
     font-size: 80px !important;
+  }
+}
+
+/* 修改 针对极小屏幕特殊处理 */
+@media screen and (max-width: 768px) {
+  body {
+    font-size: 0.18rem;
   }
 }
 </style>
