@@ -1,7 +1,6 @@
 <template>
   <div class="brand-container" ref="myContent">
     <div class="wrap">
-      <!-- 页面头部 -->
       <header>
         <div class="weather">
           <img :src="imgSrc">
@@ -19,28 +18,25 @@
         </div>
       </header>
 
-      <!-- 主要内容区域 -->
       <section class="mainbox">
-<!--        左侧区域-->
         <div class="item left">
           <div class="panel">
             <h2>德育各年级变化</h2>
-            <div id="id0"></div>
+            <div id="id0" style="width: 350px;height: 200px"></div>
             <!--            <div class="panel-footer"></div>-->
           </div>
           <div class="panel">
             <h2>智育各年级变化</h2>
-            <div id="id1"></div>
+            <div id="id1" style="width: 350px;height: 200px"></div>
             <!--            <div class="panel-footer"></div>-->
           </div>
           <div class="panel">
             <h2>体育各年级变化</h2>
-            <div id="id2"></div>
+            <div id="id2" style="width: 350px;height: 200px"></div>
             <!--            <div class="panel-footer"></div>-->
           </div>
         </div>
 
-        <!-- 中间区域 -->
         <div class="item center">
           <div class="resume">
             <div class="resume-hd">
@@ -60,45 +56,81 @@
               </ul>
             </div>
           </div>
-
-          <!-- 班级风采轮播图 -->
           <div class="map">
-            <h3 style="color: white;text-align: center;font-size: 0.45rem;">班级风采</h3>
+            <!--
+            <div class="map1"></div>
+            <div class="map2"></div>
+            <div class="map3"></div>
+-->
+
+            <h3 style="color: white;text-align: center">班级风采</h3>
             <el-carousel :autoplay="true" indicator-position="none" :interval="4000" height="230px">
-              <el-carousel-item v-for="(index, i) in 3" :key="i">
+              <el-carousel-item>
                 <div class="panel">
-                  <div class="echart" :id="'xybjChart' + (i + 1)" :style="myChartStyle"></div>
+                  <div class="echart" id="xybjChart1" :style="myChartStyle"></div>
+                </div>
+              </el-carousel-item>
+              <el-carousel-item>
+                <div class="panel">
+                  <div class="echart" id="xybjChart2" :style="myChartStyle"></div>
+                </div>
+              </el-carousel-item>
+              <el-carousel-item>
+                <div class="panel">
+                  <div class="echart" id="xybjChart3" :style="myChartStyle"></div>
                 </div>
               </el-carousel-item>
             </el-carousel>
-
-            <!-- 五育标兵轮播图 -->
-            <h3 style="color: white;text-align: center;font-size: 0.45rem;">五育标兵</h3>
+            <h3 style="color: white;text-align: center">五育标兵</h3>
             <el-carousel :autoplay="true" indicator-position="none" :interval="5000" arrow="always" height="250px">
-              <el-carousel-item v-for="(index, i) in 5" :key="i">
+              <el-carousel-item>
                 <div class="panel">
-                  <div class="echart" :id="'xygrChart' + (i + 1)" :style="myChartStyle"></div>
+                  <div class="echart" id="xygrChart1" :style="myChartStyle"></div>
+                </div>
+              </el-carousel-item>
+              <el-carousel-item>
+                <div class="panel">
+                  <div class="echart" id="xygrChart2" :style="myChartStyle"></div>
+                </div>
+              </el-carousel-item>
+              <el-carousel-item>
+                <div class="panel">
+                  <div class="echart" id="xygrChart3" :style="myChartStyle"></div>
+                </div>
+              </el-carousel-item>
+              <el-carousel-item>
+                <div class="panel">
+                  <div class="echart" id="xygrChart4" :style="myChartStyle"></div>
+                </div>
+              </el-carousel-item>
+              <el-carousel-item>
+                <div class="panel">
+                  <div class="echart" id="xygrChart5" :style="myChartStyle"></div>、
+                </div>
+              </el-carousel-item>
+              <el-carousel-item>
+                <div class="panel">
+                  <div class="echart" id="xygrChart6" :style="myChartStyle"></div>
                 </div>
               </el-carousel-item>
             </el-carousel>
           </div>
-
         </div>
 
         <div class="item right">
           <div class="panel">
             <h2>美育各年级变化</h2>
-            <div id="id3"></div>
+            <div id="id3" style="width: 350px;height: 200px"></div>
             <!--            <div class="panel-footer"></div>-->
           </div>
           <div class="panel">
             <h2>劳育各年级变化</h2>
-            <div id="id4"></div>
+            <div id="id4" style="width: 350px;height: 200px"></div>
             <!--            <div class="panel-footer"></div>-->
           </div>
           <div class="panel">
             <h2>燃尽图展示</h2>
-            <div id="id5"></div>
+            <div id="id5" style="width: 350px;height: 200px"></div>
             <!--            <div class="panel-footer"></div>-->
           </div>
         </div>
@@ -133,8 +165,8 @@ export default {
         "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimg.jj20.com%2Fup%2Fallimg%2F1113%2F060120105F7%2F200601105F7-3-1200.jpg&refer=http%3A%2F%2Fimg.jj20.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1656687720&t=867c801f0911ed362a3d06f2c1fff054",
         "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimg.jj20.com%2Fup%2Fallimg%2F1114%2F102920105033%2F201029105033-1-1200.jpg&refer=http%3A%2F%2Fimg.jj20.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1656687720&t=b8754d6573884c844088a92959416fcf"
       ],
-      // 存储当前窗口宽度
-      windowWidth: window.innerWidth,
+
+
       isFullscreen: false,
       nowTime: '',
       week: '',
@@ -186,8 +218,6 @@ export default {
     })
   },
   mounted() {
-    // 初始化字体大小
-    this.setRootFontSize();
     this.getWeather();
     this.timer = setInterval(() => {
       this.getWeather();
@@ -196,35 +226,8 @@ export default {
     this.nowTimes();
     this.initXYBJEcharts();
     this.initXYGREcharts();
-    // 修改部分：监听窗口大小变化，重新渲染图表
-    window.addEventListener('resize', this.resizeCharts);
-    window.addEventListener('resize', this.handleWindowResize);
-    this.resizeCharts();
   },
   methods: {
-    // 修改： 处理窗口变化大小
-    handleWindowResize() {
-      // 更新窗口宽度
-      this.windowWidth = window.innerWidth;
-      // 重新设置根元素字体大小
-      this.setRootFontSize();
-    },
-    setRootFontSize() {
-      let fontSize;
-      if (this.windowWidth <= 1024) {
-        fontSize = 42;
-      } else if (this.windowWidth >= 1920) {
-        fontSize = 80;
-      } else if (this.windowWidth >= 1280 && this.windowWidth <= 1440) {
-        fontSize = 50;
-      } else if (this.windowWidth >= 1440 && this.windowWidth <= 1680) {
-        fontSize = 56;
-      } else if (this.windowWidth >= 1680 && this.windowWidth <= 1920) {
-        fontSize = 64;
-      }
-      // 修改：动态设置根元素字体大小
-      document.documentElement.style.fontSize = `${fontSize}px`;
-    },
     timeFormate(timeStamp) { //显示当前时间
       let newDate = new Date(timeStamp);
       let year = newDate.getFullYear();
@@ -314,7 +317,6 @@ export default {
       myChart.setOption(option)
       this.chartList.push(myChart)
     },
-    // 修改initXYBJEcharts和initXYGREcharts方法，确保正确绑定this
     initXYBJEcharts() {
       api.getXYClass()
         .then(function (res) {
@@ -359,7 +361,7 @@ export default {
             };
             const myChart = echarts.init(document.querySelector("#xybjChart" + (i + 1)));
             myChart.setOption(option);
-            window.addEventListener("resize",  () => {
+            window.addEventListener("resize", function () {
               myChart.resize();
             });
             this.chartList.push(myChart)
@@ -523,7 +525,6 @@ export default {
     },
     change() {
       this.isFullscreen = screenfull.isFullscreen
-
     },
     init() {
       if (screenfull.enabled) {
@@ -540,20 +541,11 @@ export default {
         chart.dispose()
       })
       this.chartList = []
-    },
-    // 修改部分：重新渲染图表的方法
-    resizeCharts() {
-      this.chartList.forEach(chart => {
-        chart.resize();
-      });
     }
   },
   beforeDestroy() {
     clearInterval(this.timer);
     this.destroyChart();
-    // 修改部分：移除窗口大小变化监听
-    window.removeEventListener('resize', this.resizeCharts);
-    window.removeEventListener('resize', this.handleWindowResize);
   },
 }
 </script>
@@ -803,12 +795,6 @@ export default {
           padding: 0 0.1875rem 0;
           margin-bottom: 0.1875rem;
 
-          //修改 6个图表整体样式
-          div {
-            width: 5.4rem;
-            height: 3.2rem
-          }
-
           &:before {
             position: absolute;
             top: 0;
@@ -928,92 +914,14 @@ export default {
 }
 
 @media screen and (max-width: 1024px) {
-
-  .mainbox {
-    flex-direction: column;
+  html {
+    font-size: 42px !important;
   }
-
-  .map h3 {
-    font-size: 0.2rem;
-  }
-
-  .item {
-    flex: auto;
-    margin-bottom: 0.125rem;
-  }
-
 }
 
 @media screen and (min-width: 1920px) {
   html {
     font-size: 80px !important;
-  }
-  .map h3 {
-    font-size: 0.2rem;
-  }
-}
-
-/* 修改 针对极小屏幕特殊处理 */
-@media screen and (max-width: 768px) {
-  body {
-    font-size: 0.18rem;
-  }
-  .map h3 {
-    font-size: 0.2rem;
-  }
-}
-
-/* 修改：增加 1280px 到 1440px 屏幕尺寸的适配 */
-@media screen and (min-width: 1280px) and (max-width: 1440px) {
-  html {
-    font-size: 50px !important;
-  }
-  .mainbox {
-    /* 可以根据实际需求调整布局 */
-    justify-content: space-around;
-  }
-  .item {
-    width: 45%; /* 调整元素宽度 */
-    margin-bottom: 0.2rem;
-  }
-  .map h3 {
-    font-size: 0.2rem;
-  }
-}
-
-/* 修改：增加 1440px 到 1680px 屏幕尺寸的适配 */
-@media screen and (min-width: 1440px) and (max-width: 1680px) {
-  html {
-    font-size: 56px !important;
-  }
-  .mainbox {
-    /* 可以根据实际需求调整布局 */
-    justify-content: space-between;
-  }
-  .item {
-    width: 30%; /* 调整元素宽度 */
-    margin-bottom: 0.25rem;
-  }
-  .map h3 {
-    font-size: 0.2rem;
-  }
-}
-
-/* 修改：增加 1680px 到 1920px 屏幕尺寸的适配 */
-@media screen and (min-width: 1680px) and (max-width: 1920px) {
-  html {
-    font-size: 64px !important;
-  }
-  .mainbox {
-    /* 可以根据实际需求调整布局 */
-    justify-content: center;
-  }
-  .item {
-    width: 25%; /* 调整元素宽度 */
-    margin-bottom: 0.3rem;
-  }
-  .map h3 {
-    font-size: 0.2rem;
   }
 }
 </style>
