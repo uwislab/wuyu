@@ -1,15 +1,13 @@
 package com.fiveup.core.notice.service;
 
-import com.fiveup.core.notice.entity.NoticeEntity;
-import com.fiveup.core.notice.entity.UserIdentity;
 import com.fiveup.core.notice.info.noticeInfo;
 
 import java.util.List;
 
 public interface noticeService {
+    List<noticeInfo> getNoticeList();
 
-    void addNotice(NoticeEntity noticeEntity);
+    int deleteById(int id);
 
-    List<UserIdentity> getIdentityIds();
-
+    int addList(noticeInfo noticeInfo);
 }
