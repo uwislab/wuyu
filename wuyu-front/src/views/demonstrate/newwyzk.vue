@@ -1,5 +1,5 @@
 <template>
-  <div class="newwyzk-container">
+  <div class="newwyzk-container" ref="container">
     <!-- 顶部信息栏 -->
     <div class="top-info-bar">
       <div class="date-weather">
@@ -594,7 +594,12 @@ export default {
     async toggleFullScreen() {
       try {
         const container = this.$refs.container;
+        // if (!container) {
+        //   console.warn('全屏容器未找到');
+        //   return;
+        // }
         if (!this.isFullscreen) {
+          // 使用兼容性写法进入全屏
           if (container.requestFullscreen) {
             await container.requestFullscreen();
           } else if (container.webkitRequestFullscreen) {
@@ -603,8 +608,11 @@ export default {
             await container.mozRequestFullScreen();
           } else if (container.msRequestFullscreen) {
             await container.msRequestFullscreen();
+          } else {
+            this.$message.warning('您的浏览器不支持全屏功能');
           }
         } else {
+          // 使用兼容性写法退出全屏
           if (document.exitFullscreen) {
             await document.exitFullscreen();
           } else if (document.webkitExitFullscreen) {
@@ -1192,13 +1200,35 @@ export default {
   }
 }
 
-@media screen and (max-width: 1024px) {
+@media screen and (max - width: 1024px) {
   html {
     font-size: 42px !important;
   }
 }
 
-@media screen and (min-width: 1920px) {
+/* 1024px - 1280px */
+@media screen and (min - width: 1025px) and (max - width: 1280px) {
+  html {
+    font-size: 50px !important;
+  }
+}
+
+/* 1281px - 1600px */
+@media screen and (min - width: 1281px) and (max - width: 1600px) {
+  html {
+    font-size: 60px !important;
+  }
+}
+
+/* 1601px - 1919px */
+@media screen and (min - width: 1601px) and (max - width: 1919px) {
+  html {
+    font-size: 70px !important;
+  }
+}
+
+/* 大于等于 1920px */
+@media screen and (min - width: 1920px) {
   html {
     font-size: 80px !important;
   }
