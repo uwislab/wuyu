@@ -35,6 +35,9 @@
           />
         </el-select>
       </div>
+      <div class="fullscreen-btn" @click="toggleFullScreen">
+        <i :class="isFullscreen ? 'el-icon-close' : 'el-icon-full-screen'"></i>
+      </div>
     </header>
 
     <!-- 基本信息展示区域 -->
