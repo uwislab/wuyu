@@ -158,9 +158,10 @@ public class NoticeBookletServiceImpl implements NoticeBookletService {
             // 去除该同学的评价
             remarkMap.remove(noticeBooklet.getStudentId() + DELIMITER + noticeBookletOld.getStudentName() + DELIMITER + noticeBookletOld.getStudentClassNumber() + DELIMITER + noticeBookletOld.getStudentGrade());
             // 获取该学生成绩，判断新增还是修改
-            DiStudentScore diStudentScore = scoreMapper.getStudentScore(noticeBooklet.getStudentId());
+            DiStudentScore diStudentScore = scoreMapper.getStudentScore(noticeBooklet.getStudentId(), noticeBooklet.getSExdate());
             DiStudentScore studentScore = BeanUtil.copyProperties(noticeBooklet, DiStudentScore.class);
             if (diStudentScore == null || diStudentScore.getId() == null) {
+                studentScore.setSExdate(String.valueOf(System.currentTimeMillis()));
                 // 新增
                 scoreMapper.addStudentScore(studentScore);
             } else {

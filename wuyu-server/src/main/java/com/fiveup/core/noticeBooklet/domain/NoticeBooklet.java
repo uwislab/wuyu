@@ -66,7 +66,7 @@ public class NoticeBooklet {
     /**
      * 考试时间
      */
-    private String sDate;
+    private String sExdate;
 
     /**
      * 计划德育分

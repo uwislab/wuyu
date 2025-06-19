@@ -77,7 +77,7 @@ public interface ScoreMapper {
      * @param studentId 学生id
      * @return 学生成绩
      */
-    DiStudentScore getStudentScore(Integer studentId);
+    DiStudentScore getStudentScore(Integer studentId, String date);
 
     /**
      * 添加学生成绩

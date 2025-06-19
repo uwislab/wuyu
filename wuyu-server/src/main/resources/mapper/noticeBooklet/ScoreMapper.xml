@@ -55,28 +55,36 @@
         where student_id = #{noticeBooklet.studentId}
     </update>
     <update id="modifyStudentScoreByStudentId">
+<!--                update fiveup.di_studentscore-->
+<!--                <set>-->
+<!--                    <if test="studentScore.sDeyu != null">-->
+<!--                        s_deyu = #{studentScore.sDeyu},-->
+<!--                    </if>-->
+<!--                    <if test="studentScore.sZhiyu != null">-->
+<!--                        s_zhiyu = #{studentScore.sZhiyu},-->
+<!--                    </if>-->
+<!--                    <if test="studentScore.sTiyu != null">-->
+<!--                        s_tiyu = #{studentScore.sTiyu},-->
+<!--                    </if>-->
+<!--                    <if test="studentScore.sMeiyu != null">-->
+<!--                        s_meiyu = #{studentScore.sMeiyu},-->
+<!--                    </if>-->
+<!--                    <if test="studentScore.sLaoyu != null">-->
+<!--                        s_laoyu = #{studentScore.sLaoyu},-->
+<!--                    </if>-->
+<!--                    <if test="studentScore.sExdate != null">-->
+<!--                        s_exdate = #{studentScore.sExdate}-->
+<!--                    </if>-->
+<!--                </set>-->
+<!--                where id = #{id}-->
         update fiveup.di_studentscore
-        <set>
-            <if test="studentScore.sDeyu != null">
-                s_deyu = #{studentScore.sDeyu},
-            </if>
-            <if test="studentScore.sZhiyu != null">
-                s_zhiyu = #{studentScore.sZhiyu},
-            </if>
-            <if test="studentScore.sTiyu != null">
-                s_tiyu = #{studentScore.sTiyu},
-            </if>
-            <if test="studentScore.sMeiyu != null">
-                s_meiyu = #{studentScore.sMeiyu},
-            </if>
-            <if test="studentScore.sLaoyu != null">
-                s_laoyu = #{studentScore.sLaoyu},
-            </if>
-            <if test="studentScore.sExdate != null">
-                s_exdate = #{studentScore.sExdate}
-            </if>
-        </set>
-        where id = #{studentScore.id}
+        set s_deyu = #{studentScore.sDeyu},
+        s_zhiyu = #{studentScore.sZhiyu},
+        s_tiyu = #{studentScore.sTiyu},
+        s_meiyu = #{studentScore.sMeiyu},
+        s_laoyu = #{studentScore.sLaoyu},
+        s_exdate = #{studentScore.sExdate}
+        where id = #{id}
     </update>
     <update id="modifyStudentPlan">
         update fiveup.di_studentplan
@@ -136,6 +144,7 @@
         ss.s_tiyu,
         ss.s_meiyu,
         ss.s_laoyu,
+        ss.s_exdate,
         dp.p_deyu,
         dp.p_zhiyu,
         dp.p_tiyu,
@@ -252,7 +261,8 @@
                s_laoyu,
                s_exdate
         from fiveup.di_studentscore
-        where student_id = #{studentId}
+        where student_id = #{studentId} and s_exdate = #{date}
+        limit 1;
     </select>
     <select id="getStudentPlan" resultType="com.fiveup.core.noticeBooklet.domain.DiStudentPlan">
         select p_id,
