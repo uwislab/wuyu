@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:  # db:
+  #   image: mysql:8.0
+  #   container_name: wuyu_db
+  #   restart: always
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: wuyu_root_pwd
+  #     MYSQL_DATABASE: fiveup
+  #     MYSQL_USER: Wuyu_Developer
+  #     MYSQL_PASSWORD: D3G@qrukHR5S
+  #   volumes:
+  #     - db_data:/var/lib/mysql
+  #   ports:
+  #     - "3306:3306"
+  #   networks:
+  #     - wuyu_network
+
+  # 后端服务
+  server:
+    build:
+      context: ./wuyu-server
+      dockerfile: Dockerfile
+    container_name: fiveup-core
+    restart: always
+    ports:
+      - "9080:9080"  # 映射容器9080端口到宿主机9080端口
+    environment:
+      # 数据库连接信息 - 使用配置的外部数据库
+      DB_HOST: 49.51.69.99
+      DB_PORT: 3306
+      DB_NAME: fiveup
+      DB_USER: Wuyu_Developer
+      DB_PASSWORD: D3G@qrukHR5S
+      # 应用端口
+      SERVER_PORT: 9080
+      # 覆盖定时任务配置
+      SCHEDULE_AUTO_COPY_ENABLED: "true"
+    volumes:
+      - ./wuyu-server:/app
+    networks:
+      - wuyu_network
+      # depends_on:
+      # 使用外部数据库，可移除依赖
+      # - db
+
+  # 前端服务
+  front:
+    build:
+      context: ./wuyu-front
+      dockerfile: Dockerfile
+    container_name: wuyu_front
+    restart: always
+    ports:
+      - "80:80"
+    networks:
+      - wuyu_network
+    depends_on:
+      - server
+
+networks:
+  wuyu_network:
+    driver: bridge
+
+volumes:
+  db_data:
