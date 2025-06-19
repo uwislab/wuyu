@@ -2,7 +2,7 @@
  * @Author: hezeliangfj
  * @Date: 2025-06-15 20:39:40
  * @LastEditors: hezeliangfj
- * @LastEditTime: 2025-06-15 22:13:12
+ * @LastEditTime: 2025-06-19 19:13:30
  * @version: 0.0.1
  * @FilePath: \wuyu-front\src\utils\notice.js
  * @Descripttion: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
@@ -90,4 +90,13 @@ export const exportFile = async (options) => {
     closeLoading()
     throw error
   }
+}
+
+// 成绩输入归一化，最大100，最小0，非数字返回空字符串
+export function normalizeScoreInput(val) {
+  let num = Number(val);
+  if (isNaN(num)) return '';
+  if (num > 100) return 100;
+  if (num < 0) return 0;
+  return num;
 }

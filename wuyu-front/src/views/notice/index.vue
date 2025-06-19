@@ -2,16 +2,7 @@
  * @Author: hezeliangfj
  * @Date: 2025-06-17 14:57:41
  * @LastEditors: hezeliangfj
- * @LastEditTime: 2025-06-18 20:46:45
- * @version: 0.0.1
- * @FilePath: \wuyu-front\src\views\notice\index.vue
- * @Descripttion: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
--->
-<!--
- * @Author: hezeliangfj
- * @Date: 2025-06-14 12:54:59
- * @LastEditors: hezeliangfj
- * @LastEditTime: 2025-06-18 16:17:58
+ * @LastEditTime: 2025-06-19 19:01:57
  * @version: 0.0.1
  * @FilePath: \wuyu-front\src\views\notice\index.vue
  * @Descripttion: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
@@ -46,23 +37,20 @@
     <!-- 引入dialogs组件 -->
     <NoticeDialogs
       :dialog-visible.sync="dialogVisible"
-      :dialog-visiblepreview.sync="dialogVisiblepreview"
       :grade-id="gradeId"
       :class-id="classId"
-      :content.sync="content"
       :api-base-url="apiBaseUrl"
       :total-count="totalCount"
       ref="noticeDialogs"
     />
+    <!-- 预览弹框 -->
     <PreviewDialog
-      :dialog-visible.sync="dialogVisible"
-      :dialog-visiblepreview.sync="dialogVisiblepreview"
-      :grade-id="gradeId"
-      :class-id="classId"
-      :content.sync="content"
-      :api-base-url="apiBaseUrl"
-      :total-count="totalCount"
-      ref="noticeDialogs"/>
+      :dialog-visible.sync="previewDialogVisible"
+      :content.sync="previewContent"
+      :student-info="currentStudent"
+      ref="previewDialog"
+      @close="handlePreviewClose"
+    />
     <!-- 编辑弹框 -->
     <EditModal
       :edit-dialog-visible.sync="editDialogVisible"
@@ -70,6 +58,13 @@
       @close="handleEditClose"
       @save="handleEditSave"
       @refresh-data="handleRefreshData"
+    />
+    <ExportDialog
+      :dialog-visible.sync="exportDialogVisible"
+      :student-info="currentStudent"
+      :api-base-url="apiBaseUrl"
+      @close="handleExportClose"
+      @after-leave="onExportDialogAfterLeave"
     />
     <div class="table-container">
       <el-table :data="paginatedList" style="width: 100%" id="dataTable" border stripe>
@@ -169,6 +164,7 @@ import NoticeDialogs from './components/batchdialogs.vue'
 import EditModal from './components/editmodal.vue'
 import SearchBar from './components/search.vue'
 import PreviewDialog from './components/previewdialog.vue'
+import ExportDialog from './components/exportdialog.vue'
 // import {}
 import axios from 'axios'
 // import { create } from 'sortablejs';
@@ -186,12 +182,12 @@ export default {
     NoticeDialogs,
     EditModal,
     SearchBar,
-    PreviewDialog
+    PreviewDialog,
+    ExportDialog
   },
   data() {
     return {
       dialogVisible: false,
-      dialogVisiblepreview: false,
       list: [],
       grades: [],
       classNames: [],
@@ -221,7 +217,6 @@ export default {
         'Content-Type': 'multipart/form-data'
       },
       uploadFile: null,
-      content: '',
       // 编辑弹框相关
       editDialogVisible: false,
       editForm: {},
@@ -229,6 +224,8 @@ export default {
       previewDialogVisible: false,
       previewContent: '',
       currentStudent: null,
+      // 导出弹框相关
+      exportDialogVisible: false,
     }
   },
   computed: {
@@ -282,18 +279,6 @@ export default {
     }
   },
   methods: {
-    // async fetchCourse() {
-    //   const params = {}
-    //   const res = await getStudent(params)
-    //   this.grades = res.data.grades
-    //   this.classNames = res.data.classNames
-    // },
-    // async fetchNoticeBooklet() {
-    //   const params = {
-    //     isRemark: false
-    //   }
-    //   const res = await noticeBooklet({params})
-    //   this.list = res.data
     handleListUpdate(newList, gradeId, classId) {
       this.list = newList
       this.gradeId = gradeId
@@ -308,56 +293,9 @@ export default {
       this.query.page = page
     },
     // 单个导出
-    async handleExport(row) {
-      try {
-        showLoading('正在导出，请稍候...')
-        const params = {
-          studentId: row.studentId
-        }
-
-        // 构建查询字符串
-        const queryString = Object.keys(params)
-          .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
-          .join('&')
-        const downloadUrl = `${this.apiBaseUrl}/noticeBooklet/word/generate?${queryString}`
-
-        // 发起下载请求
-        const response = await fetch(downloadUrl, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/octet-stream'
-          }
-        })
-
-        if (!response.ok) {
-          throw new Error(`下载失败，服务器返回状态码: ${response.status}`)
-        }
-
-        const arrayBuffer = await response.arrayBuffer()
-        if (!arrayBuffer || arrayBuffer.byteLength === 0) {
-          throw new Error('下载的文件为空')
-        }
-        const blob = new Blob([arrayBuffer], { type: 'application/octet-stream' })
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.style.display = 'none'
-        a.href = url
-        a.download = `${row.studentName}的通知册.docx`
-        document.body.appendChild(a)
-        a.click()
-
-        setTimeout(() => {
-          window.URL.revokeObjectURL(url)
-          document.body.removeChild(a)
-          closeLoading()
-          this.$message.success('导出成功')
-        }, 1000)
-
-      } catch (error) {
-        console.error('导出失败:', error)
-        closeLoading()
-        this.$message.error('导出失败：' + (error.message || '未知错误'))
-      }
+    handleExport(row) {
+      this.currentStudent = row;
+      this.exportDialogVisible = true;
     },
     handleFileChange(file) {
       this.uploadFile = file.raw
@@ -371,7 +309,6 @@ export default {
         studentId: item.studentId,
         studentName: item.studentName
       }))
-      // console.log('选中的学生：', this.selectedStudents)
     },
     handleEdit(row) {
       this.editForm = { ...row };
@@ -381,10 +318,7 @@ export default {
       this.editDialogVisible = false;
     },
     handleEditSave(form) {
-      // 这里可以调用保存API或emit事件
-      // 示例：console.log('保存', form)
       this.editDialogVisible = false;
-      // 可选：刷新数据
     },
     // 预览学生通知册
     async handlePreview(row) {
@@ -399,9 +333,15 @@ export default {
     },
     // 刷新表格数据
     async handleRefreshData() {
-      // 重新获取数据
       await this.$refs.searchBar.fetchNoticeBooklet();
-    }
+    },
+    // 关闭导出弹框
+    handleExportClose() {
+      this.exportDialogVisible = false;
+    },
+    onExportDialogAfterLeave() {
+      this.currentStudent = null;
+    },
   },
   created() {
     // this.fetchCourse()

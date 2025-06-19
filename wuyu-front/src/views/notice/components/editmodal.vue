@@ -2,7 +2,7 @@
  * @Author: hezeliangfj
  * @Date: 2025-06-18 15:35:11
  * @LastEditors: hezeliangfj
- * @LastEditTime: 2025-06-18 22:04:36
+ * @LastEditTime: 2025-06-19 19:27:04
  * @version: 0.0.1
  * @FilePath: \wuyu-front\src\views\notice\components\editmodal.vue
  * @Descripttion: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
@@ -30,41 +30,41 @@
       <el-form-item label="德育">
         <div class="wuyu-row">
           <span class="wuyu-sub-label">实际</span>
-          <el-input v-model="editForm.sdeyu" size="small" class="wuyu-input"></el-input>
+          <el-input v-model.number="editForm.sdeyu" size="small" class="wuyu-input" @input="handleScoreInput('sdeyu')"></el-input>
           <span class="wuyu-sub-label">期望</span>
-          <el-input v-model="editForm.pdeyu" size="small" class="wuyu-input"></el-input>
+          <el-input v-model.number="editForm.pdeyu" size="small" class="wuyu-input" @input="handleScoreInput('pdeyu')"></el-input>
         </div>
       </el-form-item>
       <el-form-item label="智育">
         <div class="wuyu-row">
           <span class="wuyu-sub-label">实际</span>
-          <el-input v-model="editForm.szhiyu" size="small" class="wuyu-input"></el-input>
+          <el-input v-model.number="editForm.szhiyu" size="small" class="wuyu-input" @input="handleScoreInput('szhiyu')"></el-input>
           <span class="wuyu-sub-label">期望</span>
-          <el-input v-model="editForm.pzhiyu" size="small" class="wuyu-input"></el-input>
+          <el-input v-model.number="editForm.pzhiyu" size="small" class="wuyu-input" @input="handleScoreInput('pzhiyu')"></el-input>
         </div>
       </el-form-item>
       <el-form-item label="体育">
         <div class="wuyu-row">
           <span class="wuyu-sub-label">实际</span>
-          <el-input v-model="editForm.stiyu" size="small" class="wuyu-input"></el-input>
+          <el-input v-model.number="editForm.stiyu" size="small" class="wuyu-input" @input="handleScoreInput('stiyu')"></el-input>
           <span class="wuyu-sub-label">期望</span>
-          <el-input v-model="editForm.ptiyu" size="small" class="wuyu-input"></el-input>
+          <el-input v-model.number="editForm.ptiyu" size="small" class="wuyu-input" @input="handleScoreInput('ptiyu')"></el-input>
         </div>
       </el-form-item>
       <el-form-item label="美育">
         <div class="wuyu-row">
           <span class="wuyu-sub-label">实际</span>
-          <el-input v-model="editForm.smeiyu" size="small" class="wuyu-input"></el-input>
+          <el-input v-model.number="editForm.smeiyu" size="small" class="wuyu-input" @input="handleScoreInput('smeiyu')"></el-input>
           <span class="wuyu-sub-label">期望</span>
-          <el-input v-model="editForm.pmeiyu" size="small" class="wuyu-input"></el-input>
+          <el-input v-model.number="editForm.pmeiyu" size="small" class="wuyu-input" @input="handleScoreInput('pmeiyu')"></el-input>
         </div>
       </el-form-item>
       <el-form-item label="劳育">
         <div class="wuyu-row">
           <span class="wuyu-sub-label">实际</span>
-          <el-input v-model="editForm.slaoyu" size="small" class="wuyu-input"></el-input>
+          <el-input v-model.number="editForm.slaoyu" size="small" class="wuyu-input" @input="handleScoreInput('slaoyu')"></el-input>
           <span class="wuyu-sub-label">期望</span>
-          <el-input v-model="editForm.plaoyu" size="small" class="wuyu-input"></el-input>
+          <el-input v-model.number="editForm.plaoyu" size="small" class="wuyu-input" @input="handleScoreInput('plaoyu')"></el-input>
         </div>
       </el-form-item>
       <el-form-item label="假期计划">
@@ -84,6 +84,7 @@
 <script>
 import { showLoading, closeLoading } from '@/utils/loading'
 import { noticeBookletModify } from '@/api/notice'
+import { normalizeScoreInput } from '@/utils/notice'
 export default {
   name: 'EditModal',
   props: {
@@ -102,25 +103,22 @@ export default {
     // 点击取消
     handleEditClose() {
       this.$emit('close')
-      // console.log('close')
+    },
+    // 处理成绩输入
+    handleScoreInput(field) {
+      this.editForm[field] = normalizeScoreInput(this.editForm[field]);
     },
     // 点击确认
     async handleEditSave() {
       this.$emit('save', this.editForm)
-      console.log(this.editForm)
       try{
         showLoading(`修改${this.editForm.studentName}同学的通知册中，请稍候...`);
         const payload = { ...this.editForm } // 浅拷贝
-        // 或 const payload = JSON.parse(JSON.stringify(this.editForm)) // 深拷贝
-        // 这里可以直接用payload作为json传给后端
-        // console.log(payload);
         const res = await noticeBookletModify(payload)
         if(res.code ===200 ) {
           closeLoading();
           this.$message.success('修改成功');
-          // 修改成功后触发刷新事件
           this.$emit('refresh-data');
-          // 关闭弹框
           this.$emit('close');
         } else {
           this.$message.error('修改失败，请重新修改');
@@ -155,5 +153,4 @@ export default {
   width: 100%;
   text-align: center;
 }
-
 </style>
