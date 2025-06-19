@@ -26,7 +26,7 @@
     <header class="header">
       <!-- <h1>新五育中控-@group1 2025</h1> -->
       <div class="year-selector">
-        <el-select v-model="selectedYear" placeholder="选择年份" @change="handleYearChange">
+        <el-select v-model="selectedYear" placeholder="选择年份" @change="handleYearChange" :popper-append-to-body="false">
           <el-option
             v-for="year in years"
             :key="year"
@@ -285,7 +285,7 @@ export default {
       this.initCharts();
     });
 
-    // 添加全屏变化事件监听
+    // 添加全屏变化事件监听 TODO
     document.addEventListener('fullscreenchange', this.handleFullscreenChange);
     document.addEventListener('webkitfullscreenchange', this.handleFullscreenChange);
     document.addEventListener('mozfullscreenchange', this.handleFullscreenChange);
@@ -443,7 +443,7 @@ export default {
         }
       })
 
-      // 监听窗口大小变化
+      // 监听窗口大小变化 TODO
       window.addEventListener('resize', () => {
         this.chartList.forEach(chart => {
           chart.resize()
@@ -590,14 +590,14 @@ export default {
         this.initCharts()
       })
     },
-    // 切换全屏显示
+    // 切换全屏显示 TODO
     async toggleFullScreen() {
       try {
         const container = this.$refs.container;
-        // if (!container) {
-        //   console.warn('全屏容器未找到');
-        //   return;
-        // }
+        if (!container) {
+          console.warn('全屏容器未找到');
+          return;
+        }
         if (!this.isFullscreen) {
           // 使用兼容性写法进入全屏
           if (container.requestFullscreen) {
@@ -628,7 +628,7 @@ export default {
         this.$message.error('全屏切换失败，请检查浏览器设置');
       }
     },
-    // 监听全屏变化
+    // 监听全屏变化 TODO
     handleFullscreenChange() {
       this.isFullscreen = Boolean(
         document.fullscreenElement ||
@@ -636,11 +636,35 @@ export default {
         document.mozFullScreenElement ||
         document.msFullscreenElement
       );
-      // 全屏状态改变时重新初始化图表
+      // 全屏状态改变时 只调整图表大小，不重新初始化
       this.$nextTick(() => {
-        this.initCharts();
+        setTimeout(() => {
+          this.chartList.forEach(chart => {
+            if (!chart.isDisposed()) {
+              chart.resize();
+            }
+          });
+          this.adjustCarouselHeight();
+        }, 100); // 添加100ms的延迟
       });
     }
+  },
+  // 新增方法：调整轮播图高度
+  adjustCarouselHeight() {
+    const carousel = document.querySelector('.chart-carousel');
+    if (!carousel) return;
+
+    if (this.isFullscreen) {
+      carousel.style.height = 'calc(100vh - 200px)'; // 全屏时自适应高度
+    } else {
+      carousel.style.height = '600px'; // 恢复默认高度
+    }
+    // 手动触发轮播图内部重绘
+    this.chartList.forEach(chart => {
+      if (!chart.isDisposed()) {
+        chart.resize();
+      }
+    });
   },
   beforeDestroy() {
     // 清除图表实例
@@ -655,7 +679,7 @@ export default {
       clearInterval(this.dateTimer);
     }
 
-    // 移除全屏变化事件监听
+    // 移除全屏变化事件监听 TODO
     document.removeEventListener('fullscreenchange', this.handleFullscreenChange);
     document.removeEventListener('webkitfullscreenchange', this.handleFullscreenChange);
     document.removeEventListener('mozfullscreenchange', this.handleFullscreenChange);
@@ -668,7 +692,9 @@ export default {
 <style lang="scss" scoped>
 .newwyzk-container {
   width: 100%;
-  height: 100vh;
+  //小小bug找得老子好苦。。。
+  //height: 100vh;
+  min-height: 100vh;
   background: linear-gradient(135deg, #1a2b3c 0%, #2d1b3c 100%);
   padding: 0.125rem;
   box-sizing: border-box;
@@ -1233,4 +1259,5 @@ export default {
     font-size: 80px !important;
   }
 }
+
 </style>
