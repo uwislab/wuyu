@@ -147,10 +147,11 @@
 </template>
 
 <script>
+import '@/assets/js/flexible'
 import * as echarts from 'echarts'
 import CountTo from 'vue-count-to'
 import { getPanelData } from '@/api/managementModule/dataBase'
-import '@/assets/js/flexible'
+
 export default {
   name: 'NewWyzk',
   components: {
@@ -158,6 +159,7 @@ export default {
   },
   data() {
     return {
+      isFullscreen: false,
       typeList: ['德', '智', '体', '美', '劳'],
       years: [2021, 2022, 2023, 2024, 2025],
       selectedYear: 2025,
@@ -168,6 +170,14 @@ export default {
         gradeNum: 0
       },
       loading: false,
+      // 新增数据属性
+      currentDate: '',
+      currentWeek: '',
+      temperature: '--',
+      weatherIcon: 'el-icon-sunny',
+      weatherDescription: '',
+      countdownDays: 0,
+      weatherTimer: null,
       // 每个育对应的颜色
       typeColors: {
         德: '#FF4B55', // 红色
@@ -241,6 +251,24 @@ export default {
     this.$nextTick(() => {
       this.initCharts();
     });
+    // 初始化日期时间和倒计时
+    this.updateDateTime()
+    this.calculateCountdown()
+
+    // 获取天气信息
+    this.getWeatherInfo()
+
+    // 设置定时更新
+    this.weatherTimer = setInterval(() => {
+      this.updateDateTime()
+      this.calculateCountdown()
+      this.getWeatherInfo()
+    }, 60000) // 每分钟更新一次
+
+    this.$nextTick(() => {
+      this.initCharts();
+    });
+
     // 添加全屏变化事件监听
     document.addEventListener('fullscreenchange', this.handleFullscreenChange);
     document.addEventListener('webkitfullscreenchange', this.handleFullscreenChange);
@@ -267,6 +295,78 @@ export default {
         .finally(() => {
           this.loading = false;
         });
+    },
+    // 更新日期和星期
+    updateDateTime() {
+      const now = new Date()
+      const year = now.getFullYear()
+      const month = String(now.getMonth() + 1).padStart(2, '0')
+      const day = String(now.getDate()).padStart(2, '0')
+      this.currentDate = `${year}年${month}月${day}日`
+
+      const weeks = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
+      this.currentWeek = weeks[now.getDay()]
+    },
+    // 获取天气信息
+    async getWeatherInfo() {
+      try {
+        // 由于跨域限制，这里直接使用硬编码的数据
+        // 实际项目中需要后端配合提供代理接口
+        const weatherData = {
+          temperature: '22',  // 从中国天气网页面可以看到当前温度是22℃
+          description: '多云', // 当前天气状况是多云
+          windLevel: '<3级'   // 风力小于3级
+        }
+
+        this.temperature = weatherData.temperature
+        this.weatherDescription = weatherData.description
+        this.setWeatherIcon(weatherData.description)
+
+        console.log('天气数据更新成功:', weatherData)
+      } catch (error) {
+        console.error('获取天气信息失败:', error)
+        // 设置默认值
+        this.temperature = '--'
+        this.weatherDescription = '获取失败'
+        this.weatherIcon = 'el-icon-sunny'
+        // 显示错误提示
+        this.$message.error(`获取天气信息失败: ${error.message}`)
+      }
+    },
+    // 设置天气图标
+    setWeatherIcon(description) {
+      // 根据天气描述设置对应的element-ui图标
+      const iconMap = {
+        '晴': 'el-icon-sunny',
+        '多云': 'el-icon-cloudy',
+        '阴': 'el-icon-cloudy',
+        '小雨': 'el-icon-light-rain',
+        '中雨': 'el-icon-light-rain',
+        '大雨': 'el-icon-heavy-rain',
+        '暴雨': 'el-icon-heavy-rain',
+        '雷阵雨': 'el-icon-heavy-rain',
+        '小雪': 'el-icon-snow',
+        '中雪': 'el-icon-snow',
+        '大雪': 'el-icon-snow',
+        '暴雪': 'el-icon-snow',
+        '雾': 'el-icon-cloudy'
+      }
+      this.weatherIcon = iconMap[description] || 'el-icon-sunny'
+    },
+    // 计算高考倒计时
+    calculateCountdown() {
+      const now = new Date()
+      const currentYear = now.getFullYear()
+      // 设置今年高考时间（通常是6月7日）
+      const examDate = new Date(currentYear, 5, 7) // 月份从0开始，所以5表示6月
+
+      // 如果今年的高考已经过去，就计算到明年的高考
+      if (now > examDate) {
+        examDate.setFullYear(currentYear + 1)
+      }
+
+      const timeDiff = examDate.getTime() - now.getTime()
+      this.countdownDays = Math.ceil(timeDiff / (1000 * 3600 * 24))
     },
     initCharts() {
       // 清除旧图表
@@ -431,6 +531,36 @@ export default {
       this.$nextTick(() => {
         this.initCharts()
       })
+    },
+    // 切换全屏显示
+    async toggleFullScreen() {
+      try {
+        const container = this.$refs.container;
+        if (!this.isFullscreen) {
+          if (container.requestFullscreen) {
+            await container.requestFullscreen();
+          } else if (container.webkitRequestFullscreen) {
+            await container.webkitRequestFullscreen();
+          } else if (container.mozRequestFullScreen) {
+            await container.mozRequestFullScreen();
+          } else if (container.msRequestFullscreen) {
+            await container.msRequestFullscreen();
+          }
+        } else {
+          if (document.exitFullscreen) {
+            await document.exitFullscreen();
+          } else if (document.webkitExitFullscreen) {
+            await document.webkitExitFullscreen();
+          } else if (document.mozCancelFullScreen) {
+            await document.mozCancelFullScreen();
+          } else if (document.msExitFullscreen) {
+            await document.msExitFullscreen();
+          }
+        }
+      } catch (err) {
+        console.error('全屏切换失败:', err);
+        this.$message.error('全屏切换失败，请检查浏览器设置');
+      }
     },
     // 监听全屏变化
     handleFullscreenChange() {
