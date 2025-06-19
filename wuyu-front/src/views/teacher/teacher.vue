@@ -38,20 +38,6 @@
         <el-button type="success" round @click="handleAdd">新增<i class="el-icon-circle-plus-outline"></i></el-button>
       </el-form>
     </div>
-    <!--  <div style="margin: 10px 0">-->
-    <!--    -->
-    <!--&lt;!&ndash;    <el-button type="danger" round @click="delBatch">批量删除<i class="el-icon-remove-outline"></i></el-button>&ndash;&gt;-->
-    <!--&lt;!&ndash;      <el-button type="primary" round @click="exportExcel">导出<i class="el-icon-remove-outline"></i></el-button>&ndash;&gt;-->
-    <!--&lt;!&ndash;    <el-upload&ndash;&gt;-->
-    <!--&lt;!&ndash;     action="http://localhost:9090/teacher/importExcel"&ndash;&gt;-->
-    <!--&lt;!&ndash;     :show-file-list="false"&ndash;&gt;-->
-    <!--&lt;!&ndash;     accept="xlsx"&ndash;&gt;-->
-    <!--&lt;!&ndash;     :on-success="importExcel"&ndash;&gt;-->
-    <!--&lt;!&ndash;     style="display: inline-block"&ndash;&gt;-->
-    <!--&lt;!&ndash;    >&ndash;&gt;-->
-    <!--&lt;!&ndash;        <el-button type="primary" round  style="margin-left: 10px;">导入<i class="el-icon-remove-outline"></i></el-button>&ndash;&gt;-->
-    <!--&lt;!&ndash;    </el-upload>&ndash;&gt;-->
-    <!--  </div>-->
     <!--          表格数据，要关联到数据库-->
     <el-table :data="tableData" border stripe header-cell-class-name="'headerBg'"
               @selection-change="handleSelectionChange">
@@ -136,15 +122,6 @@
         <el-form-item label="角色" prop="role">
           <el-input v-model="form.role" autocomplete="off"></el-input>
         </el-form-item>
-        <!--        <el-form-item label="是否已删除" prop="deleted">
-                  <el-select v-model="form.deleted" placeholder="请选择">
-                    <el-option label="是" value="1"></el-option>
-                    <el-option label="否" value="0"></el-option>
-                  </el-select>
-                </el-form-item>-->
-        <!--        <el-form-item label="学校编号" prop="schoolId">
-                  <el-input v-model="form.schoolId" autocomplete="off"></el-input>
-                </el-form-item>-->
         <el-form-item label="账户" prop="username">
           <el-input v-model="form.username" autocomplete="off"></el-input>
         </el-form-item>
@@ -232,17 +209,6 @@ export default {
         password: [
           {min: 6, max: 20, message: '密码长度需在6到20个字符之间', trigger: 'blur'}
         ],
-        // politicalAppearance: [{ required: true, message: '政治面貌不能为空', trigger: 'blur' }],
-        // birthPlace: [{ required: true, message: '籍贯不能为空', trigger: 'blur' }],
-        // age: [
-        //   // { required: true, message: '出生日期不能为空', trigger: 'blur' },
-        //   {
-        //     pattern: /^\d{4}$/,
-        //     message: '出生年份格式应为YYYY',
-        //     trigger: 'blur'
-        //   }
-        // ],
-        // info: [{ required: true, message: '备注信息不能为空', trigger: 'blur' }]
       },
 
       positionList: [],
@@ -420,18 +386,6 @@ export default {
         }
       })
     },
-    // delBatch(){
-    //   let ids=this.multipleSelection.map(v=>v.id) //[]=>[1.2.3]
-    //     request.post("/teacher/del/batch",ids).then(res =>{
-    //         if(res){
-    //             this.$message.success("批量删除成功")
-    //             //保存成功后弹窗关闭
-    //             this.load()
-    //         }else{
-    //             this.$message.error("批量删除失败")
-    //         }
-    //     })
-    // },
     handleAnimation: function (anim) {
       this.anim = anim;
     },
@@ -455,11 +409,6 @@ export default {
       this.pagination.currentPage = 1; // 重置到第一页
       this.searchTeacher();
     },
-    // handleCurrentChange(pageNum){
-    //   console.log(`当前页 ${pageNum} `)
-    //   this.pageNum=pageNum
-    //   this.load()
-    // },
     exportExcel() {
       // 从 localStorage 获取 UserInfo
       const userInfo = JSON.parse(localStorage.getItem('UserInfo'));
@@ -470,10 +419,6 @@ export default {
       // 将 schoolId 作为参数传递给导出接口
       window.open(`${baseUrl}/teacher/exportExcel?schoolId=${userInfo.schoolId}`);
     },
-    // importExcel(){
-    //     this.$message.success("导入成功");
-    //     this.load();
-    // }
     downloadTemplate() {
       try {
         // 使用正确的端口号
