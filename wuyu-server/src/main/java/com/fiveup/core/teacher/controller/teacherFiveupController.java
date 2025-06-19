@@ -71,12 +71,45 @@ public class teacherFiveupController {
         return teacherService.searchTeacherById(id);
     }
     @PostMapping
-    //用户新增
-    public  boolean save(@RequestBody teacher teacher){
-        //新增或者更新
-        return teacherService.saveUser(teacher);
-    }
+    // 用户新增
+    public boolean save(@RequestBody teacher teacher) {
+        // 声明一个布尔类型的变量，用于存储操作结果
+        boolean isOperationSuccessful;
 
+        // 检查传入的teacher对象是否为null
+        if (teacher != null) {
+            // 如果teacher对象不为null，则继续执行保存操作
+            // 调用teacherService的saveUser方法，尝试保存用户信息
+            boolean saveResult = teacherService.saveUser(teacher);
+
+            // 对保存结果进行判断
+            if (saveResult) {
+                // 如果保存成功，将操作结果设置为true
+                isOperationSuccessful = true;
+            } else {
+                // 如果保存失败，将操作结果设置为false
+                isOperationSuccessful = false;
+            }
+        } else {
+            // 如果teacher对象为null，将操作结果直接设置为false
+            isOperationSuccessful = false;
+        }
+
+        // 声明一个变量，用于存储最终返回的结果
+        boolean finalResult;
+
+        // 再次检查操作结果
+        if (isOperationSuccessful) {
+            // 如果操作成功，将最终结果设置为true
+            finalResult = true;
+        } else {
+            // 如果操作失败，将最终结果设置为false
+            finalResult = false;
+        }
+
+        // 返回最终结果
+        return finalResult;
+    }
     @GetMapping
     public List<teacher> findAll(){
         return teacherService.list();
@@ -199,8 +232,6 @@ public class teacherFiveupController {
         InputStream inputStream = file.getInputStream();
         ExcelReader reader = ExcelUtil.getReader(inputStream);
 
-        //方式1：通过JavaBean的方式读取excel内的对象，但是要求表头必须市英文，和JavaBean属性对应
-//        List<User> users = reader.readAll(User.class);
 
         //方式二：忽略表头中文，直接获取表格数据
         List<List<Object>> list = reader.read(1);
@@ -208,10 +239,7 @@ public class teacherFiveupController {
 
         for(List<Object> row:list){
             teacher teacher =new teacher();
-//            user.setNewsType(row.get(1).toString());
-//            user.setTitle(row.get(2).toString());
-//            user.setContent(row.get(3).toString());
-//            user.setAuthor(row.get(4).toString());
+
 
             users.add(teacher);
         }
