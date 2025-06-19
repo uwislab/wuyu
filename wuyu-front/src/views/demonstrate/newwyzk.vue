@@ -107,8 +107,8 @@
     <!-- 主要内容区域 -->
     <main class="main-content">
       <!-- 轮播图区域 -->
-      <el-carousel 
-        :interval="5000" 
+      <el-carousel
+        :interval="5000"
         height="600px"
         :autoplay="true"
         indicator-position="outside"
@@ -128,7 +128,7 @@
 import * as echarts from 'echarts'
 import CountTo from 'vue-count-to'
 import { getPanelData } from '@/api/managementModule/dataBase'
-
+import '@/assets/js/flexible'
 export default {
   name: 'NewWyzk',
   components: {
@@ -219,6 +219,12 @@ export default {
     this.$nextTick(() => {
       this.initCharts();
     });
+    // 添加全屏变化事件监听
+    document.addEventListener('fullscreenchange', this.handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', this.handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', this.handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', this.handleFullscreenChange);
+
   },
   methods: {
     // 获取基本信息
@@ -403,6 +409,19 @@ export default {
       this.$nextTick(() => {
         this.initCharts()
       })
+    },
+    // 监听全屏变化
+    handleFullscreenChange() {
+      this.isFullscreen = Boolean(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement
+      );
+      // 全屏状态改变时重新初始化图表
+      this.$nextTick(() => {
+        this.initCharts();
+      });
     }
   },
   beforeDestroy() {
@@ -410,7 +429,17 @@ export default {
     this.chartList.forEach(chart => {
       chart.dispose()
     })
-    window.removeEventListener('resize', this.handleResize)
+    // 清除定时器
+    if (this.weatherTimer) {
+      clearInterval(this.weatherTimer)
+    }
+
+    // 移除全屏变化事件监听
+    document.removeEventListener('fullscreenchange', this.handleFullscreenChange);
+    document.removeEventListener('webkitfullscreenchange', this.handleFullscreenChange);
+    document.removeEventListener('mozfullscreenchange', this.handleFullscreenChange);
+    document.removeEventListener('MSFullscreenChange', this.handleFullscreenChange);
+
   }
 }
 </script>
@@ -418,38 +447,223 @@ export default {
 <style lang="scss" scoped>
 .newwyzk-container {
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
   background: linear-gradient(135deg, #1a2b3c 0%, #2d1b3c 100%);
-  padding: 20px;
+  padding: 0.125rem;
   box-sizing: border-box;
+  min-width: 1024px;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  &:fullscreen,
+  &:-webkit-full-screen,
+  &:-moz-full-screen {
+    width: 100vw;
+    height: 100vh;
+    padding: 0.125rem;
+    background: linear-gradient(135deg, #1a2b3c 0%, #2d1b3c 100%);
+    overflow: auto;
+  }
+
+  .top-info-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 0.6rem;
+    padding: 0 0.2rem;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    border-radius: 0.1rem;
+    margin-bottom: 0.2rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0.04rem 0.12rem rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .date-weather {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+
+      .date-info {
+        .date {
+          color: #fff;
+          font-size: 0.2rem;
+          margin-right: 0.15rem;
+          text-shadow: 0 0 0.1rem rgba(255, 255, 255, 0.3);
+        }
+
+        .week {
+          color: rgba(255, 255, 255, 0.8);
+          font-size: 0.16rem;
+        }
+      }
+
+      .weather-info {
+        display: flex;
+        align-items: center;
+        gap: 0.1rem;
+        padding: 0.1rem 0.15rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 0.08rem;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.08);
+        }
+
+        i {
+          color: #fff;
+          font-size: 0.24rem;
+          transition: transform 0.3s ease;
+        }
+
+        .weather-details {
+          display: flex;
+          flex-direction: column;
+
+          .temperature {
+            color: #fff;
+            font-size: 0.2rem;
+            line-height: 1.2;
+            font-weight: 500;
+          }
+
+          .description {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.14rem;
+          }
+        }
+      }
+    }
+
+    .countdown-card {
+      display: flex;
+      align-items: center;
+      gap: 0.1rem;
+      padding: 0.1rem 0.2rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 0.1rem;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: translateY(-0.02rem);
+      }
+
+      i {
+        color: #fff;
+        font-size: 0.2rem;
+      }
+
+      span {
+        color: #fff;
+        font-size: 0.16rem;
+
+        &.days {
+          font-size: 0.24rem;
+          font-weight: bold;
+          color: #ff6b6b;
+          margin: 0 0.05rem;
+          text-shadow: 0 0 0.1rem rgba(255, 107, 107, 0.3);
+        }
+      }
+    }
+  }
 
   .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 40px;
-    margin-bottom: 20px;
+    height: 0.6rem;
+    padding: 0 0.4rem;
+    margin-bottom: 0.2rem;
+    position: relative;
 
-    h1 {
-      color: #fff;
-      font-size: 32px;
-      margin: 0;
-      text-shadow: 0 0 10px rgba(255,255,255,0.3);
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -0.1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      height: 1px;
+      background: linear-gradient(
+          to right,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+      );
     }
 
     .year-selector {
       :deep(.el-select) {
-        width: 150px;
+        width: 1.5rem;
 
         .el-input__inner {
-          background: rgba(255,255,255,0.1);
-          border: 1px solid rgba(255,255,255,0.2);
+          background: rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.2);
           color: #fff;
+          height: 0.4rem;
+          line-height: 0.4rem;
+          font-size: 0.16rem;
+          transition: all 0.3s ease;
+
+          &:hover, &:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+          }
 
           &::placeholder {
-            color: rgba(255,255,255,0.5);
+            color: rgba(255, 255, 255, 0.5);
           }
         }
+      }
+    }
+
+    .fullscreen-btn {
+      cursor: pointer;
+      width: 0.4rem;
+      height: 0.4rem;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: scale(1.05);
+        border-color: rgba(255, 255, 255, 0.2);
+      }
+
+      i {
+        color: #fff;
+        font-size: 0.2rem;
+        transition: transform 0.3s ease;
+      }
+
+      &:active {
+        transform: scale(0.95);
       }
     }
   }
@@ -457,19 +671,28 @@ export default {
   .info-section {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 30px;
-    padding: 0 40px;
+    gap: 0.2rem;
+    margin-bottom: 0.3rem;
+    padding: 0 0.4rem;
 
     .school-info {
       flex: 1;
-      margin-right: 40px;
-      background: rgba(255, 255, 255, 0.1);
+      margin-right: 0.4rem;
+      background: rgba(255, 255, 255, 0.08);
       backdrop-filter: blur(10px);
-      border-radius: 15px;
-      padding: 25px;
+      padding: 0.25rem;
+      border-radius: 0.1rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-0.02rem);
+      }
 
       .info-block {
-        margin-bottom: 20px;
+        margin-bottom: 0.2rem;
+        position: relative;
 
         &:last-child {
           margin-bottom: 0;
@@ -477,10 +700,21 @@ export default {
 
         h3 {
           color: #fff;
-          font-size: 18px;
-          margin: 0 0 15px;
-          padding-bottom: 10px;
+          font-size: 0.18rem;
+          margin: 0 0 0.15rem;
+          padding-bottom: 0.1rem;
           border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+          position: relative;
+
+          &::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 2rem;
+            height: 1px;
+            background: linear-gradient(to right, rgba(126, 240, 255, 0.8), transparent);
+          }
         }
 
         ul {
@@ -489,9 +723,17 @@ export default {
           margin: 0;
 
           li {
-            margin-bottom: 12px;
+            margin-bottom: 0.12rem;
             display: flex;
             align-items: flex-start;
+            transition: all 0.3s ease;
+
+            &:hover {
+              background: rgba(255, 255, 255, 0.05);
+              border-radius: 0.04rem;
+              padding: 0.05rem;
+              margin: -0.05rem;
+            }
 
             &:last-child {
               margin-bottom: 0;
@@ -501,9 +743,9 @@ export default {
 
         .feature-content {
           .label {
-            margin-bottom: 8px;
+            margin-bottom: 0.08rem;
           }
-          
+
           .value {
             line-height: 1.6;
           }
@@ -511,14 +753,14 @@ export default {
 
         .label {
           color: rgba(255, 255, 255, 0.7);
-          font-size: 14px;
-          min-width: 90px;
-          margin-right: 10px;
+          font-size: 0.14rem;
+          min-width: 0.9rem;
+          margin-right: 0.1rem;
         }
 
         .value {
           color: #fff;
-          font-size: 14px;
+          font-size: 0.14rem;
           flex: 1;
         }
       }
@@ -527,25 +769,61 @@ export default {
     .info-cards {
       display: flex;
       flex-direction: column;
-      gap: 20px;
-      width: 300px;
+      gap: 0.2rem;
+      width: 3rem;
 
       .info-card {
         margin: 0;
         width: 100%;
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.08);
         backdrop-filter: blur(10px);
-        border-radius: 15px;
-        padding: 20px;
+        padding: 0.2rem;
+        border-radius: 0.1rem;
         display: flex;
         align-items: center;
-        transition: transform 0.3s ease;
+        transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(
+              45deg,
+              transparent,
+              rgba(255, 255, 255, 0.05),
+              transparent
+          );
+          transform: translateX(-100%);
+          transition: transform 0.6s ease;
+        }
+
+        &:hover {
+          transform: translateY(-0.05rem);
+          background: rgba(255, 255, 255, 0.1);
+          border-color: rgba(255, 255, 255, 0.2);
+
+          &::before {
+            transform: translateX(100%);
+          }
+
+          .info-icon {
+            background: rgba(255, 255, 255, 0.25);
+
+            i {
+              transform: scale(1.1);
+            }
+          }
+        }
 
         &.is-loading {
           pointer-events: none;
-          
+
           .info-content {
             opacity: 0.5;
           }
@@ -564,28 +842,27 @@ export default {
           backdrop-filter: blur(2px);
 
           i {
-            font-size: 24px;
+            font-size: 0.24rem;
             color: #fff;
+            animation: spin 1s linear infinite;
           }
         }
 
-        &:hover {
-          transform: translateY(-5px);
-        }
-
         .info-icon {
-          width: 60px;
-          height: 60px;
+          width: 0.6rem;
+          height: 0.6rem;
+          margin-right: 0.2rem;
           border-radius: 50%;
           background: rgba(255, 255, 255, 0.2);
           display: flex;
           align-items: center;
           justify-content: center;
-          margin-right: 20px;
+          transition: all 0.3s ease;
 
           i {
-            font-size: 30px;
             color: #fff;
+            font-size: 0.3rem;
+            transition: all 0.3s ease;
           }
         }
 
@@ -594,14 +871,15 @@ export default {
           transition: opacity 0.3s ease;
 
           .info-value {
-            font-size: 28px;
+            font-size: 0.28rem;
             font-weight: bold;
             color: #fff;
-            margin-bottom: 5px;
+            margin-bottom: 0.05rem;
+            text-shadow: 0 0 0.1rem rgba(255, 255, 255, 0.3);
           }
 
           .info-label {
-            font-size: 14px;
+            font-size: 0.14rem;
             color: rgba(255, 255, 255, 0.7);
           }
         }
@@ -610,39 +888,62 @@ export default {
   }
 
   .main-content {
+    padding: 0 0.4rem;
+
     .chart-carousel {
       :deep(.el-carousel__indicators) {
-        bottom: -30px;
+        bottom: -0.3rem;
 
         .el-carousel__button {
-          background-color: rgba(255,255,255,0.5);
+          background-color: rgba(255, 255, 255, 0.5);
+          transition: all 0.3s ease;
+
+          &:hover {
+            background-color: rgba(255, 255, 255, 0.8);
+          }
         }
       }
 
       :deep(.el-carousel__arrow) {
-        background-color: rgba(0,0,0,0.5);
-        border: 1px solid rgba(255,255,255,0.2);
+        background-color: rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
 
         &:hover {
-          background-color: rgba(0,0,0,0.7);
+          background-color: rgba(0, 0, 0, 0.7);
+          transform: scale(1.1);
+        }
+
+        &:active {
+          transform: scale(0.95);
         }
       }
     }
 
     .chart-container {
       height: 100%;
-      padding: 20px;
+      padding: 0.2rem;
       box-sizing: border-box;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 0.1rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+      }
 
       h2 {
         color: #fff;
         text-align: center;
-        margin: 0 0 20px;
-        font-size: 24px;
+        margin: 0 0 0.2rem;
+        font-size: 0.24rem;
+        text-shadow: 0 0 0.1rem rgba(255, 255, 255, 0.3);
       }
 
       .chart {
-        height: calc(100% - 60px);
+        height: calc(100% - 0.6rem);
         width: 100%;
       }
     }
@@ -651,19 +952,42 @@ export default {
 
 :deep(.el-select-dropdown) {
   background: rgba(45, 45, 45, 0.9);
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
 
   .el-select-dropdown__item {
     color: #fff;
+    transition: all 0.3s ease;
 
     &.hover, &:hover {
-      background: rgba(255,255,255,0.1);
+      background: rgba(255, 255, 255, 0.1);
     }
 
     &.selected {
-      background: rgba(255,255,255,0.2);
+      background: rgba(255, 255, 255, 0.2);
       color: #409EFF;
     }
   }
 }
-</style> 
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media screen and (max-width: 1024px) {
+  html {
+    font-size: 42px !important;
+  }
+}
+
+@media screen and (min-width: 1920px) {
+  html {
+    font-size: 80px !important;
+  }
+}
+</style>
