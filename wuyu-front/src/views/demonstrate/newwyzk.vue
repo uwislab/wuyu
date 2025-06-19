@@ -1,5 +1,27 @@
 <template>
   <div class="newwyzk-container">
+    <!-- 顶部信息栏 -->
+    <div class="top-info-bar">
+      <div class="date-weather">
+        <div class="date-info">
+          <span class="date">{{ currentDate }}</span>
+          <span class="week">{{ currentWeek }}</span>
+        </div>
+        <div class="weather-info">
+          <i :class="weatherIcon"></i>
+          <div class="weather-details">
+            <span class="temperature">{{ temperature }}°C</span>
+            <span class="description">{{ weatherDescription }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="countdown-card">
+        <i class="el-icon-time"></i>
+        <span>距离高考还剩</span>
+        <span class="days">{{ countdownDays }}</span>
+        <span>天</span>
+      </div>
+    </div>
     <!-- 顶部标题 -->
     <header class="header">
       <!-- <h1>新五育中控-@group1 2025</h1> -->
