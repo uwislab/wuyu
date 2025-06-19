@@ -1016,4 +1016,5 @@ export default {
     font-size: 0.2rem;
   }
 }
+
 </style>
