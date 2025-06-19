@@ -43,7 +43,7 @@ public class ExportZipServiceImpl implements ExportZipService {
             // 存储所有生成的Word文件路径
             List<String> generatedWordPaths = new ArrayList<>();
             //根据ids集合查询通知册数据集合
-            List<NoticeBooklet> noticeBooklets = noticeBookletService.getNoticeBooklet(null, classId, gradeId, true);
+            List<NoticeBooklet> noticeBooklets = noticeBookletService.getNoticeBooklet(null, classId, gradeId, true, null);
             //要处理的Word文件列表，通知册数据集合转成wordFiles集合
             List<Map<String, Object>> wordFiles = new ArrayList<>();
             //遍历通知册数据集合
@@ -130,6 +130,14 @@ public class ExportZipServiceImpl implements ExportZipService {
 
             //zip文件名字
             String zipName = gradeId + "年级" + classId + "班" + "学生通知册";
+            //如果班级编号或者年级为空
+            if(gradeId == null){
+                zipName = classId + "班" + "学生通知册";
+            }
+            //如果班级编号或者年级为空
+            if(classId == null){
+                zipName = gradeId + "年级" + "学生通知册";
+            }
             //生成zip文件
             ZipUtils.saveZip(wordPath,zipPath,zipName,response);
         } catch (Exception e) {
