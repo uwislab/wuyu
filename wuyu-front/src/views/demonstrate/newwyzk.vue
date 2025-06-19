@@ -170,7 +170,7 @@ export default {
         gradeNum: 0
       },
       loading: false,
-      // 新增数据属性
+      // 新增天气 日期 倒计时数据属性
       currentDate: '',
       currentWeek: '',
       temperature: '--',
@@ -178,6 +178,8 @@ export default {
       weatherDescription: '',
       countdownDays: 0,
       weatherTimer: null,
+      // 新增城市位置ID
+      locationId: '101010100', // 默认北京
       // 每个育对应的颜色
       typeColors: {
         德: '#FF4B55', // 红色
@@ -251,9 +253,16 @@ export default {
     this.$nextTick(() => {
       this.initCharts();
     });
+
     // 初始化日期时间和倒计时
     this.updateDateTime()
     this.calculateCountdown()
+
+    // 获取位置信息
+    this.getLocation().then(() => {
+      // 获取天气信息
+      this.getWeatherInfo();
+    });
 
     // 获取天气信息
     this.getWeatherInfo()
@@ -264,6 +273,10 @@ export default {
       this.calculateCountdown()
       this.getWeatherInfo()
     }, 60000) // 每分钟更新一次
+
+    this.weatherTimer = setInterval(() => {
+      this.getWeatherInfo();
+    }, 1800000); // 每30分钟更新一次天气
 
     this.$nextTick(() => {
       this.initCharts();
@@ -307,30 +320,63 @@ export default {
       const weeks = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
       this.currentWeek = weeks[now.getDay()]
     },
+    // 获取位置信息
+    getLocation() {
+      return new Promise((resolve, reject) => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            position => {
+              const { latitude, longitude } = position.coords;
+              const key = 'd1f1e40002524874b27188d57349f3b0'; // 和风天气API key
+
+              fetch(`https://geoapi.qweather.com/v2/city/lookup?location=${longitude},${latitude}&key=${key}`)
+                .then(response => response.json())
+                .then(data => {
+                  if (data.code === '200' && data.location && data.location.length > 0) {
+                    this.locationId = data.location[0].id;
+                    resolve();
+                  } else {
+                    console.warn('获取位置ID失败，使用默认位置');
+                    resolve(); // 使用默认位置
+                  }
+                })
+                .catch(error => {
+                  console.error('获取位置ID失败:', error);
+                  resolve(); // 使用默认位置
+                });
+            },
+            error => {
+              console.error('获取地理位置失败:', error);
+              resolve(); // 使用默认位置
+            }
+          );
+        } else {
+          console.warn('浏览器不支持地理位置获取，使用默认位置');
+          resolve(); // 使用默认位置
+        }
+      });
+    },
     // 获取天气信息
     async getWeatherInfo() {
       try {
-        // 由于跨域限制，这里直接使用硬编码的数据
-        // 实际项目中需要后端配合提供代理接口
-        const weatherData = {
-          temperature: '22',  // 从中国天气网页面可以看到当前温度是22℃
-          description: '多云', // 当前天气状况是多云
-          windLevel: '<3级'   // 风力小于3级
+        const key = 'd1f1e40002524874b27188d57349f3b0'; // 和风天气API key
+        const response = await fetch(`https://devapi.qweather.com/v7/weather/now?location=${this.locationId}&key=${key}`);
+        const data = await response.json();
+
+        if (data.code === '200') {
+          const weather = data.now;
+          this.temperature = weather.temp;
+          this.weatherDescription = weather.text;
+          this.setWeatherIcon(weather.text);
+        } else {
+          throw new Error(`天气API返回错误: ${data.code}`);
         }
-
-        this.temperature = weatherData.temperature
-        this.weatherDescription = weatherData.description
-        this.setWeatherIcon(weatherData.description)
-
-        console.log('天气数据更新成功:', weatherData)
       } catch (error) {
-        console.error('获取天气信息失败:', error)
+        console.error('获取天气信息失败:', error);
         // 设置默认值
-        this.temperature = '--'
-        this.weatherDescription = '获取失败'
-        this.weatherIcon = 'el-icon-sunny'
-        // 显示错误提示
-        this.$message.error(`获取天气信息失败: ${error.message}`)
+        this.temperature = '--';
+        this.weatherDescription = '获取失败';
+        this.weatherIcon = 'el-icon-sunny';
       }
     },
     // 设置天气图标
@@ -349,8 +395,17 @@ export default {
         '中雪': 'el-icon-snow',
         '大雪': 'el-icon-snow',
         '暴雪': 'el-icon-snow',
-        '雾': 'el-icon-cloudy'
+        '雾': 'el-icon-cloudy',
+        '沙尘暴': 'el-icon-warning',
+        '浮尘': 'el-icon-warning',
+        '扬沙': 'el-icon-warning',
+        '强沙尘暴': 'el-icon-warning',
+        '阵雪': 'el-icon-snow',
+        '毛毛雨': 'el-icon-light-rain',
+        '雨': 'el-icon-light-rain',
+        '雪': 'el-icon-snow'
       }
+      // 如果描述在映射表中，则使用对应的图标，否则使用默认的晴天图标
       this.weatherIcon = iconMap[description] || 'el-icon-sunny'
     },
     // 计算高考倒计时
@@ -584,6 +639,9 @@ export default {
     // 清除定时器
     if (this.weatherTimer) {
       clearInterval(this.weatherTimer)
+    }
+    if (this.dateTimer) {
+      clearInterval(this.dateTimer);
     }
 
     // 移除全屏变化事件监听
