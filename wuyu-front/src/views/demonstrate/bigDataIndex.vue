@@ -42,10 +42,13 @@
             <div class="resume-hd">
               <ul>
                 <li>
-                  <countTo :startVal='startVal' :endVal='all' :duration='6000' separator=""></countTo>
+                  <countTo :startVal='startVal' :endVal='panel.teacherNum' :duration='6000' separator=""></countTo>
                 </li>
                 <li>
-                  <countTo :startVal='startVal' :endVal='ava' :duration='6000' separator=""></countTo>
+                  <countTo :startVal='startVal' :endVal='panel.studentNum' :duration='6000' separator=""></countTo>
+                </li>
+                <li>
+                  <countTo :startVal='startVal' :endVal='panel.gradeNum' :duration='6000' separator=""></countTo>
                 </li>
               </ul>
             </div>
@@ -53,64 +56,28 @@
               <ul>
                 <li>老师人数（单位：人）</li>
                 <li>学生人数（单位：人）</li>
+                <li>年级数量（单位：个）</li>
               </ul>
             </div>
           </div>
           <div class="map">
-            <!--
-            <div class="map1"></div>
-            <div class="map2"></div>
-            <div class="map3"></div>
--->
-
-            <h3 style="color: white;text-align: center">班级风采</h3>
-            <el-carousel :autoplay="true" indicator-position="none" :interval="4000" height="230px">
-              <el-carousel-item>
-                <div class="panel">
-                  <div class="echart" id="xybjChart1" :style="myChartStyle"></div>
-                </div>
-              </el-carousel-item>
-              <el-carousel-item>
-                <div class="panel">
-                  <div class="echart" id="xybjChart2" :style="myChartStyle"></div>
-                </div>
-              </el-carousel-item>
-              <el-carousel-item>
-                <div class="panel">
-                  <div class="echart" id="xybjChart3" :style="myChartStyle"></div>
-                </div>
-              </el-carousel-item>
-            </el-carousel>
+            <h3 style="color: white;text-align: center">五育达成情况</h3>
+            <div class="panel panel-main">
+              <div class="panel-header">
+                <span class="panel-title">五育达成度分析</span>
+                <div class="panel-header-border"></div>
+              </div>
+              <div class="echart" id="wydcChart" style="width: 100%; height: 300px;"></div>
+            </div>
             <h3 style="color: white;text-align: center">五育标兵</h3>
-            <el-carousel :autoplay="true" indicator-position="none" :interval="5000" arrow="always" height="250px">
-              <el-carousel-item>
-                <div class="panel">
-                  <div class="echart" id="xygrChart1" :style="myChartStyle"></div>
-                </div>
-              </el-carousel-item>
-              <el-carousel-item>
-                <div class="panel">
-                  <div class="echart" id="xygrChart2" :style="myChartStyle"></div>
-                </div>
-              </el-carousel-item>
-              <el-carousel-item>
-                <div class="panel">
-                  <div class="echart" id="xygrChart3" :style="myChartStyle"></div>
-                </div>
-              </el-carousel-item>
-              <el-carousel-item>
-                <div class="panel">
-                  <div class="echart" id="xygrChart4" :style="myChartStyle"></div>
-                </div>
-              </el-carousel-item>
-              <el-carousel-item>
-                <div class="panel">
-                  <div class="echart" id="xygrChart5" :style="myChartStyle"></div>、
-                </div>
-              </el-carousel-item>
-              <el-carousel-item>
-                <div class="panel">
-                  <div class="echart" id="xygrChart6" :style="myChartStyle"></div>
+            <el-carousel :autoplay="true" indicator-position="none" :interval="5000" arrow="always" height="250px" class="carousel-container">
+              <el-carousel-item v-for="(item, index) in 6" :key="index">
+                <div class="panel panel-carousel">
+                  <div class="panel-header">
+                    <span class="panel-title">{{ typeList[index] }}育标兵</span>
+                    <div class="panel-header-border"></div>
+                  </div>
+                  <div class="echart" :id="'xygrChart' + (index + 1)" :style="myChartStyle"></div>
                 </div>
               </el-carousel-item>
             </el-carousel>
@@ -146,8 +113,10 @@ import '@/assets/js/flexible'
 import '@/assets/js/china'
 import countTo from 'vue-count-to'
 import api from '@/api/demonstrate/api'
+import { getPanelData } from "@/api/managementModule/dataBase"
 import echarts from 'echarts'
 import screenfull from 'screenfull'
+import { getGradeScore } from '@/api/fuScale'
 export default {
   name: 'Brand',
   components: {
@@ -180,20 +149,42 @@ export default {
       typeEnList: ['deyu', 'zhiyu', 'tiyu', 'meiyu', 'laoyu'],
       idList: ['id0', 'id1', 'id2', 'id3', 'id4'],
       colorList: ['#1b6cd2', '#B5C334', '#FCCE10', '#E87C25', '#27727B'],
+      panel: {
+        studentNum: 0,
+        teacherNum: 0,
+        gradeNum: 0
+      },
       all: 0,
       ava: 0,
       myChartStyle: { float: "left", width: "100%", height: "230px" }, //图表样式
+      grades: ['一年级', '二年级', '三年级', '四年级', '五年级', '六年级'],
+      yearList: ['2020-2021学年', '2021-2022学年', '2022-2023学年', '2023-2024学年'],
+      wuyuSeries: [
+        { name: '德育', data: [] },
+        { name: '智育', data: [] },
+        { name: '体育', data: [] },
+        { name: '美育', data: [] },
+        { name: '劳育', data: [] }
+      ],
+      gradeScores: {}, // Store grade scores by year
     }
   },
   computed: {
-
+    schoolId() {
+      return JSON.parse(window.localStorage.getItem("UserInfo")).schoolId;
+    }
   },
   created() {
     const that = this;
+    // 获取学校基本信息
+    getPanelData({ schoolId: this.schoolId }).then((res) => {
+      this.panel = res.data.panel;
+    });
+
+    // 获取五育年级变化数据
     api.getWynjbh().then(e => {
       setTimeout(function () {
         for (var i = 0; i < that.typeList.length; i++) {
-          // console.log(e[that.typeEnList[i]])
           e[that.typeEnList[i]].forEach(eList => {
             if (eList.data.length < 3) {
               for (let i = 0; i <= 3 - eList.data.length; i++) {
@@ -201,7 +192,6 @@ export default {
               }
             }
           })
-          // console.log(e[that.typeEnList[i]])
           that.initChart('id' + i, that.typeList[i], that.colorList[i]
             , e["gradeList"]
             , e[e["gradeList"][i] + 'riqi']
@@ -209,6 +199,33 @@ export default {
         }
       }, 500);
     })
+
+    // 获取五育达成数据
+    api.getWydc().then(e => {
+      console.log('五育达成数据:', e); // 添加日志查看数据结构
+      const mockData = {
+        '一年级': { deyu: 72, zhiyu: 68, tiyu: 75, meiyu: 68, laoyu: 75 },
+        '二年级': { deyu: 40, zhiyu: 30, tiyu: 50, meiyu: 30, laoyu: 40 },
+        '三年级': { deyu: 20, zhiyu: 25, tiyu: 30, meiyu: 20, laoyu: 35 },
+        '四年级': { deyu: 30, zhiyu: 20, tiyu: 40, meiyu: 35, laoyu: 30 },
+        '五年级': { deyu: 25, zhiyu: 30, tiyu: 35, meiyu: 25, laoyu: 45 },
+        '六年级': { deyu: 35, zhiyu: 25, tiyu: 45, meiyu: 30, laoyu: 35 },
+        gradeList: ['一年级', '二年级', '三年级', '四年级', '五年级', '六年级']
+      };
+      
+      // 合并实际数据和模拟数据
+      const mergedData = {
+        ...mockData,
+        ...e,
+        gradeList: e.gradeList || mockData.gradeList
+      };
+      
+      setTimeout(() => {
+        this.initWydcChart(mergedData);
+      }, 500);
+    })
+
+    // 获取完成度数据
     api.getWanchengdu().then(e => {
       that.all = Number.parseInt(e.count);
       that.ava = Number.parseInt(e.ava);
@@ -216,6 +233,12 @@ export default {
         that.initWancheng("id5", e.gradeList, e.successList, e.failList);
       }, 500);
     })
+
+    // 获取五育年级平均成绩数据
+    this.fetchAllGradeWuyuScore();
+
+    // 获取五育年级变化数据
+    this.fetchGradeScoresByYear();
   },
   mounted() {
     this.getWeather();
@@ -224,10 +247,35 @@ export default {
     }, 1000 * 60 * 60)
 
     this.nowTimes();
-    this.initXYBJEcharts();
     this.initXYGREcharts();
   },
   methods: {
+    getGrade(i) {
+      let res = ''
+      switch(i) {
+        case 1:
+          res = "一年级"
+          break
+        case 2:
+          res = "二年级"
+          break
+        case 3:
+          res = "三年级"
+          break
+        case 4:
+          res = "四年级"
+          break
+        case 5:
+          res = "五年级"
+          break
+        case 6:
+          res = "六年级"
+          break
+        default:
+          res = "Unknown"
+      }
+      return res
+    },
     timeFormate(timeStamp) { //显示当前时间
       let newDate = new Date(timeStamp);
       let year = newDate.getFullYear();
@@ -259,14 +307,35 @@ export default {
     initChart(divId, index, myColor, legendData, riqi, series) {
       const myChart = echarts.init(document.getElementById(divId))
       const option = {
+        title: {
+          text: index + '育各年级变化',
+          textStyle: {
+            color: '#fff',
+            fontSize: 16,
+            fontWeight: 'normal'
+          }
+        },
         tooltip: {
-          trigger: 'axis'
+          trigger: 'axis',
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          borderColor: 'rgba(0,0,0,0.7)',
+          textStyle: {
+            color: '#fff'
+          }
         },
         legend: {
           data: legendData,
           textStyle: {
-            color: '#fffff'//字体颜色
-          }
+            color: '#fff',
+            fontSize: 12
+          },
+          top: 30
+        },
+        grid: {
+          left: '10%',
+          right: '10%',
+          bottom: '15%',
+          containLabel: true
         },
         xAxis: {
           type: 'category',
@@ -277,11 +346,11 @@ export default {
             textStyle: {
               color: '#fff'
             },
-            interval: 0,//使x轴文字显示全
+            interval: 0,
             formatter: function (params) {
               var newParamsName = "";
               var paramsNameNumber = params.length;
-              var provideNumber = 9; //一行显示几个字
+              var provideNumber = 9;
               var rowNumber = Math.ceil(paramsNameNumber / provideNumber);
               if (paramsNameNumber > provideNumber) {
                 for (var p = 0; p < rowNumber; p++) {
@@ -300,91 +369,113 @@ export default {
               }
               return newParamsName;
             }
+          },
+          axisLine: {
+            lineStyle: {
+              color: 'rgba(255, 255, 255, 0.2)'
+            }
+          },
+          splitLine: {
+            show: false
           }
         },
         yAxis: {
           type: 'value',
+          name: '分数',
+          nameTextStyle: {
+            color: '#fff'
+          },
           axisLabel: {
             show: true,
             textStyle: {
               color: '#fff'
-            },
+            }
           },
-          min: 60
+          axisLine: {
+            lineStyle: {
+              color: 'rgba(255, 255, 255, 0.2)'
+            }
+          },
+          splitLine: {
+            lineStyle: {
+              color: 'rgba(255, 255, 255, 0.1)'
+            }
+          },
+          min: 60,
+          max: 100
         },
-        series: series
+        series: series.map(item => ({
+          ...item,
+          type: 'line',
+          smooth: true,
+          symbol: 'circle',
+          symbolSize: 8,
+          itemStyle: {
+            color: myColor
+          },
+          lineStyle: {
+            width: 2,
+            color: myColor
+          },
+          areaStyle: {
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [{
+                offset: 0,
+                color: myColor // 0% 处的颜色
+              }, {
+                offset: 1,
+                color: 'rgba(0,0,0,0)' // 100% 处的颜色
+              }]
+            }
+          }
+        }))
       };
       myChart.setOption(option)
       this.chartList.push(myChart)
-    },
-    initXYBJEcharts() {
-      api.getXYClass()
-        .then(function (res) {
-          const xyClassList = res.xyClass
-          for (let i = 0; i < xyClassList.length; i++) {
-            const option = {
-              title: {
-                text: xyClassList[i].class,
-                textStyle: {
-                  color: '#fff',
-                  fontWeight: 500,
-                },
-                top: '5%'
-              },
-              // legend: {
-              //     orient: 'vertical',
-              //     right: '10%'
-              // },
-              tooltip: {
-                trigger: 'item',
-                formatter: '{b} : {c} 分' // <br/>换行
-                //a:（系列名称） b:(数据名称) c:(数值) d:(饼图百分比)
-              },
-              series: [
-                {
-                  type: 'pie',
-                  radius: '50%',
-                  center: ['55%', '50%'],
-                  roseType: 'area',
-                  itemStyle: {
-                    borderRadius: 8
-                  },
-                  data: [
-                    { value: xyClassList[i].deyu, name: '德育' },
-                    { value: xyClassList[i].zhiyu, name: '智育' },
-                    { value: xyClassList[i].tiyu, name: '体育' },
-                    { value: xyClassList[i].meiyu, name: '美育' },
-                    { value: xyClassList[i].laoyu, name: '劳育' },
-                  ]
-                }
-              ]
-            };
-            const myChart = echarts.init(document.querySelector("#xybjChart" + (i + 1)));
-            myChart.setOption(option);
-            window.addEventListener("resize", function () {
-              myChart.resize();
-            });
-            this.chartList.push(myChart)
-          }
-        })
-        .catch(function (error) {
-          console.log(error);
-        })
+      
+      // 设置自适应
+      window.addEventListener('resize', () => {
+        myChart.resize();
+      });
     },
     initXYGREcharts() {
-      const kemu = ['zong', 'deyu', 'zhiyu', 'tiyu', 'meiyu', 'laoyu']
-      const kumuName = ['总分', '德育', '智育', '体育', '美育', '劳育']
+      const kemu = ['deyu', 'zhiyu', 'tiyu', 'meiyu', 'laoyu']
+      const kumuName = ['德育', '智育', '体育', '美育', '劳育']
+      const colors = ['#FF4B55', '#4B7BE5', '#23B7E5', '#7265E6', '#FFAB2B'];
+      
       api.getXYStudent()
-        .then(function (res) {
+        .then(res => {
           kemu.forEach((element, index) => {
             const option = {
               title: {
-                text: kumuName[index],
+                text: kumuName[index] + '标兵',
                 textStyle: {
                   color: '#fff',
-                  fontWeight: 500,
+                  fontSize: 16,
+                  fontWeight: 'normal'
                 },
-                top: '5%'
+                top: 10,
+                left: 'center'
+              },
+              tooltip: {
+                trigger: 'axis',
+                backgroundColor: 'rgba(0,0,0,0.7)',
+                borderColor: 'rgba(0,0,0,0.7)',
+                textStyle: {
+                  color: '#fff'
+                }
+              },
+              grid: {
+                top: '20%',
+                left: '10%',
+                right: '10%',
+                bottom: '15%',
+                containLabel: true
               },
               xAxis: {
                 data: res[element].name,
@@ -393,11 +484,11 @@ export default {
                   textStyle: {
                     color: '#fff'
                   },
-                  interval: 0,//使x轴文字显示全
+                  interval: 0,
                   formatter: function (params) {
                     var newParamsName = "";
                     var paramsNameNumber = params.length;
-                    var provideNumber = 2; //一行显示几个字
+                    var provideNumber = 2;
                     var rowNumber = Math.ceil(paramsNameNumber / provideNumber);
                     if (paramsNameNumber > provideNumber) {
                       for (var p = 0; p < rowNumber; p++) {
@@ -416,45 +507,85 @@ export default {
                     }
                     return newParamsName;
                   }
+                },
+                axisLine: {
+                  lineStyle: {
+                    color: 'rgba(255, 255, 255, 0.2)'
+                  }
+                },
+                splitLine: {
+                  show: false
                 }
               },
-              // 图例
-              // legend: {
-              //   data: ["分数"],
-              //   top: "0%",
-              //   textStyle: {
-              //     color: '#fffff'//字体颜色
-              //   }
-              // },
               yAxis: {
+                type: 'value',
+                name: '分数',
+                nameTextStyle: {
+                  color: '#fff'
+                },
                 axisLabel: {
                   show: true,
                   textStyle: {
                     color: '#fff'
                   }
-                }
+                },
+                axisLine: {
+                  lineStyle: {
+                    color: 'rgba(255, 255, 255, 0.2)'
+                  }
+                },
+                splitLine: {
+                  lineStyle: {
+                    color: 'rgba(255, 255, 255, 0.1)'
+                  }
+                },
+                min: 60,
+                max: 100
               },
               series: [
                 {
                   type: "line",
                   data: res[element].score,
-                  name: "分数", // legend属性
+                  name: "分数",
+                  smooth: true,
+                  symbol: 'circle',
+                  symbolSize: 8,
+                  itemStyle: {
+                    color: colors[index]
+                  },
+                  lineStyle: {
+                    width: 2,
+                    color: colors[index]
+                  },
+                  areaStyle: {
+                    color: {
+                      type: 'linear',
+                      x: 0,
+                      y: 0,
+                      x2: 0,
+                      y2: 1,
+                      colorStops: [{
+                        offset: 0,
+                        color: colors[index]
+                      }, {
+                        offset: 1,
+                        color: 'rgba(0,0,0,0)'
+                      }]
+                    }
+                  },
                   label: {
-                    // 柱状图上方文本标签，默认展示数值信息
                     show: true,
-                    position: "top"
+                    position: "top",
+                    textStyle: {
+                      color: '#fff'
+                    }
                   }
-                },
-              ],
-              grid: {
-                left: '15%',
-                right: '15%',
-                bottom: '15%'
-              },
+                }
+              ]
             }
             const myChart = echarts.init(document.getElementById(`xygrChart${index + 1}`))
             myChart.setOption(option)
-            window.addEventListener("resize", function () {
+            window.addEventListener("resize", () => {
               myChart.resize();
             });
             this.chartList.push(myChart)
@@ -463,6 +594,144 @@ export default {
         .catch(function (error) {
           console.log(error);
         })
+    },
+    initWydcChart(data) {
+      const myChart = echarts.init(document.getElementById('wydcChart'))
+      console.log('初始化图表数据:', data); // 添加日志
+      
+      // 处理数据，确保数据格式正确
+      const gradeList = ['一年级', '二年级', '三年级', '四年级', '五年级', '六年级'];
+      const colors = ['#FF4B55', '#4B7BE5', '#23B7E5', '#7265E6', '#FFAB2B', '#00BFA5'];
+      
+      // 添加数据验证和默认值
+      const defaultData = {
+        deyu: 0,
+        zhiyu: 0,
+        tiyu: 0,
+        meiyu: 0,
+        laoyu: 0
+      };
+
+      const seriesData = gradeList.map((grade, index) => {
+        const gradeData = data[grade] || defaultData;
+        
+        // 确保所有数值都是有效的数字
+        const values = [
+          'deyu',
+          'zhiyu',
+          'tiyu',
+          'meiyu',
+          'laoyu'
+        ].map(key => {
+          const val = Number(gradeData[key]);
+          return isNaN(val) ? 0 : Math.min(Math.max(val, 0), 100); // 限制在0-100之间
+        });
+
+        return {
+          name: grade,
+          value: values,
+          itemStyle: {
+            color: colors[index]
+          },
+          lineStyle: {
+            width: 2,
+            color: colors[index]
+          },
+          areaStyle: {
+            color: colors[index],
+            opacity: 0.1
+          }
+        };
+      });
+
+      const option = {
+        backgroundColor: 'transparent',
+        title: {
+          text: '五育达成度分析',
+          left: 'center',
+          top: 0,
+          textStyle: {
+            color: '#fff',
+            fontSize: 16,
+            fontWeight: 'normal'
+          }
+        },
+        tooltip: {
+          trigger: 'item',
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          borderColor: 'rgba(0,0,0,0.7)',
+          textStyle: {
+            color: '#fff'
+          },
+          formatter: function(params) {
+            return `${params.name}<br/>
+                    德育: ${params.value[0]}<br/>
+                    智育: ${params.value[1]}<br/>
+                    体育: ${params.value[2]}<br/>
+                    美育: ${params.value[3]}<br/>
+                    劳育: ${params.value[4]}`;
+          }
+        },
+        legend: {
+          data: gradeList,
+          textStyle: {
+            color: '#fff',
+            fontSize: 12
+          },
+          top: 30,
+          itemWidth: 12,
+          itemHeight: 12,
+          itemGap: 20
+        },
+        radar: {
+          shape: 'polygon',
+          center: ['50%', '60%'],
+          radius: '60%',
+          splitNumber: 4,
+          nameGap: 15,
+          scale: true,
+          splitArea: {
+            areaStyle: {
+              color: ['rgba(0,0,0,0)', 'rgba(0,0,0,0.1)', 'rgba(0,0,0,0.2)', 'rgba(0,0,0,0.3)']
+            }
+          },
+          axisLine: {
+            lineStyle: {
+              color: 'rgba(255, 255, 255, 0.2)'
+            }
+          },
+          splitLine: {
+            lineStyle: {
+              color: 'rgba(255, 255, 255, 0.2)'
+            }
+          },
+          axisName: {
+            color: '#fff',
+            fontSize: 14,
+            padding: [0, 15]
+          },
+          indicator: [
+            { name: '德育', max: 100 },
+            { name: '智育', max: 100 },
+            { name: '体育', max: 100 },
+            { name: '美育', max: 100 },
+            { name: '劳育', max: 100 }
+          ]
+        },
+        series: [{
+          type: 'radar',
+          symbolSize: 6,
+          data: seriesData
+        }]
+      };
+
+      // 设置自适应
+      window.addEventListener('resize', () => {
+        myChart.resize();
+      });
+
+      myChart.setOption(option);
+      this.chartList.push(myChart)
     },
     initWancheng(divId, xAxisData, succesList, failList) {
       const myChart = echarts.init(document.getElementById(divId))
@@ -541,7 +810,158 @@ export default {
         chart.dispose()
       })
       this.chartList = []
-    }
+    },
+    async fetchAllGradeWuyuScore() {
+      // 清空数据
+      this.wuyuSeries = [
+        { name: '德育', data: [] },
+        { name: '智育', data: [] },
+        { name: '体育', data: [] },
+        { name: '美育', data: [] },
+        { name: '劳育', data: [] }
+      ];
+      for (let i = 0; i < this.grades.length; i++) {
+        const grade = this.grades[i];
+        try {
+          const res = await getGradeScore(grade);
+          // res 应为 [{name: '平均分', data: [德,智,体,美,劳], type: 'line'}]
+          if (Array.isArray(res) && res.length > 0 && Array.isArray(res[0].data)) {
+            for (let j = 0; j < 5; j++) {
+              this.wuyuSeries[j].data.push(res[0].data[j]);
+            }
+          } else {
+            // 若无数据，补空
+            for (let j = 0; j < 5; j++) {
+              this.wuyuSeries[j].data.push(null);
+            }
+          }
+        } catch (e) {
+          for (let j = 0; j < 5; j++) {
+            this.wuyuSeries[j].data.push(null);
+          }
+        }
+      }
+      // 渲染五育图表
+      for (let i = 0; i < 5; i++) {
+        this.drawWuyuChart('id' + i, this.typeList[i], this.colorList[i], this.grades, this.wuyuSeries[i].data);
+      }
+    },
+    drawWuyuChart(divId, name, color, xData, data) {
+      const myChart = echarts.init(document.getElementById(divId));
+      const option = {
+        title: {  left: 'center', textStyle: { color: '#fff', fontSize: 16 } },
+        tooltip: { trigger: 'axis' },
+        xAxis: { type: 'category', data: xData, axisLabel: { color: '#fff' } },
+        yAxis: { type: 'value', min: 0, max: 100, axisLabel: { color: '#fff' } },
+        series: [{
+          name: name,
+          data: data,
+          type: 'line',
+          itemStyle: { color: color },
+          label: { show: true, position: 'top', color: '#fff' }
+        }]
+      };
+      myChart.setOption(option);
+      this.chartList.push(myChart);
+    },
+    async fetchGradeScoresByYear() {
+      try {
+        const promises = this.grades.map(grade => getGradeScore(grade));
+        const results = await Promise.all(promises);
+        
+        // Process the results
+        const gradeScores = {};
+        results.forEach((result, index) => {
+          gradeScores[this.grades[index]] = result;
+        });
+        
+        this.gradeScores = gradeScores;
+        
+        // Initialize charts with the new data
+        for (let i = 0; i < this.typeList.length; i++) {
+          const seriesData = this.grades.map(grade => {
+            return {
+              name: grade,
+              type: 'line',
+              data: this.gradeScores[grade].map(yearData => yearData[this.typeEnList[i]])
+            };
+          });
+          
+          this.initChart('id' + i, this.typeList[i], this.colorList[i], this.grades, this.yearList, seriesData);
+        }
+      } catch (error) {
+        console.error('Error fetching grade scores:', error);
+      }
+    },
+    initChart(divId, index, myColor, legendData, yearList, series) {
+      const myChart = echarts.init(document.getElementById(divId))
+      const option = {
+        tooltip: {
+          trigger: 'axis'
+        },
+        legend: {
+          data: legendData,
+          textStyle: {
+            color: '#fffff'//字体颜色
+          }
+        },
+        xAxis: {
+          type: 'category',
+          boundaryGap: false,
+          data: yearList,
+          axisLabel: {
+            show: true,
+            textStyle: {
+              color: '#fff'
+            },
+            interval: 0,//使x轴文字显示全
+            formatter: function (params) {
+              var newParamsName = "";
+              var paramsNameNumber = params.length;
+              var provideNumber = 9; //一行显示几个字
+              var rowNumber = Math.ceil(paramsNameNumber / provideNumber);
+              if (paramsNameNumber > provideNumber) {
+                for (var p = 0; p < rowNumber; p++) {
+                  var tempStr = "";
+                  var start = p * provideNumber;
+                  var end = start + provideNumber;
+                  if (p == rowNumber - 1) {
+                    tempStr = params.substring(start, paramsNameNumber);
+                  } else {
+                    tempStr = params.substring(start, end) + "\n";
+                  }
+                  newParamsName += tempStr;
+                }
+              } else {
+                newParamsName = params;
+              }
+              return newParamsName;
+            }
+          }
+        },
+        yAxis: {
+          type: 'value',
+          axisLabel: {
+            show: true,
+            textStyle: {
+              color: '#fff'
+            },
+          },
+          min: 60
+        },
+        series: series.map(item => ({
+          ...item,
+          smooth: true,
+          symbol: 'circle',
+          symbolSize: 8,
+          lineStyle: {
+            width: 2
+          }
+        }))
+      };
+      myChart.setOption(option)
+      this.chartList.push(myChart)
+    },
   },
   beforeDestroy() {
     clearInterval(this.timer);
@@ -562,12 +982,27 @@ export default {
     background: url(../../assets/img/brand/bg.jpg) no-repeat #000;
     background-size: cover;
     line-height: 1.15;
+    min-height: 100vh;
+    position: relative;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 1;
+    }
 
     header {
       position: relative;
       height: 1rem;
-      background: url(../../assets/img/brand/head_bg.png) no-repeat top center;
-      background-size: 100% 100%;
+      background: linear-gradient(to right, rgba(1, 134, 218, 0.3), rgba(1, 134, 218, 0.1));
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      z-index: 2;
 
       h2 {
         color: #7ef0ff;
@@ -575,6 +1010,7 @@ export default {
         text-align: center;
         line-height: 0.75rem;
         letter-spacing: 1px;
+        text-shadow: 0 0 10px rgba(126, 240, 255, 0.5);
       }
 
       .weather {
@@ -582,18 +1018,30 @@ export default {
         left: 1.375rem;
         top: 0.35rem;
         font-size: 0.25rem;
-        color: rgba(126, 240, 255, .7);
+        color: rgba(126, 240, 255, 0.7);
+        display: flex;
+        align-items: center;
+        gap: 0.1rem;
 
         img {
           width: .45rem;
+          filter: drop-shadow(0 0 5px rgba(126, 240, 255, 0.3));
         }
 
-        span {
-          display: inline-block;
-        }
+        button {
+          margin-left: 0.2rem;
+          padding: 0.1rem 0.2rem;
+          background: rgba(126, 240, 255, 0.1);
+          border: 1px solid rgba(126, 240, 255, 0.3);
+          color: rgba(126, 240, 255, 0.7);
+          border-radius: 4px;
+          cursor: pointer;
+          transition: all 0.3s;
 
-        .tem {
-          margin: 0 .1rem 0 .2rem;
+          &:hover {
+            background: rgba(126, 240, 255, 0.2);
+            border-color: rgba(126, 240, 255, 0.5);
+          }
         }
       }
 
@@ -601,25 +1049,29 @@ export default {
         position: absolute;
         right: 1.375rem;
         top: 0.5rem;
-        color: rgba(126, 240, 255, .7);
+        color: rgba(126, 240, 255, 0.7);
         display: flex;
+        align-items: center;
 
         .time {
           font-size: .28rem;
           margin-right: .18rem;
+          font-family: 'DIGITALDREAMFAT', monospace;
         }
 
         .date {
+          text-align: right;
+          
           span {
             display: block;
-
-            &:nth-child(1) {
-              font-size: .12rem;
-              text-align: right;
-            }
-
-            &:nth-child(2) {
+            
+            &:first-child {
               font-size: .14rem;
+              margin-bottom: 0.05rem;
+            }
+            
+            &:last-child {
+              font-size: .16rem;
             }
           }
         }
@@ -627,289 +1079,157 @@ export default {
     }
 
     .mainbox {
+      position: relative;
+      z-index: 2;
       min-width: 1024px;
       max-width: 1920px;
       padding: 0.125rem 0.125rem 0;
       display: flex;
+      gap: 0.125rem;
 
       .item {
         flex: 3;
-
+        
         &.center {
           flex: 5;
-          margin: 0 0.125rem 0.1rem;
-          overflow: hidden;
-
-          .resume {
-            background: rgba(101, 132, 226, 0.1);
-            padding: 0.1875rem;
-
-            .resume-hd {
-              position: relative;
-              border: 1px solid rgba(25, 186, 139, 0.17);
-
-              ul {
-                display: flex;
-
-                %li-line {
-                  content: "";
-                  position: absolute;
-                  height: 50%;
-                  width: 1px;
-                  background: rgba(255, 255, 255, 0.2);
-                  top: 25%;
-                }
-
-                li {
-                  position: relative;
-                  flex: 1;
-                  text-align: center;
-                  height: 1.2rem;
-                  line-height: 1.2rem;
-                  font-size: 0.65rem;
-                  color: #ffeb7b;
-                  padding: 0.05rem 0;
-                  font-family: 'DIGITALDREAMFAT';
-                  font-weight: bold;
-
-                  &:nth-child(2) {
-                    &:after {
-                      @extend %li-line;
-                      right: 0;
-                    }
-
-                    &:before {
-                      @extend %li-line;
-                      left: 0;
-                    }
-                  }
-                }
-              }
-
-              &:before {
-                content: "";
-                position: absolute;
-                width: 30px;
-                height: 10px;
-                border-top: 2px solid #02a6b5;
-                border-left: 2px solid #02a6b5;
-                top: 0;
-                left: 0;
-              }
-
-              &:after {
-                content: "";
-                position: absolute;
-                width: 30px;
-                height: 10px;
-                border-bottom: 2px solid #02a6b5;
-                border-right: 2px solid #02a6b5;
-                right: 0;
-                bottom: 0;
-              }
-            }
-
-            .resume-bd {
-              ul {
-                display: flex;
-
-                li {
-                  flex: 1;
-                  height: 0.5rem;
-                  line-height: 0.5rem;
-                  text-align: center;
-                  font-size: 0.225rem;
-                  color: rgba(255, 255, 255, 0.7);
-                  padding-top: 0.125rem;
-                }
-              }
-            }
-          }
-        }
-
-        %map-style {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 6.475rem;
-          height: 6.475rem;
-          background: url(../../assets/img/brand/map.png) no-repeat;
-          background-size: 100% 100%;
-          opacity: 0.3;
-        }
-
-        .map {
-          position: relative;
-          height: 10.125rem;
-
-          .chart {
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 5;
-            height: 10.125rem;
-            width: 100%;
-          }
-
-          .map1 {
-            @extend %map-style;
-          }
-
-          .map2 {
-            @extend %map-style;
-            width: 8.0375rem;
-            height: 8.0375rem;
-            background-image: url(../../assets/img/brand/lbx.png);
-            opacity: 0.6;
-            -webkit-animation: rotate 15s linear infinite;
-            animation: rotate 15s linear infinite;
-            z-index: 2;
-          }
-
-          .map3 {
-            @extend %map-style;
-            width: 7.075rem;
-            height: 7.075rem;
-            background-image: url(../../assets/img/brand/jt.png);
-            -webkit-animation: rotate1 10s linear infinite;
-            animation: rotate1 10s linear infinite;
-          }
-
-          .panel-footer {
-            width: 100%;
-            height: 50px;
-            text-align: center;
-            line-height: 20px;
-            // color: #fff;
-            font-size: 20px;
-            font-weight: 300;
-          }
         }
 
         .panel {
           position: relative;
           height: 3.875rem;
-          border: 1px solid rgba(25, 186, 139, 0.17);
-          background: rgba(255, 255, 255, 0.04) url(../../assets/img/brand/line.png);
-          padding: 0 0.1875rem 0;
+          background: rgba(1, 134, 218, 0.1);
+          border: 1px solid rgba(1, 134, 218, 0.3);
+          border-radius: 4px;
+          padding: 0.15rem;
           margin-bottom: 0.1875rem;
+          backdrop-filter: blur(10px);
+          transition: all 0.3s;
 
-          &:before {
-            position: absolute;
-            top: 0;
-            left: 0;
-            content: "";
-            width: 10px;
-            height: 10px;
-            border-top: 2px solid #02a6b5;
-            border-left: 2px solid #02a6b5;
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(1, 134, 218, 0.2);
           }
 
-          &:after {
-            position: absolute;
-            top: 0;
-            right: 0;
-            content: "";
-            width: 10px;
-            height: 10px;
-            border-top: 2px solid #02a6b5;
-            border-right: 2px solid #02a6b5;
-          }
+          .panel-header {
+            position: relative;
+            padding-bottom: 0.15rem;
+            margin-bottom: 0.15rem;
 
-          .panel-footer {
-            position: absolute;
-            left: 0;
-            bottom: 0;
-            width: 100%;
+            .panel-title {
+              color: #7ef0ff;
+              font-size: 0.16rem;
+              font-weight: 500;
+            }
 
-            &:before {
+            .panel-header-border {
               position: absolute;
               bottom: 0;
               left: 0;
-              content: "";
-              width: 10px;
-              height: 10px;
-              border-bottom: 2px solid #02a6b5;
-              border-left: 2px solid #02a6b5;
-            }
+              width: 100%;
+              height: 1px;
+              background: linear-gradient(to right, rgba(1, 134, 218, 0.8), rgba(1, 134, 218, 0.2));
 
-            &:after {
-              position: absolute;
-              bottom: 0;
-              right: 0;
-              content: "";
-              width: 10px;
-              height: 10px;
-              border-bottom: 2px solid #02a6b5;
-              border-right: 2px solid #02a6b5;
-            }
-          }
+              &::before,
+              &::after {
+                content: '';
+                position: absolute;
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background: #0186da;
+                top: 50%;
+                transform: translateY(-50%);
+              }
 
-          h2 {
-            height: 0.6rem;
-            line-height: 0.6rem;
-            text-align: center;
-            color: #fff;
-            font-size: 0.225rem;
-            font-weight: 400;
+              &::before {
+                left: 0;
+              }
 
-            a {
-              margin: 0 0.1875rem;
-              color: #fff;
-              text-decoration: none;
+              &::after {
+                right: 0;
+              }
             }
           }
 
-          .chart {
-            height: 3rem;
+          &.panel-main {
+            height: auto;
+            margin-bottom: 0.3rem;
+          }
+
+          &.panel-carousel {
+            height: 100%;
+            margin: 0;
+          }
+        }
+
+        .resume {
+          background: rgba(1, 134, 218, 0.1);
+          border: 1px solid rgba(1, 134, 218, 0.3);
+          border-radius: 4px;
+          padding: 0.1875rem;
+          margin-bottom: 0.3rem;
+          backdrop-filter: blur(10px);
+
+          .resume-hd {
+            ul {
+              display: flex;
+              gap: 0.2rem;
+
+              li {
+                flex: 1;
+                text-align: center;
+                padding: 0.2rem;
+                background: rgba(1, 134, 218, 0.1);
+                border-radius: 4px;
+                color: #ffeb7b;
+                font-size: 0.4rem;
+                font-family: 'DIGITALDREAMFAT', monospace;
+                text-shadow: 0 0 10px rgba(255, 235, 123, 0.3);
+              }
+            }
+          }
+
+          .resume-bd {
+            margin-top: 0.15rem;
+
+            ul {
+              display: flex;
+              gap: 0.2rem;
+
+              li {
+                flex: 1;
+                text-align: center;
+                color: rgba(255, 255, 255, 0.7);
+                font-size: 0.14rem;
+              }
+            }
           }
         }
       }
-
     }
-
-  }
-
-}
-
-@-webkit-keyframes rotate {
-  from {
-    transform: translate(-50%, -50%) rotate(0deg);
-  }
-
-  to {
-    transform: translate(-50%, -50%) rotate(360deg);
   }
 }
 
-@keyframes rotate {
-  from {
-    transform: translate(-50%, -50%) rotate(0deg);
-  }
-
-  to {
-    transform: translate(-50%, -50%) rotate(360deg);
-  }
-}
-
-@-webkit-keyframes rotate1 {
-  from {
-    transform: translate(-50%, -50%) rotate(0deg);
-  }
-
-  to {
-    transform: translate(-50%, -50%) rotate(-360deg);
+.carousel-container {
+  :deep(.el-carousel__arrow) {
+    background: rgba(1, 134, 218, 0.3);
+    border: 1px solid rgba(1, 134, 218, 0.5);
+    
+    &:hover {
+      background: rgba(1, 134, 218, 0.5);
+    }
   }
 }
 
-@keyframes rotate1 {
-  from {
-    transform: translate(-50%, -50%) rotate(0deg);
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(1, 134, 218, 0.4);
   }
-
-  to {
-    transform: translate(-50%, -50%) rotate(-360deg);
+  70% {
+    box-shadow: 0 0 0 10px rgba(1, 134, 218, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(1, 134, 218, 0);
   }
 }
 
