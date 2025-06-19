@@ -140,12 +140,6 @@ public class teacherFiveupService extends ServiceImpl<teacherFiveupMapper, teach
         return operationResult;
     }
 
-    /**
-     * 检查指定教师对象的手机号是否已存在于数据库中
-     *
-     * @param teacher 待检查的教师对象
-     * @return 手机号是否存在
-     */
     private boolean checkIfPhoneNumberExists(teacher teacher) {
         // 声明查询条件包装器
         LambdaQueryWrapper<teacher> queryWrapper = null;
@@ -179,12 +173,6 @@ public class teacherFiveupService extends ServiceImpl<teacherFiveupMapper, teach
         return resultFlag;
     }
 
-    /**
-     * 检查指定教师对象的ID是否已经存在于数据库中
-     *
-     * @param teacher 待检查的教师对象
-     * @return 教师ID是否存在
-     */
     private boolean checkIfTeacherIdExists(teacher teacher) {
         // 声明查询结果变量
         teacher queryResult = null;
