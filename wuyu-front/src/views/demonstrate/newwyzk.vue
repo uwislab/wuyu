@@ -290,8 +290,6 @@ export default {
     document.addEventListener('webkitfullscreenchange', this.handleFullscreenChange);
     document.addEventListener('mozfullscreenchange', this.handleFullscreenChange);
     document.addEventListener('MSFullscreenChange', this.handleFullscreenChange);
-    // 添加窗口resize监听
-    window.addEventListener('resize', this.adjustLayout);
 
   },
   methods: {
@@ -596,23 +594,34 @@ export default {
     async toggleFullScreen() {
       try {
         const container = this.$refs.container;
-        if (!container) return;
-
-        // 使用标准API + 浏览器前缀
-        const requestFs = container.requestFullscreen ||
-          container.webkitRequestFullscreen ||
-          container.mozRequestFullScreen ||
-          container.msRequestFullscreen;
-
-        const exitFs = document.exitFullscreen ||
-          document.webkitExitFullscreen ||
-          document.mozCancelFullScreen ||
-          document.msExitFullscreen;
-
-        if (!this.isFullscreen && requestFs) {
-          await requestFs.call(container);
-        } else if (exitFs) {
-          await exitFs.call(document);
+        if (!container) {
+          console.warn('全屏容器未找到');
+          return;
+        }
+        if (!this.isFullscreen) {
+          // 使用兼容性写法进入全屏
+          if (container.requestFullscreen) {
+            await container.requestFullscreen();
+          } else if (container.webkitRequestFullscreen) {
+            await container.webkitRequestFullscreen();
+          } else if (container.mozRequestFullScreen) {
+            await container.mozRequestFullScreen();
+          } else if (container.msRequestFullscreen) {
+            await container.msRequestFullscreen();
+          } else {
+            this.$message.warning('您的浏览器不支持全屏功能');
+          }
+        } else {
+          // 使用兼容性写法退出全屏
+          if (document.exitFullscreen) {
+            await document.exitFullscreen();
+          } else if (document.webkitExitFullscreen) {
+            await document.webkitExitFullscreen();
+          } else if (document.mozCancelFullScreen) {
+            await document.mozCancelFullScreen();
+          } else if (document.msExitFullscreen) {
+            await document.msExitFullscreen();
+          }
         }
       } catch (err) {
         console.error('全屏切换失败:', err);
@@ -621,19 +630,12 @@ export default {
     },
     // 监听全屏变化 TODO
     handleFullscreenChange() {
-      this.isFullscreen = !!(
+      this.isFullscreen = Boolean(
         document.fullscreenElement ||
         document.webkitFullscreenElement ||
         document.mozFullScreenElement ||
         document.msFullscreenElement
       );
-      // 添加延迟确保布局稳定
-      setTimeout(() => {
-        this.$nextTick(() => {
-          this.adjustLayout();
-          this.resizeCharts();
-        });
-      }, 300);
       // 全屏状态改变时 只调整图表大小，不重新初始化
       this.$nextTick(() => {
         setTimeout(() => {
@@ -646,33 +648,6 @@ export default {
         }, 100); // 添加100ms的延迟
       });
     }
-  },
-  // 新增布局调整方法
-  adjustLayout() {
-    if (!this.$refs.container) return;
-
-    // 计算实际可用高度
-    const headerHeight = document.querySelector('.header')?.offsetHeight || 0;
-    const infoSectionHeight = document.querySelector('.info-section')?.offsetHeight || 0;
-    const topBarHeight = document.querySelector('.top-info-bar')?.offsetHeight || 0;
-    const padding = 20; // 安全边距
-
-    const availableHeight = window.innerHeight - headerHeight - infoSectionHeight - topBarHeight - padding;
-
-    // 动态设置轮播图高度
-    const carousel = document.querySelector('.chart-carousel');
-    if (carousel) {
-      carousel.style.height = `${Math.max(availableHeight, 400)}px`;
-    }
-  },
-
-  // 新增图表重绘方法
-  resizeCharts() {
-    this.chartList.forEach(chart => {
-      if (!chart.isDisposed()) {
-        chart.resize();
-      }
-    });
   },
   // 新增方法：调整轮播图高度
   adjustCarouselHeight() {
@@ -709,7 +684,6 @@ export default {
     document.removeEventListener('webkitfullscreenchange', this.handleFullscreenChange);
     document.removeEventListener('mozfullscreenchange', this.handleFullscreenChange);
     document.removeEventListener('MSFullscreenChange', this.handleFullscreenChange);
-    window.removeEventListener('resize', this.adjustLayout);
 
   }
 }
@@ -719,16 +693,14 @@ export default {
 .newwyzk-container {
   width: 100%;
   //小小bug找得老子好苦。。。
-  height: 100vh;
+  //height: 100vh;
   min-height: 100vh;
   background: linear-gradient(135deg, #1a2b3c 0%, #2d1b3c 100%);
   padding: 0.125rem;
   box-sizing: border-box;
   min-width: 1024px;
   position: relative;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  //overflow: auto;
 
   &::before {
     content: '';
@@ -756,7 +728,7 @@ export default {
   &:-moz-full-screen {
     width: 100vw;
     height: 100vh;
-    padding: 0 !important;
+    padding: 0.125rem;
     background: linear-gradient(135deg, #1a2b3c 0%, #2d1b3c 100%);
     overflow: auto;
   }
@@ -1177,24 +1149,9 @@ export default {
   }
 
   .main-content {
-    flex: 1;
-    min-height: 0;
     padding: 0 0.4rem;
 
     .chart-carousel {
-      height: 100% !important;
-      .el-carousel__container {
-        height: 100% !important;
-      }
-
-      .chart-container {
-        height: 100%;
-
-        .chart {
-          height: 100% !important;
-        }
-      }
-
       :deep(.el-carousel__indicators) {
         bottom: -0.3rem;
 
