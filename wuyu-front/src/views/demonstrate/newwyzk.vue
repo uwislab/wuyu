@@ -154,6 +154,13 @@ import '@/assets/js/flexible'
 import * as echarts from 'echarts'
 import CountTo from 'vue-count-to'
 import { getPanelData } from '@/api/managementModule/dataBase'
+import {
+  getLocationId,
+  getWeatherNow,
+  getUserLocation,
+  DEFAULT_CITY_ID,
+  WEATHER_ICON_MAP
+} from '@/api/demonstrate/weather'; // 导入天气API
 
 export default {
   name: 'NewWyzk',
@@ -181,8 +188,8 @@ export default {
       weatherDescription: '',
       countdownDays: 0,
       weatherTimer: null,
-      // 新增城市位置ID
-      locationId: '101010100', // 默认北京
+      // 新增城市位置ID 默认北京
+      locationId: DEFAULT_CITY_ID,
       // 每个育对应的颜色
       typeColors: {
         德: '#FF4B55', // 红色
@@ -277,15 +284,11 @@ export default {
       this.getWeatherInfo()
     }, 60000) // 每分钟更新一次
 
-    this.weatherTimer = setInterval(() => {
-      this.getWeatherInfo();
-    }, 1800000); // 每30分钟更新一次天气
-
     this.$nextTick(() => {
       this.initCharts();
     });
 
-    // 添加全屏变化事件监听 TODO
+    // 添加全屏变化事件监听
     document.addEventListener('fullscreenchange', this.handleFullscreenChange);
     document.addEventListener('webkitfullscreenchange', this.handleFullscreenChange);
     document.addEventListener('mozfullscreenchange', this.handleFullscreenChange);
@@ -324,92 +327,34 @@ export default {
       this.currentWeek = weeks[now.getDay()]
     },
     // 获取位置信息
-    getLocation() {
-      return new Promise((resolve, reject) => {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            position => {
-              const { latitude, longitude } = position.coords;
-              const key = 'd1f1e40002524874b27188d57349f3b0'; // 和风天气API key
-
-              fetch(`https://geoapi.qweather.com/v2/city/lookup?location=${longitude},${latitude}&key=${key}`)
-                .then(response => response.json())
-                .then(data => {
-                  if (data.code === '200' && data.location && data.location.length > 0) {
-                    this.locationId = data.location[0].id;
-                    resolve();
-                  } else {
-                    console.warn('获取位置ID失败，使用默认位置');
-                    resolve(); // 使用默认位置
-                  }
-                })
-                .catch(error => {
-                  console.error('获取位置ID失败:', error);
-                  resolve(); // 使用默认位置
-                });
-            },
-            error => {
-              console.error('获取地理位置失败:', error);
-              resolve(); // 使用默认位置
-            }
-          );
-        } else {
-          console.warn('浏览器不支持地理位置获取，使用默认位置');
-          resolve(); // 使用默认位置
-        }
-      });
+    async getLocation() {
+      try {
+        const coords = await getUserLocation();
+        this.locationId = await getLocationId(coords.latitude, coords.longitude);
+      } catch (error) {
+        console.error('获取地理位置失败:', error);
+        this.locationId = DEFAULT_CITY_ID; // 失败时使用默认城市
+      }
     },
     // 获取天气信息
     async getWeatherInfo() {
       try {
-        const key = 'd1f1e40002524874b27188d57349f3b0'; // 和风天气API key
-        const response = await fetch(`https://devapi.qweather.com/v7/weather/now?location=${this.locationId}&key=${key}`);
-        const data = await response.json();
-
-        if (data.code === '200') {
-          const weather = data.now;
-          this.temperature = weather.temp;
-          this.weatherDescription = weather.text;
-          this.setWeatherIcon(weather.text);
-        } else {
-          throw new Error(`天气API返回错误: ${data.code}`);
-        }
+        const weather = await getWeatherNow(this.locationId);
+        this.temperature = weather.temp;
+        this.weatherDescription = weather.text;
+        this.setWeatherIcon(weather.text);
       } catch (error) {
         console.error('获取天气信息失败:', error);
         // 设置默认值
         this.temperature = '--';
         this.weatherDescription = '获取失败';
-        this.weatherIcon = 'el-icon-sunny';
+        this.weatherIcon = WEATHER_ICON_MAP['晴'] || 'el-icon-sunny';
       }
     },
     // 设置天气图标
     setWeatherIcon(description) {
       // 根据天气描述设置对应的element-ui图标
-      const iconMap = {
-        '晴': 'el-icon-sunny',
-        '多云': 'el-icon-cloudy',
-        '阴': 'el-icon-cloudy',
-        '小雨': 'el-icon-light-rain',
-        '中雨': 'el-icon-light-rain',
-        '大雨': 'el-icon-heavy-rain',
-        '暴雨': 'el-icon-heavy-rain',
-        '雷阵雨': 'el-icon-heavy-rain',
-        '小雪': 'el-icon-snow',
-        '中雪': 'el-icon-snow',
-        '大雪': 'el-icon-snow',
-        '暴雪': 'el-icon-snow',
-        '雾': 'el-icon-cloudy',
-        '沙尘暴': 'el-icon-warning',
-        '浮尘': 'el-icon-warning',
-        '扬沙': 'el-icon-warning',
-        '强沙尘暴': 'el-icon-warning',
-        '阵雪': 'el-icon-snow',
-        '毛毛雨': 'el-icon-light-rain',
-        '雨': 'el-icon-light-rain',
-        '雪': 'el-icon-snow'
-      }
-      // 如果描述在映射表中，则使用对应的图标，否则使用默认的晴天图标
-      this.weatherIcon = iconMap[description] || 'el-icon-sunny'
+      this.weatherIcon = WEATHER_ICON_MAP[description] || WEATHER_ICON_MAP['晴'] || 'el-icon-sunny';
     },
     // 计算高考倒计时
     calculateCountdown() {
@@ -443,7 +388,7 @@ export default {
         }
       })
 
-      // 监听窗口大小变化 TODO
+      // 监听窗口大小变化
       window.addEventListener('resize', () => {
         this.chartList.forEach(chart => {
           chart.resize()
@@ -590,7 +535,7 @@ export default {
         this.initCharts()
       })
     },
-    // 切换全屏显示 TODO
+    // 切换全屏显示
     async toggleFullScreen() {
       try {
         const container = this.$refs.container;
@@ -628,7 +573,7 @@ export default {
         this.$message.error('全屏切换失败，请检查浏览器设置');
       }
     },
-    // 监听全屏变化 TODO
+    // 监听全屏变化
     handleFullscreenChange() {
       this.isFullscreen = Boolean(
         document.fullscreenElement ||
@@ -636,35 +581,7 @@ export default {
         document.mozFullScreenElement ||
         document.msFullscreenElement
       );
-      // 全屏状态改变时 只调整图表大小，不重新初始化
-      this.$nextTick(() => {
-        setTimeout(() => {
-          this.chartList.forEach(chart => {
-            if (!chart.isDisposed()) {
-              chart.resize();
-            }
-          });
-          this.adjustCarouselHeight();
-        }, 100); // 添加100ms的延迟
-      });
     }
-  },
-  // 新增方法：调整轮播图高度
-  adjustCarouselHeight() {
-    const carousel = document.querySelector('.chart-carousel');
-    if (!carousel) return;
-
-    if (this.isFullscreen) {
-      carousel.style.height = 'calc(100vh - 200px)'; // 全屏时自适应高度
-    } else {
-      carousel.style.height = '600px'; // 恢复默认高度
-    }
-    // 手动触发轮播图内部重绘
-    this.chartList.forEach(chart => {
-      if (!chart.isDisposed()) {
-        chart.resize();
-      }
-    });
   },
   beforeDestroy() {
     // 清除图表实例
@@ -674,12 +591,10 @@ export default {
     // 清除定时器
     if (this.weatherTimer) {
       clearInterval(this.weatherTimer)
-    }
-    if (this.dateTimer) {
-      clearInterval(this.dateTimer);
+      this.weatherTimer = null;
     }
 
-    // 移除全屏变化事件监听 TODO
+    // 移除全屏变化事件监听
     document.removeEventListener('fullscreenchange', this.handleFullscreenChange);
     document.removeEventListener('webkitfullscreenchange', this.handleFullscreenChange);
     document.removeEventListener('mozfullscreenchange', this.handleFullscreenChange);
@@ -692,7 +607,7 @@ export default {
 <style lang="scss" scoped>
 .newwyzk-container {
   width: 100%;
-  //小小bug找得老子好苦。。。
+  //。。。
   //height: 100vh;
   min-height: 100vh;
   background: linear-gradient(135deg, #1a2b3c 0%, #2d1b3c 100%);
@@ -700,7 +615,8 @@ export default {
   box-sizing: border-box;
   min-width: 1024px;
   position: relative;
-  //overflow: auto;
+  //丑点能用就这样吧
+  overflow: auto;
 
   &::before {
     content: '';
