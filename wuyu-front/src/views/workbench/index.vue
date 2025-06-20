@@ -1,17 +1,40 @@
 <template>
   <div class="container">
-    <!-- 公告列表显示 -->
+    <div class="header">
+      <div class="header-left">
+        <span class="title">工作台</span>
+        <div class="statistics">
+          <el-tag type="success" effect="plain">已读: {{ readCount }}</el-tag>
+          <el-tag type="info" effect="plain">未读: {{ unreadCount }}</el-tag>
+        </div>
+      </div>
+      <div class="search-box">
+        <el-input
+          v-model="searchQuery"
+          placeholder="搜索公告主题或内容"
+          prefix-icon="el-icon-search"
+          clearable
+          @clear="handleSearch"
+          @input="handleSearch">
+        </el-input>
+      </div>
+    </div>
+
+    <!-- 公告列表 -->
     <div class="announcement-list">
       <el-card
         v-for="(item, index) in notifications"
         :key="index"
         class="announcement-card"
+        :class="{'is-read': item.isRead}"
         shadow="hover">
         <div class="card-header">
           <span :class="{'is-important': item.isImportant}">公告标题：{{ item.theme }}</span>
           <div class="card-buttons">
             <el-tag v-if="item.isImportant" size="mini" type="danger" class="important-tag">重要</el-tag>
             <el-tag v-else size="mini" type="info" class="unread-tag">普通</el-tag>
+            <el-tag v-if="item.isRead" size="mini" type="success">已读</el-tag>
+            <el-tag v-else size="mini" type="warning">未读</el-tag>
           </div>
         </div>
         <div class="card-content">
@@ -26,10 +49,24 @@
         <div class="card-footer">
           <span class="release-time">发布时间：{{ item.releaseTime }}</span>
           <div class="action-buttons">
-            <el-button v-if="!item.isRead" type="text" >确认收到</el-button>
+            <el-button v-if="!item.isRead" type="text" @click.stop="markAsRead(item.id)">确认已读</el-button>
           </div>
         </div>
       </el-card>
+    </div>
+
+    <!-- 分页组件 -->
+    <div class="pagination-container">
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="pageNum"
+        :page-sizes="[10, 20, 50, 100]"
+        :page-size="pageSize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total"
+        background>
+      </el-pagination>
     </div>
 
     <!-- 查看公告详情对话框 -->
@@ -53,24 +90,97 @@
 </template>
 
 <script>
-import { getNoticeList } from "@/api/notice";
+import { getNoticeList, markNoticeAsRead, getNoticeStatistics } from "@/api/notice";
 
 export default {
   data() {
     return {
       notifications: [],
+      searchQuery: '',
       dialogVisible: false,
       currentAnnouncement: {},
-      contentPreviewLimit: 20 // 公告内容预览字数限制
+      pageNum: 1, // 当前页码
+      pageSize: 10, // 每页大小
+      total: 0, // 总记录数
+      identityId:null,
+      contentPreviewLimit: 20, // 公告内容预览字数限制
+      statistics: {
+        readCount: 0,
+        unreadCount: 0
+      }
     };
+  },
+
+  computed: {
+    readCount() {
+      return this.statistics.readCount;
+    },
+    unreadCount() {
+      return this.statistics.unreadCount;
+    }
+  },
+
+  watch: {
+    // 不需要监听 notifications 变化来触发 handleSearch，因为现在 load 会直接更新 filteredNotifications
+    // 而是监听 searchQuery, pageNum, pageSize 的变化来触发 load
+    searchQuery() {
+      this.pageNum = 1; // 搜索时重置页码
+      this.load();
+    },
+    pageNum() {
+      this.load();
+    },
+    pageSize() {
+      this.load();
+    }
   },
 
   mounted() {
     this.load();
+    this.loadStatistics();
   },
 
   methods: {
+    getCurrentUserId() { //获得用户id
+      try {
+        const userInfoString = localStorage.getItem("UserInfo");
+        if (userInfoString) {
+          const userInfo = JSON.parse(userInfoString);
+          return userInfo.id;
+        }
+      } catch (e) {
+        console.error("从 localStorage 解析 UserInfo 失败", e);
+      }
+      return null;
+    },
+
     load() {
+      const userId = this.getCurrentUserId();
+      if (!userId) {
+        this.$message.error("无法获取用户ID，请重新登录");
+        return;
+      }
+      // 获取用户身份ID
+      let identityId = null;
+      try {
+        const userInfoString = localStorage.getItem("UserInfo");
+        if (userInfoString) {
+          const userInfo = JSON.parse(userInfoString);
+          identityId = userInfo.identity;
+          this.identityId = identityId
+        }
+      } catch (e) {
+        console.error("从 localStorage 解析 UserInfo 失败", e);
+      }
+
+      const query = { //构建query查询条件
+        userId: userId,
+        keyword: this.searchQuery,
+        pageNum: this.pageNum,
+        pageSize: this.pageSize,
+        identityId: identityId // 添加身份ID到查询参数
+      };
+
       getNoticeList(query).then(res => { //页面加载时请求公告数据
         if (res.code === 200) {
           console.log('工作台页面返回数据：', res.data);
@@ -86,6 +196,14 @@ export default {
       });
     },
 
+    formatDate(dateString) {
+      const date = new Date(dateString);
+      return {
+        day: date.getDate(),
+        month: `${date.getMonth() + 1}月`
+      };
+    },
+
     showButton(item) {
       this.currentAnnouncement = item;
       this.dialogVisible = true;
@@ -93,6 +211,78 @@ export default {
 
     handleClose(done) {
       done();
+    },
+
+    loadStatistics() {
+      const userId = this.getCurrentUserId();
+      if (!userId) {
+        this.$message.error("无法获取用户ID，请重新登录");
+        return;
+      }
+
+      // 确保userId是数字类型
+      const numericUserId = Number(userId);
+      if (isNaN(numericUserId)) {
+        this.$message.error("用户ID格式错误");
+        return;
+      }
+
+      getNoticeStatistics(numericUserId,this.identityId).then(res => {
+        if (res.code === 200) {
+          this.statistics = res.data;
+        } else {
+          this.$message.error("获取公告统计信息失败");
+        }
+      }).catch(error => {
+        console.error("获取公告统计信息失败:", error);
+        this.$message.error("获取公告统计信息失败");
+      });
+    },
+
+    markAsRead(id) {
+      this.$confirm('此操作将把该公告标记为已读, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        const userId = this.getCurrentUserId();
+        if (!userId) {
+          this.$message.error("无法获取用户ID，请重新登录。");
+          return;
+        }
+        markNoticeAsRead(id, userId).then(res => {
+          if (res.code === 200) {
+            this.$message.success("标记已读成功");
+            this.load(); // 重新加载当前页数据
+            this.loadStatistics(); // 重新加载统计信息
+          } else {
+            this.$message.error("标记已读失败: " + res.message);
+          }
+        }).catch(error => {
+          console.error("标记已读请求失败:", error);
+          this.$message.error("标记已读请求失败");
+        });
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消标记'
+        });
+      });
+    },
+
+    handleSearch() {
+      this.pageNum = 1; // 搜索时重置页码到第一页
+      this.load();
+    },
+
+    handleSizeChange(newSize) {
+      this.pageSize = newSize;
+      // this.load() 会被 watch 触发，无需在此再次调用
+    },
+
+    handleCurrentChange(newPage) {
+      this.pageNum = newPage;
+      // this.load() 会被 watch 触发，无需在此再次调用
     },
 
     getPreviewContent(content) {

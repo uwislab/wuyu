@@ -106,6 +106,12 @@ export const asyncRoutes = [
         name: "个人信息",
         meta: { title: "个人信息", role: [0,4] },
       },
+      {
+        path: "/workbench/index",
+        component: () => import("@/views/workbench/index"),
+        name: "工作台",
+        meta: { title: "工作台", role: [0,4] },
+      },
     ],
   },
   {
@@ -892,12 +898,6 @@ export const asyncRoutes = [
         component: () => import("@/views/demonstrate/grade"),
         name: "年级成绩展示",
         meta: { title: "年级成绩展示", role: [0,4] },
-      },
-      {
-        path: "newwyzk",
-        component: () => import("@/views/demonstrate/newwyzk"),
-        name: "新中控大屏",
-        meta: { title: "新中控大屏", role: [0,4] },
       },
     ],
   },

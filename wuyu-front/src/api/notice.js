@@ -25,4 +25,20 @@ export function getNoticeList(query) {
     params: query
   })
 }
+// 获取公告已读未读统计
+export function getNoticeStatistics(userId,identityId) {
+  return request({
+    url: '/api/notice/statistics',
+    method: 'get',
+    params: { userId,identityId }
+  })
+}
+// 标记公告为已读
+export function markNoticeAsRead(id, userId) {
+  return request({
+    url: `/api/notice/read/${id}`,
+    method: 'put',
+    params: { userId }
+  })
+}
 
