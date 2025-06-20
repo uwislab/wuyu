@@ -8,6 +8,7 @@ import com.fiveup.core.fuScore.entity.vo.FuClassAvgScoreVO;
 import com.fiveup.core.fuScore.entity.vo.FuGradeAvgScoreVO;
 import com.fiveup.core.fuScore.mapper.FuClassScoreMapper;
 import com.fiveup.core.fuScore.service.FuClassScoreService;
+import com.fiveup.core.util.CaffeineUtil;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,26 +25,29 @@ public class FuClassScoreServiceImpl extends ServiceImpl<FuClassScoreMapper, FuC
 
     @Override
     public List<FuClassAvgScoreVO> getClassAvgScore(Integer semester, String clazz) {
-        List<FuClassScorePO> fuClassScorePOS = list(
-                new LambdaQueryWrapper<FuClassScorePO>()
-                        .eq(FuClassScorePO::getClassName, clazz)
-                        .ge(FuClassScorePO::getData, semester * 100 + 12)
-                        .le(FuClassScorePO::getData, semester * 100 + 107)
-                        .orderByAsc(FuClassScorePO::getGradeId)
-        );
-        return fuClassScorePOS.stream().map(item -> {
-            return FuClassAvgScoreVO.builder()
-                    .gradeId(item.getGradeId())
-                    .classId(item.getClassId())
-                    .className(item.getClassName())
-                    .moralityScore(item.getMoralityScore())
-                    .intelligenceScore(item.getIntelligenceScore())
-                    .physicalScore(item.getPhysicalScore())
-                    .aestheticScore(item.getAestheticScore())
-                    .labourScore(item.getLabourScore())
-                    .data(item.getData())
-                    .build();
-        }).collect(Collectors.toList());
+        String cacheKey = "classAvgScore:" + semester + ":" + clazz;
+        return CaffeineUtil.get(cacheKey, key -> {
+            List<FuClassScorePO> fuClassScorePOS = list(
+                    new LambdaQueryWrapper<FuClassScorePO>()
+                            .eq(FuClassScorePO::getClassName, clazz)
+                            .ge(FuClassScorePO::getData, semester * 100 + 12)
+                            .le(FuClassScorePO::getData, semester * 100 + 107)
+                            .orderByAsc(FuClassScorePO::getGradeId)
+            );
+            return fuClassScorePOS.stream().map(item -> {
+                return FuClassAvgScoreVO.builder()
+                        .gradeId(item.getGradeId())
+                        .classId(item.getClassId())
+                        .className(item.getClassName())
+                        .moralityScore(item.getMoralityScore())
+                        .intelligenceScore(item.getIntelligenceScore())
+                        .physicalScore(item.getPhysicalScore())
+                        .aestheticScore(item.getAestheticScore())
+                        .labourScore(item.getLabourScore())
+                        .data(item.getData())
+                        .build();
+            }).collect(Collectors.toList());
+        });
     }
 }
 

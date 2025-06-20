@@ -385,7 +385,13 @@ public class FuScoreController {
     public CommonResponse<List<Map<String, Object>>> getGradeInfo() {
         return CommonResponse.ok(fuGradeScoreService.getGradeInfo());
     }
-    
+
+    /**
+     * 获取班级五育成绩
+     * @param semester
+     * @param clazz
+     * @return
+     */
     @GetMapping("/class/avgScore")
     public CommonResponse<List<FuClassAvgScoreVO>> getClassAvgScore(@NotNull(message = "请选择学期") Integer semester, 
                                                                     @NotNull(message = "请选择班级") String clazz) {

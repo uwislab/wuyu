@@ -7,6 +7,7 @@ import com.fiveup.core.fuScore.entity.po.FuGradeScorePO;
 import com.fiveup.core.fuScore.entity.vo.FuGradeAvgScoreVO;
 import com.fiveup.core.fuScore.mapper.FuGradeScoreMapper;
 import com.fiveup.core.fuScore.service.FuGradeScoreService;
+import com.fiveup.core.util.CaffeineUtil;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,43 +25,48 @@ public class FuGradeScoreServiceImpl extends ServiceImpl<FuGradeScoreMapper, FuG
 
     @Override
     public List<FuGradeAvgScoreVO> getGradeAvgScore(Integer semester) {
-        List<FuGradeScorePO> fuGradeScorePOS = list(
-                new LambdaQueryWrapper<FuGradeScorePO>()
-                        .ge(FuGradeScorePO::getData, semester * 100 + 12)
-                        .le(FuGradeScorePO::getData, semester * 100 + 107)
-                        .orderByAsc(FuGradeScorePO::getGradeId)
-        );
-        return fuGradeScorePOS.stream()
-                .map(item -> {
-                    return FuGradeAvgScoreVO.builder()
-                            .gradeId(item.getGradeId())
-                            .gradeName(item.getGradeName())
-                            .moralityScore(item.getMoralityScore())
-                            .intelligenceScore(item.getIntelligenceScore())
-                            .physicalScore(item.getPhysicalScore())
-                            .aestheticScore(item.getAestheticScore())
-                            .labourScore(item.getLabourScore())
-                            .data(item.getData())
-                            .build();
-                })
-                .collect(Collectors.toList());
+        String cacheKey = "gradeAvgScore:" + semester;
+        return CaffeineUtil.get(cacheKey, key -> {
+            List<FuGradeScorePO> fuGradeScorePOS = list(
+                    new LambdaQueryWrapper<FuGradeScorePO>()
+                            .ge(FuGradeScorePO::getData, semester * 100 + 12)
+                            .le(FuGradeScorePO::getData, semester * 100 + 107)
+                            .orderByAsc(FuGradeScorePO::getGradeId)
+            );
+            return fuGradeScorePOS.stream()
+                    .map(item -> {
+                        return FuGradeAvgScoreVO.builder()
+                                .gradeId(item.getGradeId())
+                                .gradeName(item.getGradeName())
+                                .moralityScore(item.getMoralityScore())
+                                .intelligenceScore(item.getIntelligenceScore())
+                                .physicalScore(item.getPhysicalScore())
+                                .aestheticScore(item.getAestheticScore())
+                                .labourScore(item.getLabourScore())
+                                .data(item.getData())
+                                .build();
+                    })
+                    .collect(Collectors.toList());
+        });
     }
 
     @Override
     public List<Map<String, Object>> getGradeInfo() {
-        List<FuGradeScorePO> gradeInfo = list(
-                new LambdaQueryWrapper<FuGradeScorePO>()
-                        .select(FuGradeScorePO::getGradeId, FuGradeScorePO::getGradeName)
-                        .groupBy(FuGradeScorePO::getGradeId)
-                        .groupBy(FuGradeScorePO::getGradeName)
-        );
-        return gradeInfo.stream()
-                .map(fuGradeScorePO -> {
-                    return MapUtil.<String,Object>builder()
-                            .put("gradeId", fuGradeScorePO.getGradeId())
-                            .put("gradeName", fuGradeScorePO.getGradeName())
-                            .build();
-                })
-                .collect(Collectors.toList());
+        return CaffeineUtil.get("gradeInfo", key -> {
+            List<FuGradeScorePO> gradeInfo = list(
+                    new LambdaQueryWrapper<FuGradeScorePO>()
+                            .select(FuGradeScorePO::getGradeId, FuGradeScorePO::getGradeName)
+                            .groupBy(FuGradeScorePO::getGradeId)
+                            .groupBy(FuGradeScorePO::getGradeName)
+            );
+            return gradeInfo.stream()
+                    .map(fuGradeScorePO -> {
+                        return MapUtil.<String,Object>builder()
+                                .put("gradeId", fuGradeScorePO.getGradeId())
+                                .put("gradeName", fuGradeScorePO.getGradeName())
+                                .build();
+                    })
+                    .collect(Collectors.toList());
+        });
     }
 }
