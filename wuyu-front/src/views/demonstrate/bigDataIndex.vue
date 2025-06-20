@@ -22,17 +22,17 @@
         <div class="item left">
           <div class="panel">
             <h2>德育各年级变化</h2>
-            <div id="id0" style="width: 350px;height: 200px"></div>
+            <div id="id0" style="width: 350px;height: 220px; margin-top: -10px;"></div>
             <!--            <div class="panel-footer"></div>-->
           </div>
           <div class="panel">
             <h2>智育各年级变化</h2>
-            <div id="id1" style="width: 350px;height: 200px"></div>
+            <div id="id1" style="width: 350px;height: 220px; margin-top: -10px;"></div>
             <!--            <div class="panel-footer"></div>-->
           </div>
           <div class="panel">
             <h2>体育各年级变化</h2>
-            <div id="id2" style="width: 350px;height: 200px"></div>
+            <div id="id2" style="width: 350px;height: 220px; margin-top: -10px;"></div>
             <!--            <div class="panel-footer"></div>-->
           </div>
         </div>
@@ -71,13 +71,13 @@
             </div>
             <h3 style="color: white;text-align: center">五育标兵</h3>
             <el-carousel :autoplay="true" indicator-position="none" :interval="5000" arrow="always" height="250px" class="carousel-container">
-              <el-carousel-item v-for="(item, index) in 6" :key="index">
-                <div class="panel panel-carousel">
-                  <div class="panel-header">
+              <el-carousel-item v-for="(item, index) in 5" :key="index">
+                <div class="panel panel-carousel" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; background: transparent;">
+                  <div class="panel-header" style="margin-bottom: 10px;">
                     <span class="panel-title">{{ typeList[index] }}育标兵</span>
                     <div class="panel-header-border"></div>
                   </div>
-                  <div class="echart" :id="'xygrChart' + (index + 1)" :style="myChartStyle"></div>
+                  <img :src="pictureList1[index % pictureList1.length]" alt="标兵图片" style="width: 500px; height: 200px; object-fit: cover; border-radius: 18px; box-shadow: 0 8px 28px rgba(0,0,0,0.22);">
                 </div>
               </el-carousel-item>
             </el-carousel>
@@ -87,12 +87,12 @@
         <div class="item right">
           <div class="panel">
             <h2>美育各年级变化</h2>
-            <div id="id3" style="width: 350px;height: 200px"></div>
+            <div id="id3" style="width: 350px;height: 220px; margin-top: -10px;"></div>
             <!--            <div class="panel-footer"></div>-->
           </div>
           <div class="panel">
             <h2>劳育各年级变化</h2>
-            <div id="id4" style="width: 350px;height: 200px"></div>
+            <div id="id4" style="width: 350px;height: 220px; margin-top: -10px;"></div>
             <!--            <div class="panel-footer"></div>-->
           </div>
           <div class="panel">
@@ -125,14 +125,14 @@ export default {
   data() {
     return {
       pictureList1: [
-        "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimg.jj20.com%2Fup%2Fallimg%2Ftp06%2F200QQU3202Y7-0-lp.jpg&refer=http%3A%2F%2Fimg.jj20.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1656687720&t=7cae6f9a936d1ce9b590ee9f4f574fc4",
-        "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimg.jj20.com%2Fup%2Fallimg%2F1114%2F0R620115Q8%2F200R6115Q8-6-1200.jpg&refer=http%3A%2F%2Fimg.jj20.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1656687720&t=c87971b1dfb562bd6e4314165076c073",
-        "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimg.jj20.com%2Fup%2Fallimg%2F1114%2F102920105033%2F201029105033-6-1200.jpg&refer=http%3A%2F%2Fimg.jj20.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1656687720&t=93f86a9d21d937fdba1c824955f87a60"
+        "https://i04piccdn.sogoucdn.com/2b58f7955a60852f",
+        "https://i04piccdn.sogoucdn.com/4c32f3068e5a5124",
+        "https://i02piccdn.sogoucdn.com/1872684e9d957a10"
       ],
       pictureList2: [
-        "https://img2.baidu.com/it/u=2513024551,2896067572&fm=253&fmt=auto&app=138&f=JPEG?w=667&h=500",
-        "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimg.jj20.com%2Fup%2Fallimg%2F1113%2F060120105F7%2F200601105F7-3-1200.jpg&refer=http%3A%2F%2Fimg.jj20.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1656687720&t=867c801f0911ed362a3d06f2c1fff054",
-        "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimg.jj20.com%2Fup%2Fallimg%2F1114%2F102920105033%2F201029105033-1-1200.jpg&refer=http%3A%2F%2Fimg.jj20.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1656687720&t=b8754d6573884c844088a92959416fcf"
+        "https://i01piccdn.sogoucdn.com/f02186169a45663d",
+        "https://i03piccdn.sogoucdn.com/9159a1772fee80f7",
+        "https://i04piccdn.sogoucdn.com/2b58f7955a60852f"
       ],
 
 
@@ -141,8 +141,11 @@ export default {
       week: '',
       date: '',
       timer: null,
-      imgSrc: '',
-      weatcherData: {},
+      imgSrc: require('../../assets/img/brand/qing.png'),
+      weatcherData: {
+        tem: '--',
+        wea: '未知'
+      },
       startVal: 0,
       chartList: [],
       typeList: ['德', '智', '体', '美', '劳'],
@@ -212,14 +215,14 @@ export default {
         '六年级': { deyu: 35, zhiyu: 25, tiyu: 45, meiyu: 30, laoyu: 35 },
         gradeList: ['一年级', '二年级', '三年级', '四年级', '五年级', '六年级']
       };
-      
+
       // 合并实际数据和模拟数据
       const mergedData = {
         ...mockData,
         ...e,
         gradeList: e.gradeList || mockData.gradeList
       };
-      
+
       setTimeout(() => {
         this.initWydcChart(mergedData);
       }, 500);
@@ -301,9 +304,95 @@ export default {
       this.nowTimes = null;
     },
     getWeather() { // 第三方天气api接口
-      this.imgSrc = require('../../assets/img/brand/qing.png');
+      // 先获取城市位置
+      this.getLocation().then(location => {
+        const key = 'd1f1e40002524874b27188d57349f3b0'; // 和风天气API key
+
+        fetch(`https://devapi.qweather.com/v7/weather/now?location=${location}&key=${key}`)
+          .then(response => response.json())
+          .then(data => {
+            if(data.code === '200') {
+              const weather = data.now;
+              this.weatcherData = {
+                tem: weather.temp,
+                wea: weather.text
+              };
+
+              // 根据天气状况设置对应的图标
+              const weatherIcons = {
+                '晴': 'qing.png',
+                '多云': 'yun.png',
+                '阴': 'yin.png',
+                '小雨': 'yu.png',
+                '中雨': 'yu.png',
+                '大雨': 'yu.png',
+                '雷阵雨': 'yu.png',
+                '小雪': 'xue.png',
+                '中雪': 'xue.png',
+                '大雪': 'xue.png',
+                '雾': 'wu.png',
+                '沙尘暴': 'shachen.png',
+                '浮尘': 'shachen.png',
+                '扬沙': 'shachen.png',
+                '强沙尘暴': 'shachen.png',
+                '阵雪': 'xue.png',
+                '毛毛雨': 'yu.png',
+                '暴雨': 'yu.png',
+                '大暴雨': 'yu.png',
+                '特大暴雨': 'yu.png',
+                '强阵雨': 'yu.png',
+                '强雷阵雨': 'yu.png',
+                '雨': 'yu.png',
+                '雪': 'xue.png'
+              };
+
+              this.imgSrc = require(`../../assets/img/brand/${weatherIcons[weather.text] || 'qing.png'}`);
+            }
+          })
+          .catch(error => {
+            console.error('获取天气数据失败:', error);
+            // 设置默认值
+            this.weatcherData = {
+              tem: '--',
+              wea: '未知'
+            };
+            this.imgSrc = require('../../assets/img/brand/qing.png');
+          });
+      });
     },
 
+    // 获取城市位置
+    getLocation() {
+      return new Promise((resolve, reject) => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            position => {
+              const { latitude, longitude } = position.coords;
+              // 使用和风天气的城市查询API获取城市ID
+              const key = 'd1f1e40002524874b27188d57349f3b0'; // 和风天气API key
+              fetch(`https://geoapi.qweather.com/v2/city/lookup?location=${longitude},${latitude}&key=${key}`)
+                .then(response => response.json())
+                .then(data => {
+                  if(data.code === '200' && data.location && data.location.length > 0) {
+                    resolve(data.location[0].id);
+                  } else {
+                    resolve('101010100'); // 默认北京
+                  }
+                })
+                .catch(() => {
+                  resolve('101010100'); // 默认北京
+                });
+            },
+            error => {
+              console.error('获取位置失败:', error);
+              resolve('101010100'); // 默认北京
+            }
+          );
+        } else {
+          resolve('101010100'); // 默认北京
+        }
+      });
+    },
     initChart(divId, index, myColor, legendData, riqi, series) {
       const myChart = echarts.init(document.getElementById(divId))
       const option = {
@@ -324,120 +413,127 @@ export default {
           }
         },
         legend: {
-          data: legendData,
-          textStyle: {
-            color: '#fff',
-            fontSize: 12
-          },
-          top: 30
+          show: false,
         },
         grid: {
-          left: '10%',
-          right: '10%',
-          bottom: '15%',
+          left: '8%',
+          right: '8%',
+          bottom: '14%',
+          top: 60,
           containLabel: true
         },
         xAxis: {
           type: 'category',
           boundaryGap: false,
-          data: ['2020-2021学年', '2021-2022学年', '2022-2023学年'],
+          data: riqi,
           axisLabel: {
             show: true,
-            textStyle: {
-              color: '#fff'
-            },
+            color: '#333',
+            fontSize: 13,
+            fontWeight: 400,
             interval: 0,
-            formatter: function (params) {
-              var newParamsName = "";
-              var paramsNameNumber = params.length;
-              var provideNumber = 9;
-              var rowNumber = Math.ceil(paramsNameNumber / provideNumber);
-              if (paramsNameNumber > provideNumber) {
-                for (var p = 0; p < rowNumber; p++) {
-                  var tempStr = "";
-                  var start = p * provideNumber;
-                  var end = start + provideNumber;
-                  if (p == rowNumber - 1) {
-                    tempStr = params.substring(start, paramsNameNumber);
-                  } else {
-                    tempStr = params.substring(start, end) + "\n";
-                  }
-                  newParamsName += tempStr;
-                }
-              } else {
-                newParamsName = params;
-              }
-              return newParamsName;
-            }
+            margin: 12
           },
           axisLine: {
             lineStyle: {
-              color: 'rgba(255, 255, 255, 0.2)'
+              color: '#d9d9d9',
+              width: 1
             }
           },
-          splitLine: {
-            show: false
-          }
+          axisTick: { show: false },
+          splitLine: { show: false }
         },
         yAxis: {
           type: 'value',
           name: '分数',
           nameTextStyle: {
-            color: '#fff'
+            color: '#666',
+            fontSize: 13,
+            fontWeight: 400
           },
           axisLabel: {
             show: true,
-            textStyle: {
-              color: '#fff'
-            }
+            color: '#333',
+            fontSize: 13,
+            margin: 16
           },
           axisLine: {
             lineStyle: {
-              color: 'rgba(255, 255, 255, 0.2)'
+              color: '#d9d9d9',
+              width: 1
             }
           },
+          axisTick: { show: false },
           splitLine: {
             lineStyle: {
-              color: 'rgba(255, 255, 255, 0.1)'
+              color: '#ededed',
+              type: 'dashed',
+              width: 1
             }
           },
           min: 60,
           max: 100
         },
-        series: series.map(item => ({
+        series: series.map((item, idx) => ({
           ...item,
           type: 'line',
           smooth: true,
           symbol: 'circle',
-          symbolSize: 8,
+          symbolSize: 7,
           itemStyle: {
-            color: myColor
+            color: myColor,
+            borderColor: myColor,
+            borderWidth: 0,
+            shadowColor: 'transparent',
+            shadowBlur: 0
+          },
+          emphasis: {
+            focus: 'series',
+            itemStyle: {
+              borderColor: myColor,
+              borderWidth: 0,
+              shadowColor: 'transparent',
+              shadowBlur: 0
+            },
+            lineStyle: {
+              width: 3
+            }
           },
           lineStyle: {
             width: 2,
-            color: myColor
+            color: myColor,
+            shadowColor: 'transparent',
+            shadowBlur: 0
           },
-          areaStyle: {
-            color: {
-              type: 'linear',
-              x: 0,
-              y: 0,
-              x2: 0,
-              y2: 1,
-              colorStops: [{
-                offset: 0,
-                color: myColor // 0% 处的颜色
-              }, {
-                offset: 1,
-                color: 'rgba(0,0,0,0)' // 100% 处的颜色
-              }]
-            }
+          areaStyle: undefined,
+          label: {
+            show: true,
+            position: 'top',
+            color: '#333',
+            fontWeight: 'normal',
+            fontSize: 13,
+            backgroundColor: 'transparent',
+            borderRadius: 0,
+            padding: 0,
+            distance: 8,
+            formatter: function(params) { return params.value; }
           }
-        }))
+        })),
+        tooltip: {
+          trigger: 'axis',
+          backgroundColor: '#fff',
+          borderColor: '#d9d9d9',
+          borderWidth: 1,
+          textStyle: {
+            color: '#333',
+            fontSize: 13
+          },
+          extraCssText: 'border-radius: 4px; box-shadow: 0 2px 8px #eee;'
+        },
       };
       myChart.setOption(option)
       this.chartList.push(myChart)
-      
+
       // 设置自适应
       window.addEventListener('resize', () => {
         myChart.resize();
@@ -447,7 +543,7 @@ export default {
       const kemu = ['deyu', 'zhiyu', 'tiyu', 'meiyu', 'laoyu']
       const kumuName = ['德育', '智育', '体育', '美育', '劳育']
       const colors = ['#FF4B55', '#4B7BE5', '#23B7E5', '#7265E6', '#FFAB2B'];
-      
+
       api.getXYStudent()
         .then(res => {
           kemu.forEach((element, index) => {
@@ -598,11 +694,11 @@ export default {
     initWydcChart(data) {
       const myChart = echarts.init(document.getElementById('wydcChart'))
       console.log('初始化图表数据:', data); // 添加日志
-      
+
       // 处理数据，确保数据格式正确
       const gradeList = ['一年级', '二年级', '三年级', '四年级', '五年级', '六年级'];
       const colors = ['#FF4B55', '#4B7BE5', '#23B7E5', '#7265E6', '#FFAB2B', '#00BFA5'];
-      
+
       // 添加数据验证和默认值
       const defaultData = {
         deyu: 0,
@@ -614,7 +710,7 @@ export default {
 
       const seriesData = gradeList.map((grade, index) => {
         const gradeData = data[grade] || defaultData;
-        
+
         // 确保所有数值都是有效的数字
         const values = [
           'deyu',
@@ -868,15 +964,15 @@ export default {
       try {
         const promises = this.grades.map(grade => getGradeScore(grade));
         const results = await Promise.all(promises);
-        
+
         // Process the results
         const gradeScores = {};
         results.forEach((result, index) => {
           gradeScores[this.grades[index]] = result;
         });
-        
+
         this.gradeScores = gradeScores;
-        
+
         // Initialize charts with the new data
         for (let i = 0; i < this.typeList.length; i++) {
           const seriesData = this.grades.map(grade => {
@@ -886,7 +982,7 @@ export default {
               data: this.gradeScores[grade].map(yearData => yearData[this.typeEnList[i]])
             };
           });
-          
+
           this.initChart('id' + i, this.typeList[i], this.colorList[i], this.grades, this.yearList, seriesData);
         }
       } catch (error) {
@@ -900,10 +996,14 @@ export default {
           trigger: 'axis'
         },
         legend: {
-          data: legendData,
-          textStyle: {
-            color: '#fffff'//字体颜色
-          }
+          show: false,
+        },
+        grid: {
+          left: '8%',
+          right: '8%',
+          bottom: '14%',
+          top: 60,
+          containLabel: true
         },
         xAxis: {
           type: 'category',
@@ -911,53 +1011,108 @@ export default {
           data: yearList,
           axisLabel: {
             show: true,
-            textStyle: {
-              color: '#fff'
-            },
-            interval: 0,//使x轴文字显示全
-            formatter: function (params) {
-              var newParamsName = "";
-              var paramsNameNumber = params.length;
-              var provideNumber = 9; //一行显示几个字
-              var rowNumber = Math.ceil(paramsNameNumber / provideNumber);
-              if (paramsNameNumber > provideNumber) {
-                for (var p = 0; p < rowNumber; p++) {
-                  var tempStr = "";
-                  var start = p * provideNumber;
-                  var end = start + provideNumber;
-                  if (p == rowNumber - 1) {
-                    tempStr = params.substring(start, paramsNameNumber);
-                  } else {
-                    tempStr = params.substring(start, end) + "\n";
-                  }
-                  newParamsName += tempStr;
-                }
-              } else {
-                newParamsName = params;
-              }
-              return newParamsName;
+            color: '#333',
+            fontSize: 13,
+            fontWeight: 400,
+            interval: 0,
+            margin: 12
+          },
+          axisLine: {
+            lineStyle: {
+              color: '#d9d9d9',
+              width: 1
             }
-          }
+          },
+          axisTick: { show: false },
+          splitLine: { show: false }
         },
         yAxis: {
           type: 'value',
+          name: '分数',
+          nameTextStyle: {
+            color: '#666',
+            fontSize: 13,
+            fontWeight: 400
+          },
           axisLabel: {
             show: true,
-            textStyle: {
-              color: '#fff'
-            },
+            color: '#333',
+            fontSize: 13,
+            margin: 16
           },
-          min: 60
+          axisLine: {
+            lineStyle: {
+              color: '#d9d9d9',
+              width: 1
+            }
+          },
+          axisTick: { show: false },
+          splitLine: {
+            lineStyle: {
+              color: '#ededed',
+              type: 'dashed',
+              width: 1
+            }
+          },
+          min: 60,
+          max: 100
         },
-        series: series.map(item => ({
+        series: series.map((item, idx) => ({
           ...item,
+          type: 'line',
           smooth: true,
           symbol: 'circle',
-          symbolSize: 8,
+          symbolSize: 7,
+          itemStyle: {
+            color: myColor,
+            borderColor: myColor,
+            borderWidth: 0,
+            shadowColor: 'transparent',
+            shadowBlur: 0
+          },
+          emphasis: {
+            focus: 'series',
+            itemStyle: {
+              borderColor: myColor,
+              borderWidth: 0,
+              shadowColor: 'transparent',
+              shadowBlur: 0
+            },
+            lineStyle: {
+              width: 3
+            }
+          },
           lineStyle: {
-            width: 2
+            width: 2,
+            color: myColor,
+            shadowColor: 'transparent',
+            shadowBlur: 0
+          },
+          areaStyle: undefined,
+          label: {
+            show: true,
+            position: 'top',
+            color: '#333',
+            fontWeight: 'normal',
+            fontSize: 13,
+            backgroundColor: 'transparent',
+            borderRadius: 0,
+            padding: 0,
+            distance: 8,
+            formatter: function(params) { return params.value; }
           }
-        }))
+        })),
+        tooltip: {
+          trigger: 'axis',
+          backgroundColor: '#fff',
+          borderColor: '#d9d9d9',
+          borderWidth: 1,
+          textStyle: {
+            color: '#333',
+            fontSize: 13
+          },
+          extraCssText: 'border-radius: 4px; box-shadow: 0 2px 8px #eee;'
+        },
       };
       myChart.setOption(option)
       this.chartList.push(myChart)
@@ -984,7 +1139,7 @@ export default {
     line-height: 1.15;
     min-height: 100vh;
     position: relative;
-    
+
     &::before {
       content: '';
       position: absolute;
@@ -1061,15 +1216,15 @@ export default {
 
         .date {
           text-align: right;
-          
+
           span {
             display: block;
-            
+
             &:first-child {
               font-size: .14rem;
               margin-bottom: 0.05rem;
             }
-            
+
             &:last-child {
               font-size: .16rem;
             }
@@ -1089,7 +1244,7 @@ export default {
 
       .item {
         flex: 3;
-        
+
         &.center {
           flex: 5;
         }
@@ -1097,58 +1252,29 @@ export default {
         .panel {
           position: relative;
           height: 3.875rem;
-          background: rgba(1, 134, 218, 0.1);
-          border: 1px solid rgba(1, 134, 218, 0.3);
-          border-radius: 4px;
-          padding: 0.15rem;
-          margin-bottom: 0.1875rem;
-          backdrop-filter: blur(10px);
-          transition: all 0.3s;
+          background: linear-gradient(135deg, rgba(1,134,218,0.18) 0%, rgba(30,41,59,0.22) 100%);
+          border: 1.5px solid rgba(126,240,255,0.18);
+          border-radius: 16px;
+          box-shadow: 0 6px 24px 0 rgba(1,134,218,0.10), 0 1.5px 6px 0 rgba(126,240,255,0.08);
+          padding: 0.22rem 0.18rem;
+          margin-bottom: 0.22rem;
+          backdrop-filter: blur(8px);
+          transition: all 0.3s cubic-bezier(.4,2,.6,1);
 
           &:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(1, 134, 218, 0.2);
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 12px 32px 0 rgba(1,134,218,0.18), 0 2px 8px 0 rgba(126,240,255,0.12);
+            border-color: #7ef0ff;
           }
 
-          .panel-header {
-            position: relative;
-            padding-bottom: 0.15rem;
-            margin-bottom: 0.15rem;
-
-            .panel-title {
-              color: #7ef0ff;
-              font-size: 0.16rem;
-              font-weight: 500;
-            }
-
-            .panel-header-border {
-              position: absolute;
-              bottom: 0;
-              left: 0;
-              width: 100%;
-              height: 1px;
-              background: linear-gradient(to right, rgba(1, 134, 218, 0.8), rgba(1, 134, 218, 0.2));
-
-              &::before,
-              &::after {
-                content: '';
-                position: absolute;
-                width: 10px;
-                height: 10px;
-                border-radius: 50%;
-                background: #0186da;
-                top: 50%;
-                transform: translateY(-50%);
-              }
-
-              &::before {
-                left: 0;
-              }
-
-              &::after {
-                right: 0;
-              }
-            }
+          .panel-header,
+          h2 {
+            color: #7ef0ff;
+            font-size: 0.22rem;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-shadow: 0 2px 8px rgba(126,240,255,0.18);
+            margin-bottom: 0.12rem;
           }
 
           &.panel-main {
@@ -1214,7 +1340,7 @@ export default {
   :deep(.el-carousel__arrow) {
     background: rgba(1, 134, 218, 0.3);
     border: 1px solid rgba(1, 134, 218, 0.5);
-    
+
     &:hover {
       background: rgba(1, 134, 218, 0.5);
     }
