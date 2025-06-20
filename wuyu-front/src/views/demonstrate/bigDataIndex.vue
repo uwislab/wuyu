@@ -6,7 +6,10 @@
           <img :src="imgSrc">
           <span class="tem">{{ weatcherData.tem }}°C</span>
           <span class="wea">{{ weatcherData.wea }}</span>
-          <button @click="click">全屏</button>
+<!--          <button @click="click">全屏</button>-->
+<!--           修改部分开始 -->
+          <button @click="toggleFullscreen">全屏</button>
+<!--           修改部分结束 -->
         </div>
         <h2>五育中控平台</h2>
         <div class="showTime">
@@ -148,6 +151,7 @@ import countTo from 'vue-count-to'
 import api from '@/api/demonstrate/api'
 import echarts from 'echarts'
 import screenfull from 'screenfull'
+
 export default {
   name: 'Brand',
   components: {
@@ -218,6 +222,12 @@ export default {
     })
   },
   mounted() {
+    this.init();
+    // 修改部分开始
+    if (screenfull.enabled) {
+      screenfull.on('change', this.handleFullscreenChange);
+    };
+    // 修改部分结束
     this.getWeather();
     this.timer = setInterval(() => {
       this.getWeather();
@@ -228,6 +238,27 @@ export default {
     this.initXYGREcharts();
   },
   methods: {
+    // 修改部分开始
+    toggleFullscreen() {
+      if (!screenfull.enabled) {
+        this.$message({
+          message: '您的浏览器不支持全屏功能',
+          type: 'warning'
+        });
+        return;
+      }
+      screenfull.toggle(this.$refs.myContent);
+    },
+    handleFullscreenChange() {
+      // 处理全屏状态变化的逻辑
+      if (screenfull.isFullscreen) {
+        // 进入全屏状态
+      } else {
+        // 退出全屏状态
+      }
+    },
+    // 修改部分结束
+
     timeFormate(timeStamp) { //显示当前时间
       let newDate = new Date(timeStamp);
       let year = newDate.getFullYear();
@@ -546,6 +577,11 @@ export default {
   beforeDestroy() {
     clearInterval(this.timer);
     this.destroyChart();
+    // 修改部分开始
+    if (screenfull.enabled) {
+      screenfull.off('change', this.handleFullscreenChange);
+    }
+    // 修改部分结束
   },
 }
 </script>
@@ -917,11 +953,23 @@ export default {
   html {
     font-size: 42px !important;
   }
+  // 修改部分开始
+  .mainbox {
+    flex-direction: column;
+  }
+
+  .item {
+    width: 100%;
+    margin-bottom: 0.1875rem;
+  }
+  // 修改部分结束
 }
 
 @media screen and (min-width: 1920px) {
   html {
     font-size: 80px !important;
   }
+
 }
+
 </style>
