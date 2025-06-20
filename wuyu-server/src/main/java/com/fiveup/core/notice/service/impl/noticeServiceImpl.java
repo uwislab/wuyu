@@ -2,10 +2,10 @@ package com.fiveup.core.notice.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fiveup.core.excption.AppException;
-import com.fiveup.core.notice.entity.NoticeEntity;
-import com.fiveup.core.notice.entity.NoticeIdentityEntity;
-import com.fiveup.core.notice.entity.UserIdentity;
+import com.fiveup.core.notice.entity.*;
+import com.fiveup.core.notice.mapper.noticeIdentityMappingMapper;
 import com.fiveup.core.notice.mapper.noticeMapper;
+import com.fiveup.core.notice.mapper.noticeReadRecordMapper;
 import com.fiveup.core.notice.service.noticeService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -23,13 +23,19 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class noticeServiceImpl implements noticeService {
 
+    @Autowired
+    private noticeReadRecordMapper noticeReadRecordMapper;
+    @Autowired
+    private noticeIdentityMappingMapper noticeIdentityMappingMapper;
     @Resource
     private noticeMapper noticeMapper;
 
@@ -191,6 +197,32 @@ public class noticeServiceImpl implements noticeService {
         // 从 PageInfo 获取每页大小
         resultPage.setPageSize(pageInfo.getPageSize());
         return resultPage;
+    }
+    @Override
+    public void markAsRead(Long noticeId, int userId) {
+        // 检查是否已读
+        NoticeReadRecord record = noticeReadRecordMapper.selectByNoticeIdAndUserId(noticeId, userId);
+        if (record != null) {
+            return;
+        }
+
+        // 创建阅读记录
+        NoticeReadRecord newRecord = new NoticeReadRecord();
+        newRecord.setNoticeId(noticeId);
+        newRecord.setUserId(userId);
+        noticeReadRecordMapper.insert(newRecord);
+    }
+    @Override
+    public Map<String, Object> getNoticeStatistics(int userId, String identityId) {
+        Map<String, Object> result = new HashMap<>();
+        // 查询该用户已读数量
+        int readCount = noticeReadRecordMapper.selectCountReadNotice(userId);
+        // 查询属于该用户身份总的通知数量
+        int totalCount = noticeIdentityMappingMapper.selectTotalCountByIdentityId(identityId);
+        // 计算未读数量
+        result.put("readCount", readCount);
+        result.put("unreadCount", totalCount-readCount);
+        return result;
     }
 
 }
