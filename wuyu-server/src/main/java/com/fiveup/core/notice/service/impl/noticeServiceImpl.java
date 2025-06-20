@@ -1,15 +1,19 @@
 package com.fiveup.core.notice.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fiveup.core.excption.AppException;
 import com.fiveup.core.notice.entity.NoticeEntity;
 import com.fiveup.core.notice.entity.NoticeIdentityEntity;
 import com.fiveup.core.notice.entity.UserIdentity;
 import com.fiveup.core.notice.mapper.noticeMapper;
 import com.fiveup.core.notice.service.noticeService;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.service.spi.ServiceException;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
@@ -18,7 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -122,4 +128,69 @@ public class noticeServiceImpl implements noticeService {
             throw new AppException("查询异常");
         }
     }
+
+    @Override
+    public PageResult<NoticeVO> getPaginatedNoticeList(NoticePageQuery queryParams) {
+        // 开启 PageHelper 分页
+        PageHelper.startPage(queryParams.getPageNum(), queryParams.getPageSize());
+
+        // 构建查询条件 (MyBatis-Plus 的 LambdaQueryWrapper)
+        LambdaQueryWrapper<Notice> queryWrapper = new LambdaQueryWrapper<>();
+        // 默认按发布时间倒序
+        queryWrapper.orderByDesc(Notice::getReleaseTime);
+
+        // 如果存在搜索关键词，则添加模糊查询条件
+        if (com.baomidou.mybatisplus.core.toolkit.StringUtils.isNotBlank(queryParams.getKeyword())) {
+            queryWrapper.like(Notice::getTheme, queryParams.getKeyword())
+                    .or()
+                    .like(Notice::getContent, queryParams.getKeyword());
+        }
+
+        // 如果指定了身份ID，则通过 notice_identity_mapping 表查询相关公告ID
+        if (queryParams.getIdentityId() != null) {
+            List<Long> filteredNoticeIds = noticeIdentityMappingMapper.selectNoticeIdsByIdentityId(queryParams.getIdentityId());
+            // 如果没有找到任何匹配的公告ID，直接返回空结果
+            if (filteredNoticeIds.isEmpty()) {
+                PageResult<NoticeVO> emptyResult = new PageResult<>();
+                emptyResult.setTotal(0L);
+                emptyResult.setRecords(new ArrayList<>());
+                emptyResult.setPageNum(queryParams.getPageNum());
+                emptyResult.setPageSize(queryParams.getPageSize());
+                return emptyResult;
+            }
+            queryWrapper.in(Notice::getId, filteredNoticeIds);
+        }
+
+        //执行查询。PageHelper 会自动拦截此查询并进行分页
+        List<Notice> noticeList = noticeMapper.selectList(queryWrapper);
+
+        //使用 PageInfo 封装分页结果
+        PageInfo<Notice> pageInfo = new PageInfo<>(noticeList);
+
+        //获取用户已读的公告ID列表
+        List<Long> readNoticeIds = (queryParams.getUserId() != 0) ?
+                noticeReadRecordMapper.selectReadNoticeIdsByUserId(queryParams.getUserId()) :
+                new ArrayList<>();
+
+        //组装返回数据 (NoticeVO 列表)
+        List<NoticeVO> noticeVOList = noticeList.stream().map(notice -> {
+            NoticeVO noticeVO = new NoticeVO();
+            BeanUtils.copyProperties(notice, noticeVO);
+            noticeVO.setIsRead(readNoticeIds.contains(notice.getId())); // Set read status based on user data
+            return noticeVO;
+        }).collect(Collectors.toList());
+
+        //构建 PageResult 返回给前端
+        PageResult<NoticeVO> resultPage = new PageResult<>();
+        // 从 PageInfo 获取总记录数
+        resultPage.setTotal(pageInfo.getTotal());
+        // 当前页数据
+        resultPage.setRecords(noticeVOList);
+        // 从 PageInfo 获取当前页码
+        resultPage.setPageNum(pageInfo.getPageNum());
+        // 从 PageInfo 获取每页大小
+        resultPage.setPageSize(pageInfo.getPageSize());
+        return resultPage;
+    }
+
 }

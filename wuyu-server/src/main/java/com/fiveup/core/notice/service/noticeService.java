@@ -12,4 +12,6 @@ public interface noticeService {
 
     List<UserIdentity> getIdentityIds();
 
+    public PageResult<NoticeVO> getPaginatedNoticeList(NoticePageQuery queryParams);
+
 }
