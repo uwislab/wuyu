@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.teacherworkspace.mapper.TeacherWorkspaceMapper">
+
+    <update id="updateWork">
+        update fu_score
+        <set>
+            <if test="upid != null">
+                upid = #{upid},
+            </if>
+            <if test="title != null">
+                title = #{title},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="starttime != null">
+                starttime = #{starttime},
+            </if>
+            <if test="finishtime != null">
+                finishtime = #{finishtime},
+            </if>
+            <if test="zhibiao != null">
+                zhibiao = #{zhibiao},
+            </if>
+            <if test="zhibiao2 != null">
+                zhibiao2 = #{zhibiao2},
+            </if>
+            <if test="zhibiao3 != null">
+                zhibiao3 = #{zhibiao3},
+            </if>
+            <if test="score != null">
+                score = #{score},
+            </if>
+            <if test="beizhu != null">
+                beizhu = #{beizhu},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="teacherName != null">
+                teacher_name = #{teacherName}
+            </if>
+        </set>
+
+        <where>
+            id = #{id}
+        </where>
+    </update>
+</mapper>

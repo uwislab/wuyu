@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.collection.mapper.ColScoreMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.fiveup.core.collection.model.ColScore">
+        <id column="id" property="id" />
+        <result column="s_number" property="sNumber" />
+        <result column="deyu" property="deyu" />
+        <result column="zhiyu" property="zhiyu" />
+        <result column="tiyu" property="tiyu" />
+        <result column="meiyu" property="meiyu" />
+        <result column="laoyu" property="laoyu" />
+        <result column="parent_evaluate" property="parentEvaluate" />
+        <result column="teacher_evaluate" property="teacherEvaluate" />
+    </resultMap>
+
+</mapper>

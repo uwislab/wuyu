@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.questionnaire.mapper.QAnswerMapper">
+    
+    <resultMap type="QAnswer" id="QAnswerResult">
+        <result property="answerId"    column="answer_id"    />
+        <result property="questId"    column="quest_id"    />
+        <result property="paperId"    column="paper_id"    />
+        <result property="questionType"    column="question_type"    />
+        <result property="answerContent"    column="answer_content"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="createBy"    column="create_by"    />
+    </resultMap>
+
+    <sql id="selectQAnswerVo">
+        select answer_id, quest_id, paper_id, question_type, answer_content, create_time, create_by from q_answer
+    </sql>
+
+    <select id="selectQAnswerList" parameterType="QAnswer" resultMap="QAnswerResult">
+        <include refid="selectQAnswerVo"/>
+        <where>  
+            <if test="questId != null "> and quest_id = #{questId}</if>
+        </where>
+    </select>
+    
+    <select id="selectQAnswerByAnswerId" parameterType="Long" resultMap="QAnswerResult">
+        <include refid="selectQAnswerVo"/>
+        where answer_id = #{answerId}
+    </select>
+        
+    <insert id="insertQAnswer" parameterType="QAnswer" useGeneratedKeys="true" keyProperty="answerId">
+        insert into q_answer
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="questId != null">quest_id,</if>
+            <if test="paperId != null">paper_id,</if>
+            <if test="questionType != null">question_type,</if>
+            <if test="answerContent != null and answerContent != ''">answer_content,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="createBy != null">create_by,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="questId != null">#{questId},</if>
+            <if test="paperId != null">#{paperId},</if>
+            <if test="questionType != null">#{questionType},</if>
+            <if test="answerContent != null and answerContent != ''">#{answerContent},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="createBy != null">#{createBy},</if>
+         </trim>
+    </insert>
+
+    <update id="updateQAnswer" parameterType="QAnswer">
+        update q_answer
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="questId != null">quest_id = #{questId},</if>
+            <if test="paperId != null">paper_id = #{paperId},</if>
+            <if test="questionType != null">question_type = #{questionType},</if>
+            <if test="answerContent != null and answerContent != ''">answer_content = #{answerContent},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+        </trim>
+        where answer_id = #{answerId}
+    </update>
+
+    <delete id="deleteQAnswerByAnswerId" parameterType="Long">
+        delete from q_answer where answer_id = #{answerId}
+    </delete>
+
+    <delete id="deleteQAnswerByAnswerIds" parameterType="String">
+        delete from q_answer where answer_id in 
+        <foreach item="answerId" collection="array" open="(" separator="," close=")">
+            #{answerId}
+        </foreach>
+    </delete>
+
+    <insert id="addAnswers">
+        insert into q_answer(quest_id,paper_id,question_type,answer_content,create_time,create_user_id) values
+        <foreach collection="answerList"  separator="," item="answer">
+            (#{answer.questId},#{answer.paperId},#{answer.questionType},#{answer.answerContent},#{answer.createTime},#{answer.createUserId})
+        </foreach>
+    </insert>
+</mapper>
