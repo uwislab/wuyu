@@ -2,6 +2,10 @@ package com.fiveup.core.fuScore.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fiveup.core.fuScore.entity.po.FuClassScorePO;
+import com.fiveup.core.fuScore.entity.vo.FuClassAvgScoreVO;
+import com.fiveup.core.fuScore.entity.vo.FuGradeAvgScoreVO;
+
+import java.util.List;
 
 
 /**
@@ -12,5 +16,6 @@ import com.fiveup.core.fuScore.entity.po.FuClassScorePO;
  */
 public interface FuClassScoreService extends IService<FuClassScorePO> {
 
+    List<FuClassAvgScoreVO> getClassAvgScore(Integer semester, String clazz);
 }
 
