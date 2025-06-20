@@ -50,7 +50,7 @@ public class studentscoreService {
 
     /*查找本次班级学生成绩*/
     public List<student_score> SelectScoreByClass(int grade,int sclass){
-        return stMapper.SelectScoreByClass(grade,sclass);
+        return stMapper.SelectScoreByClassNew(grade,sclass);
     }
     /*查询本次年级成绩*/
     public List<student_score> SelectScoreByGrade(int grade){
@@ -105,6 +105,35 @@ public class studentscoreService {
         return list;
     }
     //标准差σ=sqrt(s^2)
+    public static float[] avaragescoreNew(List<student_score> listscore) {
+        float[] list = new float[5];
+        if (listscore == null || listscore.isEmpty()) {
+            // 返回全为 0 的数组或者其他默认值
+            return list; // 此时 list 中的元素默认都是 0.0
+        }
+
+        int allDeyu=0;
+        int allZhiyu=0;
+        int allTiyu=0;
+        int allMeiyu=0;
+        int allLaoyu=0;
+
+        for (int i = 0; i < listscore.size(); i++) {
+            allDeyu = allDeyu + listscore.get(i).getsDeyu();
+            allZhiyu = allZhiyu + listscore.get(i).getsZhiyu();
+            allMeiyu = allMeiyu + listscore.get(i).getsMeiyu();
+            allTiyu = allTiyu + listscore.get(i).getsTiyu();
+            allLaoyu = allLaoyu + listscore.get(i).getsLaoyu();
+        }
+
+        list[0]=(float)allDeyu/listscore.size();
+        list[1]=(float)allZhiyu/listscore.size();
+        list[2]=(float)allTiyu/listscore.size();
+        list[3]=(float)allMeiyu/listscore.size();
+        list[4]=(float)allLaoyu/listscore.size();
+
+        return list;
+    }
     public static double StandardDiviation(int[] x) {
         int m=x.length;
         int sum=0;

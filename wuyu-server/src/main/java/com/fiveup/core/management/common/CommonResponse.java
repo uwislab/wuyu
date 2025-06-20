@@ -17,6 +17,7 @@ import java.io.Serializable;
  */
 @Data
 public final class CommonResponse<T> implements Serializable {
+    public static final Object SUCCESS_CODE = 0;
     private static final long serialVersionUID = -4540673037543549080L;
 
     private CommonResponse() {

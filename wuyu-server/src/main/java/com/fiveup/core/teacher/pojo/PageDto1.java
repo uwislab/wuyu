@@ -1,4 +1,4 @@
-package com.fiveup.core.management.pojo;
+package com.fiveup.core.teacher.pojo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,4 +21,5 @@ public class PageDto1 implements Serializable {
     private String position;//职位
     private Integer gender;//性别
     private String grade;
+    private Long schoolId;
 }

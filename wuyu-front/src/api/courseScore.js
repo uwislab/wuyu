@@ -44,3 +44,10 @@ export function editCourseScore(formData) {
     }
   })
 }
+//获取课程成绩统计数据
+export function getCourseScoreStatistics() {
+  return request({
+    url: '/coursescore/statistics',
+    method: 'get'
+  })
+}

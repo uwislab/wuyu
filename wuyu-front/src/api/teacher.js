@@ -203,3 +203,14 @@ export function deleteBatch(data){
   })
 }
 
+
+export function addTeacher(data){
+  return request({
+    url:'/teacher/save',
+    method:'post',
+    data,
+
+    baseURL:baseUrl
+  })
+}
+

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.teacherworkspace.mapper.LessonMapper">
+    <insert id="batchInsert">
+        INSERT INTO basic_lesson (id, grade, class_num, class_name, course, teacher_name, teacher_id,  academic_year, semester, is_current)
+        VALUES
+        <foreach collection="lessons" item="lesson" separator=",">
+            (#{lesson.id}, #{lesson.grade}, #{lesson.classNum}, #{lesson.className}, #{lesson.course},
+            #{lesson.teacherName}, #{lesson.teacherId}, #{lesson.academicYear},#{lesson.semester},#{lesson.isCurrent})
+        </foreach>
+    </insert>
+
+    <sql id="page-condition">
+        <if test='dto.grade != null'>
+            WHERE lesson.grade = #{dto.grade}
+        </if>
+        <if test="dto.classNum != null">
+            WHERE lesson.class_num = #{dto.classNum}
+        </if>
+        <if test='dto.course != "" and dto.course != null'>
+            WHERE lesson.course like concat('%', #{dto.course}, '%')
+        </if>
+    </sql>
+
+    <select id="pageLessons" resultType="com.fiveup.core.teacherworkspace.model.Lesson"
+            parameterType="com.fiveup.core.teacherworkspace.model.dto.PageLessonDto">
+        SELECT *
+        FROM basic_lesson as lesson
+        <include refid="page-condition"/>
+        limit (#{dto.page} - 1) * #{dto.size}, #{dto.size}
+        order by lesson.grade desc
+    </select>
+
+    <select id="pageCount" resultType="java.lang.Long"
+            parameterType="com.fiveup.core.teacherworkspace.model.dto.PageLessonDto">
+        SELECT count(*)
+        FROM basic_lesson as lesson
+        <include refid="page-condition"/>
+    </select>
+
+    <delete id="deleteByIds">
+        DELETE FROM basic_lesson
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <insert id="addLesson" parameterType="com.fiveup.core.teacherworkspace.model.Lesson"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO basic_lesson (
+            grade,
+            class_num,
+            class_name,
+            course,
+            teacher_name,
+            teacher_id,
+            academic_year,
+            semester,
+            is_current
+        ) VALUES (
+                     #{grade},
+                     #{classNum},
+                     #{className},
+                     #{course},
+                     #{teacherName},
+                     #{teacherId},
+                     #{academicYear},
+                     #{semester},
+                     #{isCurrent}
+                 )
+    </insert>
+
+    <update id="updateLesson" parameterType="com.fiveup.core.teacherworkspace.model.Lesson">
+        UPDATE basic_lesson
+        SET
+            grade = #{grade},
+            class_num = #{classNum},
+            class_name = #{className},
+            course = #{course},
+            teacher_name = #{teacherName},
+            teacher_id = #{teacherId},
+            academic_year = #{academicYear},
+            semester = #{semester},
+            is_current = #{isCurrent}
+        WHERE id = #{id}
+    </update>
+</mapper>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>学生学期综合素质评价通知册</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+            text-align: center;
+        }
+        h1, h2, h3 {
+            color: #0095f9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #b3e5fc;
+        }
+        .section-header {
+            margin-top: 20px;
+            text-align: left;
+        }
+        .content-section {
+            text-align: left;
+        }
+        .signature-date {
+            text-align: right;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<h1>学生学期综合素质评价通知册</h1>
+<h2>五育发展综合评价</h2>
+
+<div class="section-header"><h3>学生基本信息</h3></div>
+<table>
+    <tr><th>姓名</th><td>{{studentName}}</td></tr>
+    <tr><th>班级</th><td>{{studentClassNumber}}</td></tr>
+    <tr><th>年级</th><td>{{studentGrade}}</td></tr>
+</table>
+
+<div class="section-header"><h3>学习成绩</h3></div>
+<table>
+    <thead>
+    <tr>
+        <th>项目</th>
+        <th>德育成绩</th>
+        <th>智育成绩</th>
+        <th>体育成绩</th>
+        <th>美育成绩</th>
+        <th>劳育成绩</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>成绩</td>
+        <td>{{sDeyu}}</td>
+        <td>{{sZhiyu}}</td>
+        <td>{{sTiyu}}</td>
+        <td>{{sMeiyu}}</td>
+        <td>{{sLaoyu}}</td>
+    </tr>
+    </tbody>
+</table>
+
+<div class="section-header"><h3>假期要求</h3></div>
+<table>
+    <thead>
+    <tr>
+        <th>项目</th>
+        <th>德育要求</th>
+        <th>智育要求</th>
+        <th>体育要求</th>
+        <th>美育要求</th>
+        <th>劳育要求</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>成绩</td>
+        <td>{{pDeyu}}</td>
+        <td>{{pZhiyu}}</td>
+        <td>{{pTiyu}}</td>
+        <td>{{pMeiyu}}</td>
+        <td>{{pLaoyu}}</td>
+    </tr>
+    </tbody>
+</table>
+
+<div class="section-header"><h3>假期计划</h3></div>
+<div class="content-section">{{pPlan}}</div>
+
+<div class="section-header"><h3>班主任建议</h3></div>
+<div class="content-section">{{comment}}</div>
+
+<div class="section-header"><h3>综合评价</h3></div>
+<div class="content-section">{{remark}}</div>
+
+<div class="signature-date">签发日期：{{year}}年{{month}}月{{day}}日</div>
+</body>
+</html>

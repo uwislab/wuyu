@@ -83,5 +83,21 @@ export default {
       contentType: "application/json",
       data: data
     })
+  },
+  // 获取学生个人五育成绩
+  getStudentScore(params) {
+    return request({
+      url: `/diagnose/studentscore`,
+      method: 'get',
+      params: params
+    })
+  },
+  // 获取班级平均五育成绩
+  getClassAverageScores(params) {
+    return request({
+      url: `/diagnose/class/average/scores`,
+      method: 'get',
+      params: params
+    })
   }
 }

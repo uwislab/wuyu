@@ -1,0 +1,45 @@
+name: Assign PR Reviewer
+
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+    branches: [main]
+
+jobs:
+  assign-reviewer:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write  # 必须添加此权限
+      contents: read  # 可选，用于读取 branches_creators.txt
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get source branch creator
+        id: get-creator
+        run: |
+          SOURCE_BRANCH="${{ github.head_ref }}"
+          # 从文件查找创建者（确保文件路径正确）
+          CREATOR=$(grep "^${SOURCE_BRANCH}:" branches_creators.txt | cut -d':' -f2)
+          
+          if [ -z "$CREATOR" ]; then
+            echo "::warning::No creator found for branch $SOURCE_BRANCH"
+            exit 0
+          fi
+          echo "creator=$CREATOR" >> $GITHUB_OUTPUT
+
+      - name: Assign reviewer via GitHub API
+        if: steps.get-creator.outputs.creator
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { creator } = process.env;
+            // 调用 API 添加审核者
+            await github.rest.pulls.requestReviewers({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              reviewers: [creator]
+            });
+        env:
+          creator: ${{ steps.get-creator.outputs.creator }}

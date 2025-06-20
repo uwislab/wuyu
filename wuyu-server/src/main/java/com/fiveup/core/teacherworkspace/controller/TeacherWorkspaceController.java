@@ -1,9 +1,11 @@
 package com.fiveup.core.teacherworkspace.controller;
 
-import com.fiveup.core.courseScore.controller.CourseScoreController;
 import com.fiveup.core.courseScore.service.CourseScoreService;
 import com.fiveup.core.management.common.CommonResponse;
-import com.fiveup.core.teacherworkspace.model.*;
+import com.fiveup.core.teacherworkspace.model.Lesson;
+import com.fiveup.core.teacherworkspace.model.LessonTeacher;
+import com.fiveup.core.teacherworkspace.model.Teacher;
+import com.fiveup.core.teacherworkspace.model.Work;
 import com.fiveup.core.teacherworkspace.service.TeacherWorkspaceService;
 import org.springframework.web.bind.annotation.*;
 

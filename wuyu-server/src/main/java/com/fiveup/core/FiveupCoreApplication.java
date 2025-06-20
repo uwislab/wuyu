@@ -17,7 +17,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 @EnableSwagger2
 @EnableSwaggerBootstrapUI
 @MapperScan(basePackages = {"com.fiveup.core.management.mapper", "com.fiveup.core.events.mapper", "com.fiveup.core.demonstrate.mapper","com.fiveup.core.monitor.entity"})
-
 @MapperScan(basePackages = {"com.fiveup.core.fuScale.develop_09.Mapper"})
 public class FiveupCoreApplication {
 

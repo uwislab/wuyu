@@ -32,7 +32,7 @@ export function filterAsyncRoutes(routes, roles) {
       res.push(tmp)
     }
   })
-
+  console.log('route',res)
   return res
 }
 
@@ -74,5 +74,5 @@ export default {
   namespaced: true,
   state,
   mutations,
-  actions
+  actions,
 }
