@@ -398,4 +398,13 @@ public class FuScoreController {
         return CommonResponse.ok(fuClassScoreService.getClassAvgScore(semester, clazz));
     }
 
+    /**
+     * 班级列表查询
+     * @return
+     */
+    @GetMapping("/classInfo")
+    public CommonResponse<List<String>> getClassInfo() {
+        return CommonResponse.ok(fuClassScoreService.getClassInfo());
+    }
+
 }

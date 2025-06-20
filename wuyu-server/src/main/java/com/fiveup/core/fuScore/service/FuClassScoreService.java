@@ -17,5 +17,8 @@ import java.util.List;
 public interface FuClassScoreService extends IService<FuClassScorePO> {
 
     List<FuClassAvgScoreVO> getClassAvgScore(Integer semester, String clazz);
+
+    List<String> getClassInfo();
+    
 }
 

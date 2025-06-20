@@ -49,5 +49,18 @@ public class FuClassScoreServiceImpl extends ServiceImpl<FuClassScoreMapper, FuC
             }).collect(Collectors.toList());
         });
     }
+
+    @Override
+    public List<String> getClassInfo() {
+        return CaffeineUtil.get("classInfo", key -> {
+            return list(
+                    new LambdaQueryWrapper<FuClassScorePO>()
+                            .select(FuClassScorePO::getClassName)
+                            .groupBy(FuClassScorePO::getClassName)
+            ).stream()
+                    .map(FuClassScorePO::getClassName)
+                    .collect(Collectors.toList());
+        });
+    }
 }
 
