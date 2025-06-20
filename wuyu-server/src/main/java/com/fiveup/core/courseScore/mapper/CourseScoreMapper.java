@@ -10,6 +10,7 @@ public interface CourseScoreMapper {
 
     /**
      * 条件查询
+     *
      * @param courseName
      * @param courseType
      * @param teacherName
@@ -29,6 +30,7 @@ public interface CourseScoreMapper {
 
     /**
      * 分页条件查询
+     *
      * @param teacher_name
      * @param course_type
      * @param test_number
@@ -40,6 +42,7 @@ public interface CourseScoreMapper {
 
     /**
      * 根据ids数组删除成绩
+     *
      * @param ids
      * @return
      */
@@ -47,6 +50,7 @@ public interface CourseScoreMapper {
 
     /**
      * 修改成绩
+     *
      * @param courseScore
      */
     @Update("UPDATE course_score SET " +
@@ -61,4 +65,26 @@ public interface CourseScoreMapper {
             "remark = #{remark} " +
             "WHERE id = #{id}")
     void edit(CourseScore courseScore);
+
+
+    @Select("SELECT " +
+            "DISTINCT" +
+            " course_name" +
+            " FROM course_score")
+    List<String> getAllDistinctCourseNames();
+
+    @Select("SELECT " +
+            "DISTINCT " +
+            "test_number " +
+            "FROM course_score")
+    List<Integer> getAllDistinctTestNumbers();
+
+    @Select("SELECT" +
+            " * " +
+            "FROM " +
+            "course_score" +
+            " WHERE course_name = #{courseName}" +
+            " AND test_number = #{testNumber}")
+    List<CourseScore> getByCourseNameAndTestNumber(@Param("courseName") String courseName, @Param("testNumber") Integer testNumber);
+
 }

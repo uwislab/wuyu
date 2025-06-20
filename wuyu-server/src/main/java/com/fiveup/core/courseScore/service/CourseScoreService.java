@@ -44,4 +44,31 @@ public interface CourseScoreService {
      * @param courseScore
      */
     void edit(CourseScore courseScore);
+
+
+
+    /**
+     * 获取所有课程名称
+     * @return
+     */
+    List<String> getAllDistinctCourseNames();
+
+    /**
+     * 获取所有不同的考试序号
+     * @return
+     */
+    List<Integer> getAllDistinctTestNumbers();
+
+
+
+    /**
+     * 根据课程名称和考试序号获取成绩
+     * @param courseName
+     * @param testNumber
+     * @return
+     */
+    List<CourseScore> getByCourseNameAndTestNumber(String courseName, Integer testNumber);
+
+
+
 }

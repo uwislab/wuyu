@@ -51,3 +51,16 @@ export function getCourseScoreStatistics() {
     method: 'get'
   })
 }
+
+
+// 获取课程成绩分段数据及选项数据
+export function getCourseScoreDistribution(params) {
+  return request({
+    url: '/coursescore/distribution',
+    method: 'post',
+    data: params,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}

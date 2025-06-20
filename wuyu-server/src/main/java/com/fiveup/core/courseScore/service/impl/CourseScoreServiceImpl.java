@@ -20,6 +20,7 @@ public class CourseScoreServiceImpl implements CourseScoreService {
 
     /**
      * 成绩录入
+     *
      * @param courseScore
      */
     @Override
@@ -37,11 +38,12 @@ public class CourseScoreServiceImpl implements CourseScoreService {
 
     @Override
     public List<CourseScore> getList(String teacher_name, int course_type, int test_number, String course_name) {
-        return courseScoreMapper.getList(teacher_name,course_type,test_number,course_name);
+        return courseScoreMapper.getList(teacher_name, course_type, test_number, course_name);
     }
 
     /**
      * 条件分页查询
+     *
      * @param courseName
      * @param courseType
      * @param teacherName
@@ -56,7 +58,7 @@ public class CourseScoreServiceImpl implements CourseScoreService {
         // 设置分页信息
         PageHelper.startPage(page, pageSize);
         // 执行sql
-        List<CourseScore> courseScoreList = courseScoreMapper.findByCondition(courseName,courseType,teacherName,studentNum,studentName);
+        List<CourseScore> courseScoreList = courseScoreMapper.findByCondition(courseName, courseType, teacherName, studentNum, studentName);
         // 获取分页信息
         PageInfo<CourseScore> pageInfo = new PageInfo<>(courseScoreList);
         //
@@ -75,6 +77,7 @@ public class CourseScoreServiceImpl implements CourseScoreService {
 
     /**
      * 根据ids数组删除成绩
+     *
      * @param ids
      */
     @Override
@@ -84,10 +87,28 @@ public class CourseScoreServiceImpl implements CourseScoreService {
 
     /**
      * 修改成绩
+     *
      * @param courseScore
      */
     @Override
     public void edit(CourseScore courseScore) {
         courseScoreMapper.edit(courseScore);
     }
+
+
+    @Override
+    public List<String> getAllDistinctCourseNames() {
+        return courseScoreMapper.getAllDistinctCourseNames();
+    }
+
+    @Override
+    public List<Integer> getAllDistinctTestNumbers() {
+        return courseScoreMapper.getAllDistinctTestNumbers();
+    }
+
+    @Override
+    public List<CourseScore> getByCourseNameAndTestNumber(String courseName, Integer testNumber) {
+        return courseScoreMapper.getByCourseNameAndTestNumber(courseName, testNumber);
+    }
+
 }
