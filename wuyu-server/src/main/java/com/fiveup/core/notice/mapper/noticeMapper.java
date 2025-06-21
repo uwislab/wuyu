@@ -1,10 +1,10 @@
 package com.fiveup.core.notice.mapper;
 
+import com.fiveup.core.notice.entity.Notice;
 import com.fiveup.core.notice.entity.NoticeEntity;
 import com.fiveup.core.notice.entity.NoticeIdentityEntity;
 import com.fiveup.core.notice.entity.UserIdentity;
-import com.fiveup.core.notice.info.noticeInfo;
-import org.apache.ibatis.annotations.*;
+import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 
@@ -28,4 +28,5 @@ public interface noticeMapper {
      */
     List<UserIdentity> getIdentityIds();
 
+    Notice selectById(Long noticeId);
 }

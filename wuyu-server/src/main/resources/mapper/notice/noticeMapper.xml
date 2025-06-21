@@ -38,4 +38,7 @@
             identity_info AS identityInfo
         FROM basic_user_identity
     </select>
+    <select id="selectById" resultType="com.fiveup.core.notice.entity.Notice" parameterType="java.lang.Long">
+        SELECT * FROM notice WHERE id = #{noticeId}
+    </select>
 </mapper>
