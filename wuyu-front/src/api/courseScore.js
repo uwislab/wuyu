@@ -64,3 +64,15 @@ export function getCourseScoreDistribution(params) {
     }
   });
 }
+
+// 获取个人成绩变化数据
+export function getPersonalScoreTrend(params) {
+  return request({
+    url: '/coursescore/personal-trend',
+    method: 'post',
+    data: params,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}

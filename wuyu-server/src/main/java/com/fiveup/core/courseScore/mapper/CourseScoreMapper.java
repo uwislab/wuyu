@@ -87,4 +87,21 @@ public interface CourseScoreMapper {
             " AND test_number = #{testNumber}")
     List<CourseScore> getByCourseNameAndTestNumber(@Param("courseName") String courseName, @Param("testNumber") Integer testNumber);
 
+
+    /**
+     *
+     *
+     * 查询学生在某门课程中的历次考试成绩
+     */
+    @Select("SELECT " +
+            "* " +
+            "FROM" +
+            " course_score " +
+            "WHERE" +
+            " course_name " +
+            "= #{courseName}" +
+            " AND" +
+            " student_name = #{studentName}")
+    List<CourseScore> getPersonalTrend(@Param("courseName") String courseName, @Param("studentName") String studentName);
+
 }

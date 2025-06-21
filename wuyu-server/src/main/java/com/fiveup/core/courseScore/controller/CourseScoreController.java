@@ -55,6 +55,36 @@ public class CourseScoreController {
         return result;
     }
 
+    /**
+     * 获取指定课程和学生的历次考试成绩（用于折线图）
+     */
+    @PostMapping("/personal-trend")
+    public Result getPersonalTrend(@RequestBody Map<String, Object> request) {
+        String courseName = (String) request.get("courseName");
+        String studentName = (String) request.get("studentName");
+
+        if (courseName == null || studentName == null) {
+            return new Result(400, "缺少必要参数：courseName 或 studentName");
+        }
+
+        List<CourseScore> scores = courseScoreService.getPersonalTrend(courseName, studentName);
+
+        // 按照 testNumber 升序排序
+        scores.sort((s1, s2) -> Integer.compare(s1.getTestNumber(), s2.getTestNumber()));
+
+        // 构造返回数据格式
+        List<Map<String, Object>> dataList = new ArrayList<>();
+        for (CourseScore score : scores) {
+            Map<String, Object> dataItem = new HashMap<>();
+            dataItem.put("testNumber", score.getTestNumber());
+            dataItem.put("score", score.getScore());
+            dataList.add(dataItem);
+        }
+
+        return new Result(200, "成功", dataList);
+    }
+
+
     @PostMapping("/distribution")
     public Result getDistribution(@RequestBody Map<String, Object> request) {
         if ("getOptions".equals(request.get("action"))) {

@@ -111,4 +111,10 @@ public class CourseScoreServiceImpl implements CourseScoreService {
         return courseScoreMapper.getByCourseNameAndTestNumber(courseName, testNumber);
     }
 
+    @Override
+    public List<CourseScore> getPersonalTrend(String courseName, String studentName) {
+        return courseScoreMapper.getPersonalTrend(courseName, studentName);
+    }
+
+
 }
