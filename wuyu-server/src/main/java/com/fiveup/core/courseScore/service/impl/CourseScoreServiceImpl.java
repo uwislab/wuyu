@@ -117,4 +117,14 @@ public class CourseScoreServiceImpl implements CourseScoreService {
     }
 
 
+    @Override
+    public List<CourseScore> getStudentList() {
+        return courseScoreMapper.getDistinctStudents();
+    }
+
+    @Override
+    public List<CourseScore> getByStudent(String studentNum) {
+        return courseScoreMapper.getByStudent(studentNum);
+    }
+
 }

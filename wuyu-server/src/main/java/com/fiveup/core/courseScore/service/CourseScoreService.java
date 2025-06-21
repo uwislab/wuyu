@@ -85,4 +85,20 @@ public interface CourseScoreService {
     List<CourseScore> getPersonalTrend(String courseName, String studentName);
 
 
+    /**
+     * 获取所有学生信息（去重）
+     *
+     * @return 学生列表
+     */
+    List<CourseScore> getStudentList();
+
+    /**
+     * 根据学生学号查询所有课程成绩
+     *
+     * @param studentNum 学生学号
+     * @return 成绩列表
+     */
+    List<CourseScore> getByStudent(String studentNum);
+
+
 }

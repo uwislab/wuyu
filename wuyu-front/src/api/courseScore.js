@@ -76,3 +76,26 @@ export function getPersonalScoreTrend(params) {
     }
   });
 }
+
+// 获取学生列表（GET）
+export function getStudentList() {
+  return request({
+    url: '/coursescore/student/list',
+    method: 'get'
+  });
+}
+
+
+
+
+// 获取学生多科成绩（POST）
+export function getStudentMultiSubjectScores(params) {
+  return request({
+    url: '/coursescore/getByStudent',
+    method: 'post',
+    data: params,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}

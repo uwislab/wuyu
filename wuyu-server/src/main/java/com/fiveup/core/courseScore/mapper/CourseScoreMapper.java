@@ -89,8 +89,6 @@ public interface CourseScoreMapper {
 
 
     /**
-     *
-     *
      * 查询学生在某门课程中的历次考试成绩
      */
     @Select("SELECT " +
@@ -103,5 +101,30 @@ public interface CourseScoreMapper {
             " AND" +
             " student_name = #{studentName}")
     List<CourseScore> getPersonalTrend(@Param("courseName") String courseName, @Param("studentName") String studentName);
+
+
+    /**
+     * 查询所有学生（去重）
+     */
+    @Select("SELECT " +
+            "DISTINCT" +
+            " student_name," +
+            " student_num" +
+            " FROM" +
+            " course_score")
+    List<CourseScore> getDistinctStudents();
+
+    /**
+     * 根据学生学号查询所有课程成绩
+     */
+    @Select("SELECT" +
+            " *" +
+            " FROM" +
+            " course_score" +
+            " WHERE" +
+            " student_num " +
+            "= #{studentNum}")
+    List<CourseScore> getByStudent(@Param("studentNum") String studentNum);
+
 
 }

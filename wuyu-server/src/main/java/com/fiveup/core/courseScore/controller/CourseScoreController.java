@@ -56,6 +56,46 @@ public class CourseScoreController {
     }
 
     /**
+     * 获取学生列表（studentName, studentNum）
+     */
+    @GetMapping("/student/list")
+    public Result getStudentList() {
+        List<CourseScore> students = courseScoreService.getStudentList();
+        List<Map<String, Object>> data = new ArrayList<>();
+        for (CourseScore student : students) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("studentName", student.getStudentName());
+            item.put("studentNum", student.getStudentNum());
+            data.add(item);
+        }
+        return new Result(200, "成功", data);
+    }
+
+    /**
+     * 根据学生学号获取该学生的各科成绩
+     */
+    @PostMapping("/getByStudent")
+    public Result getByStudent(@RequestBody Map<String, String> request) {
+        String studentNum = request.get("studentNum");
+        if (studentNum == null || studentNum.trim().isEmpty()) {
+            return new Result(400, "缺少参数：studentNum");
+        }
+
+        List<CourseScore> scores = courseScoreService.getByStudent(studentNum);
+
+        List<Map<String, Object>> data = new ArrayList<>();
+        for (CourseScore score : scores) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("courseName", score.getCourseName());
+            item.put("score", score.getScore());
+            data.add(item);
+        }
+
+        return new Result(200, "成功", data);
+    }
+
+
+    /**
      * 获取指定课程和学生的历次考试成绩（用于折线图）
      */
     @PostMapping("/personal-trend")
