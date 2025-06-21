@@ -607,15 +607,12 @@ export default {
 <style lang="scss" scoped>
 .newwyzk-container {
   width: 100%;
-  //。。。
   //height: 100vh;
-  min-height: 100vh;
   background: linear-gradient(135deg, #1a2b3c 0%, #2d1b3c 100%);
   padding: 0.125rem;
   box-sizing: border-box;
   min-width: 1024px;
   position: relative;
-  //丑点能用就这样吧
   overflow: auto;
 
   &::before {
@@ -631,27 +628,14 @@ export default {
     pointer-events: none;
   }
 
-  &:fullscreen{
-    width: 100vw;
-    height: 100vh;
-    padding: 0 !important;
-  }
-  &:-webkit-full-screen{
-    width: 100vw;
-    height: 100vh;
-    padding: 0 !important;
-  }
+  &:fullscreen,
+  &:-webkit-full-screen,
   &:-moz-full-screen {
     width: 100vw;
     height: 100vh;
     padding: 0.125rem;
     background: linear-gradient(135deg, #1a2b3c 0%, #2d1b3c 100%);
     overflow: auto;
-  }
-  &:-ms-fullscreen {
-    width: 100vw;
-    height: 100vh;
-    padding: 0 !important;
   }
 
   .top-info-bar {
@@ -1156,38 +1140,15 @@ export default {
   }
 }
 
-@media screen and (max - width: 1024px) {
+@media screen and (max-width: 1024px) {
   html {
     font-size: 42px !important;
   }
 }
 
-/* 1024px - 1280px */
-@media screen and (min - width: 1025px) and (max - width: 1280px) {
-  html {
-    font-size: 50px !important;
-  }
-}
-
-/* 1281px - 1600px */
-@media screen and (min - width: 1281px) and (max - width: 1600px) {
-  html {
-    font-size: 60px !important;
-  }
-}
-
-/* 1601px - 1919px */
-@media screen and (min - width: 1601px) and (max - width: 1919px) {
-  html {
-    font-size: 70px !important;
-  }
-}
-
-/* 大于等于 1920px */
-@media screen and (min - width: 1920px) {
+@media screen and (min-width: 1920px) {
   html {
     font-size: 80px !important;
   }
 }
-
 </style>
