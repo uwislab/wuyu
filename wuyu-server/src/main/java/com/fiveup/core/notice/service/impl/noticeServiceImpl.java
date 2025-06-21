@@ -17,6 +17,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.service.spi.ServiceException;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -45,8 +46,6 @@ public class noticeServiceImpl implements noticeService {
     @Autowired
     private noticeMapperExtendBaseMapper noticeMapperExtendBaseMapper;
 
-//    @Resource
-//    private RedissonClient redissonClient;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -90,8 +89,6 @@ public class noticeServiceImpl implements noticeService {
             noticeMapper.insertNoticeIdentityRecord(entity);
             log.info("公告关联记录创建 | 公告ID[{}] 身份ID[{}]", noticeId, identityId);
 
-            //updateCache(noticeId);           // 模拟缓存更新
-
         } catch (DuplicateKeyException e) {
             log.error("公告重复插入 | 标题[{}] 错误信息: {}",
                     noticeEntity.getTheme(), e.getMessage());
@@ -103,9 +100,6 @@ public class noticeServiceImpl implements noticeService {
             log.error("添加公告未知错误 | 实体: {} | 异常: ",
                     noticeEntity, e);
             throw new ServiceException("系统内部错误");
-        } finally {
-            // 8. 资源清理（示例）
-            //clearTemporaryResources(noticeEntity);
         }
 
         log.info("公告添加成功 | ID[{}] 耗时[{}ms]",
@@ -113,22 +107,6 @@ public class noticeServiceImpl implements noticeService {
                 System.currentTimeMillis() - startTime);
     }
 
-
-    private void updateCache(String noticeId) {
-//        try {
-//            // 模拟缓存更新
-//            redissonClient.refresh(CacheRegion.NOTICE, noticeId);
-//        } catch (CacheException e) {
-//            log.warn("公告缓存更新失败 | ID[{}] {}", noticeId, e.getMessage());
-//        }
-    }
-
-    private void clearTemporaryResources(NoticeEntity entity) {
-//        // 模拟资源清理
-//        if (entity.getAttachments() != null) {
-//            tempFileCleaner.clean(entity.getAttachments());
-//        }
-    }
 
     @Override
     public List<UserIdentity> getIdentityIds() {
