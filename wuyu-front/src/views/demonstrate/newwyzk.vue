@@ -1,10 +1,32 @@
 <template>
-  <div class="newwyzk-container">
+  <div class="newwyzk-container" ref="container">
+    <!-- 顶部信息栏 -->
+    <div class="top-info-bar">
+      <div class="date-weather">
+        <div class="date-info">
+          <span class="date">{{ currentDate }}</span>
+          <span class="week">{{ currentWeek }}</span>
+        </div>
+        <div class="weather-info">
+          <i :class="weatherIcon"></i>
+          <div class="weather-details">
+            <span class="temperature">{{ temperature }}°C</span>
+            <span class="description">{{ weatherDescription }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="countdown-card">
+        <i class="el-icon-time"></i>
+        <span>距离高考还剩</span>
+        <span class="days">{{ countdownDays }}</span>
+        <span>天</span>
+      </div>
+    </div>
     <!-- 顶部标题 -->
     <header class="header">
       <!-- <h1>新五育中控-@group1 2025</h1> -->
       <div class="year-selector">
-        <el-select v-model="selectedYear" placeholder="选择年份" @change="handleYearChange">
+        <el-select v-model="selectedYear" placeholder="选择年份" @change="handleYearChange" :popper-append-to-body="false">
           <el-option
             v-for="year in years"
             :key="year"
@@ -12,6 +34,9 @@
             :value="year"
           />
         </el-select>
+      </div>
+      <div class="fullscreen-btn" @click="toggleFullScreen">
+        <i :class="isFullscreen ? 'el-icon-close' : 'el-icon-full-screen'"></i>
       </div>
     </header>
 
@@ -107,8 +132,8 @@
     <!-- 主要内容区域 -->
     <main class="main-content">
       <!-- 轮播图区域 -->
-      <el-carousel 
-        :interval="5000" 
+      <el-carousel
+        :interval="5000"
         height="600px"
         :autoplay="true"
         indicator-position="outside"
@@ -125,9 +150,17 @@
 </template>
 
 <script>
+import '@/assets/js/flexible'
 import * as echarts from 'echarts'
 import CountTo from 'vue-count-to'
 import { getPanelData } from '@/api/managementModule/dataBase'
+import {
+  getLocationId,
+  getWeatherNow,
+  getUserLocation,
+  DEFAULT_CITY_ID,
+  WEATHER_ICON_MAP
+} from '@/api/demonstrate/weather'; // 导入天气API
 
 export default {
   name: 'NewWyzk',
@@ -136,6 +169,7 @@ export default {
   },
   data() {
     return {
+      isFullscreen: false,
       typeList: ['德', '智', '体', '美', '劳'],
       years: [2021, 2022, 2023, 2024, 2025],
       selectedYear: 2025,
@@ -146,6 +180,16 @@ export default {
         gradeNum: 0
       },
       loading: false,
+      // 新增天气 日期 倒计时数据属性
+      currentDate: '',
+      currentWeek: '',
+      temperature: '--',
+      weatherIcon: 'el-icon-sunny',
+      weatherDescription: '',
+      countdownDays: 0,
+      weatherTimer: null,
+      // 新增城市位置ID 默认北京
+      locationId: DEFAULT_CITY_ID,
       // 每个育对应的颜色
       typeColors: {
         德: '#FF4B55', // 红色
@@ -219,6 +263,37 @@ export default {
     this.$nextTick(() => {
       this.initCharts();
     });
+
+    // 初始化日期时间和倒计时
+    this.updateDateTime()
+    this.calculateCountdown()
+
+    // 获取位置信息
+    this.getLocation().then(() => {
+      // 获取天气信息
+      this.getWeatherInfo();
+    });
+
+    // 获取天气信息
+    this.getWeatherInfo()
+
+    // 设置定时更新
+    this.weatherTimer = setInterval(() => {
+      this.updateDateTime()
+      this.calculateCountdown()
+      this.getWeatherInfo()
+    }, 60000) // 每分钟更新一次
+
+    this.$nextTick(() => {
+      this.initCharts();
+    });
+
+    // 添加全屏变化事件监听
+    document.addEventListener('fullscreenchange', this.handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', this.handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', this.handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', this.handleFullscreenChange);
+
   },
   methods: {
     // 获取基本信息
@@ -239,6 +314,62 @@ export default {
         .finally(() => {
           this.loading = false;
         });
+    },
+    // 更新日期和星期
+    updateDateTime() {
+      const now = new Date()
+      const year = now.getFullYear()
+      const month = String(now.getMonth() + 1).padStart(2, '0')
+      const day = String(now.getDate()).padStart(2, '0')
+      this.currentDate = `${year}年${month}月${day}日`
+
+      const weeks = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
+      this.currentWeek = weeks[now.getDay()]
+    },
+    // 获取位置信息
+    async getLocation() {
+      try {
+        const coords = await getUserLocation();
+        this.locationId = await getLocationId(coords.latitude, coords.longitude);
+      } catch (error) {
+        console.error('获取地理位置失败:', error);
+        this.locationId = DEFAULT_CITY_ID; // 失败时使用默认城市
+      }
+    },
+    // 获取天气信息
+    async getWeatherInfo() {
+      try {
+        const weather = await getWeatherNow(this.locationId);
+        this.temperature = weather.temp;
+        this.weatherDescription = weather.text;
+        this.setWeatherIcon(weather.text);
+      } catch (error) {
+        console.error('获取天气信息失败:', error);
+        // 设置默认值
+        this.temperature = '--';
+        this.weatherDescription = '获取失败';
+        this.weatherIcon = WEATHER_ICON_MAP['晴'] || 'el-icon-sunny';
+      }
+    },
+    // 设置天气图标
+    setWeatherIcon(description) {
+      // 根据天气描述设置对应的element-ui图标
+      this.weatherIcon = WEATHER_ICON_MAP[description] || WEATHER_ICON_MAP['晴'] || 'el-icon-sunny';
+    },
+    // 计算高考倒计时
+    calculateCountdown() {
+      const now = new Date()
+      const currentYear = now.getFullYear()
+      // 设置今年高考时间（通常是6月7日）
+      const examDate = new Date(currentYear, 5, 7) // 月份从0开始，所以5表示6月
+
+      // 如果今年的高考已经过去，就计算到明年的高考
+      if (now > examDate) {
+        examDate.setFullYear(currentYear + 1)
+      }
+
+      const timeDiff = examDate.getTime() - now.getTime()
+      this.countdownDays = Math.ceil(timeDiff / (1000 * 3600 * 24))
     },
     initCharts() {
       // 清除旧图表
@@ -403,6 +534,53 @@ export default {
       this.$nextTick(() => {
         this.initCharts()
       })
+    },
+    // 切换全屏显示
+    async toggleFullScreen() {
+      try {
+        const container = this.$refs.container;
+        if (!container) {
+          console.warn('全屏容器未找到');
+          return;
+        }
+        if (!this.isFullscreen) {
+          // 使用兼容性写法进入全屏
+          if (container.requestFullscreen) {
+            await container.requestFullscreen();
+          } else if (container.webkitRequestFullscreen) {
+            await container.webkitRequestFullscreen();
+          } else if (container.mozRequestFullScreen) {
+            await container.mozRequestFullScreen();
+          } else if (container.msRequestFullscreen) {
+            await container.msRequestFullscreen();
+          } else {
+            this.$message.warning('您的浏览器不支持全屏功能');
+          }
+        } else {
+          // 使用兼容性写法退出全屏
+          if (document.exitFullscreen) {
+            await document.exitFullscreen();
+          } else if (document.webkitExitFullscreen) {
+            await document.webkitExitFullscreen();
+          } else if (document.mozCancelFullScreen) {
+            await document.mozCancelFullScreen();
+          } else if (document.msExitFullscreen) {
+            await document.msExitFullscreen();
+          }
+        }
+      } catch (err) {
+        console.error('全屏切换失败:', err);
+        this.$message.error('全屏切换失败，请检查浏览器设置');
+      }
+    },
+    // 监听全屏变化
+    handleFullscreenChange() {
+      this.isFullscreen = Boolean(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement
+      );
     }
   },
   beforeDestroy() {
@@ -410,7 +588,18 @@ export default {
     this.chartList.forEach(chart => {
       chart.dispose()
     })
-    window.removeEventListener('resize', this.handleResize)
+    // 清除定时器
+    if (this.weatherTimer) {
+      clearInterval(this.weatherTimer)
+      this.weatherTimer = null;
+    }
+
+    // 移除全屏变化事件监听
+    document.removeEventListener('fullscreenchange', this.handleFullscreenChange);
+    document.removeEventListener('webkitfullscreenchange', this.handleFullscreenChange);
+    document.removeEventListener('mozfullscreenchange', this.handleFullscreenChange);
+    document.removeEventListener('MSFullscreenChange', this.handleFullscreenChange);
+
   }
 }
 </script>
@@ -418,38 +607,224 @@ export default {
 <style lang="scss" scoped>
 .newwyzk-container {
   width: 100%;
-  min-height: 100vh;
+  //height: 100vh;
   background: linear-gradient(135deg, #1a2b3c 0%, #2d1b3c 100%);
-  padding: 20px;
+  padding: 0.125rem;
   box-sizing: border-box;
+  min-width: 1024px;
+  position: relative;
+  overflow: auto;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  &:fullscreen,
+  &:-webkit-full-screen,
+  &:-moz-full-screen {
+    width: 100vw;
+    height: 100vh;
+    padding: 0.125rem;
+    background: linear-gradient(135deg, #1a2b3c 0%, #2d1b3c 100%);
+    overflow: auto;
+  }
+
+  .top-info-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 0.6rem;
+    padding: 0 0.2rem;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    border-radius: 0.1rem;
+    margin-bottom: 0.2rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0.04rem 0.12rem rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .date-weather {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+
+      .date-info {
+        .date {
+          color: #fff;
+          font-size: 0.2rem;
+          margin-right: 0.15rem;
+          text-shadow: 0 0 0.1rem rgba(255, 255, 255, 0.3);
+        }
+
+        .week {
+          color: rgba(255, 255, 255, 0.8);
+          font-size: 0.16rem;
+        }
+      }
+
+      .weather-info {
+        display: flex;
+        align-items: center;
+        gap: 0.1rem;
+        padding: 0.1rem 0.15rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 0.08rem;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.08);
+        }
+
+        i {
+          color: #fff;
+          font-size: 0.24rem;
+          transition: transform 0.3s ease;
+        }
+
+        .weather-details {
+          display: flex;
+          flex-direction: column;
+
+          .temperature {
+            color: #fff;
+            font-size: 0.2rem;
+            line-height: 1.2;
+            font-weight: 500;
+          }
+
+          .description {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.14rem;
+          }
+        }
+      }
+    }
+
+    .countdown-card {
+      display: flex;
+      align-items: center;
+      gap: 0.1rem;
+      padding: 0.1rem 0.2rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 0.1rem;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: translateY(-0.02rem);
+      }
+
+      i {
+        color: #fff;
+        font-size: 0.2rem;
+      }
+
+      span {
+        color: #fff;
+        font-size: 0.16rem;
+
+        &.days {
+          font-size: 0.24rem;
+          font-weight: bold;
+          color: #ff6b6b;
+          margin: 0 0.05rem;
+          text-shadow: 0 0 0.1rem rgba(255, 107, 107, 0.3);
+        }
+      }
+    }
+  }
 
   .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 40px;
-    margin-bottom: 20px;
+    height: 0.6rem;
+    padding: 0 0.4rem;
+    margin-bottom: 0.2rem;
+    position: relative;
 
-    h1 {
-      color: #fff;
-      font-size: 32px;
-      margin: 0;
-      text-shadow: 0 0 10px rgba(255,255,255,0.3);
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -0.1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      height: 1px;
+      background: linear-gradient(
+          to right,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+      );
     }
 
     .year-selector {
       :deep(.el-select) {
-        width: 150px;
+        width: 1.5rem;
 
         .el-input__inner {
-          background: rgba(255,255,255,0.1);
-          border: 1px solid rgba(255,255,255,0.2);
+          background: rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.2);
           color: #fff;
+          height: 0.4rem;
+          line-height: 0.4rem;
+          font-size: 0.16rem;
+          transition: all 0.3s ease;
+
+          &:hover, &:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+          }
 
           &::placeholder {
-            color: rgba(255,255,255,0.5);
+            color: rgba(255, 255, 255, 0.5);
           }
         }
+      }
+    }
+
+    .fullscreen-btn {
+      cursor: pointer;
+      width: 0.4rem;
+      height: 0.4rem;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: scale(1.05);
+        border-color: rgba(255, 255, 255, 0.2);
+      }
+
+      i {
+        color: #fff;
+        font-size: 0.2rem;
+        transition: transform 0.3s ease;
+      }
+
+      &:active {
+        transform: scale(0.95);
       }
     }
   }
@@ -457,19 +832,28 @@ export default {
   .info-section {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 30px;
-    padding: 0 40px;
+    gap: 0.2rem;
+    margin-bottom: 0.3rem;
+    padding: 0 0.4rem;
 
     .school-info {
       flex: 1;
-      margin-right: 40px;
-      background: rgba(255, 255, 255, 0.1);
+      margin-right: 0.4rem;
+      background: rgba(255, 255, 255, 0.08);
       backdrop-filter: blur(10px);
-      border-radius: 15px;
-      padding: 25px;
+      padding: 0.25rem;
+      border-radius: 0.1rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-0.02rem);
+      }
 
       .info-block {
-        margin-bottom: 20px;
+        margin-bottom: 0.2rem;
+        position: relative;
 
         &:last-child {
           margin-bottom: 0;
@@ -477,10 +861,21 @@ export default {
 
         h3 {
           color: #fff;
-          font-size: 18px;
-          margin: 0 0 15px;
-          padding-bottom: 10px;
+          font-size: 0.18rem;
+          margin: 0 0 0.15rem;
+          padding-bottom: 0.1rem;
           border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+          position: relative;
+
+          &::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 2rem;
+            height: 1px;
+            background: linear-gradient(to right, rgba(126, 240, 255, 0.8), transparent);
+          }
         }
 
         ul {
@@ -489,9 +884,17 @@ export default {
           margin: 0;
 
           li {
-            margin-bottom: 12px;
+            margin-bottom: 0.12rem;
             display: flex;
             align-items: flex-start;
+            transition: all 0.3s ease;
+
+            &:hover {
+              background: rgba(255, 255, 255, 0.05);
+              border-radius: 0.04rem;
+              padding: 0.05rem;
+              margin: -0.05rem;
+            }
 
             &:last-child {
               margin-bottom: 0;
@@ -501,9 +904,9 @@ export default {
 
         .feature-content {
           .label {
-            margin-bottom: 8px;
+            margin-bottom: 0.08rem;
           }
-          
+
           .value {
             line-height: 1.6;
           }
@@ -511,14 +914,14 @@ export default {
 
         .label {
           color: rgba(255, 255, 255, 0.7);
-          font-size: 14px;
-          min-width: 90px;
-          margin-right: 10px;
+          font-size: 0.14rem;
+          min-width: 0.9rem;
+          margin-right: 0.1rem;
         }
 
         .value {
           color: #fff;
-          font-size: 14px;
+          font-size: 0.14rem;
           flex: 1;
         }
       }
@@ -527,25 +930,61 @@ export default {
     .info-cards {
       display: flex;
       flex-direction: column;
-      gap: 20px;
-      width: 300px;
+      gap: 0.2rem;
+      width: 3rem;
 
       .info-card {
         margin: 0;
         width: 100%;
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.08);
         backdrop-filter: blur(10px);
-        border-radius: 15px;
-        padding: 20px;
+        padding: 0.2rem;
+        border-radius: 0.1rem;
         display: flex;
         align-items: center;
-        transition: transform 0.3s ease;
+        transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(
+              45deg,
+              transparent,
+              rgba(255, 255, 255, 0.05),
+              transparent
+          );
+          transform: translateX(-100%);
+          transition: transform 0.6s ease;
+        }
+
+        &:hover {
+          transform: translateY(-0.05rem);
+          background: rgba(255, 255, 255, 0.1);
+          border-color: rgba(255, 255, 255, 0.2);
+
+          &::before {
+            transform: translateX(100%);
+          }
+
+          .info-icon {
+            background: rgba(255, 255, 255, 0.25);
+
+            i {
+              transform: scale(1.1);
+            }
+          }
+        }
 
         &.is-loading {
           pointer-events: none;
-          
+
           .info-content {
             opacity: 0.5;
           }
@@ -564,28 +1003,27 @@ export default {
           backdrop-filter: blur(2px);
 
           i {
-            font-size: 24px;
+            font-size: 0.24rem;
             color: #fff;
+            animation: spin 1s linear infinite;
           }
         }
 
-        &:hover {
-          transform: translateY(-5px);
-        }
-
         .info-icon {
-          width: 60px;
-          height: 60px;
+          width: 0.6rem;
+          height: 0.6rem;
+          margin-right: 0.2rem;
           border-radius: 50%;
           background: rgba(255, 255, 255, 0.2);
           display: flex;
           align-items: center;
           justify-content: center;
-          margin-right: 20px;
+          transition: all 0.3s ease;
 
           i {
-            font-size: 30px;
             color: #fff;
+            font-size: 0.3rem;
+            transition: all 0.3s ease;
           }
         }
 
@@ -594,14 +1032,15 @@ export default {
           transition: opacity 0.3s ease;
 
           .info-value {
-            font-size: 28px;
+            font-size: 0.28rem;
             font-weight: bold;
             color: #fff;
-            margin-bottom: 5px;
+            margin-bottom: 0.05rem;
+            text-shadow: 0 0 0.1rem rgba(255, 255, 255, 0.3);
           }
 
           .info-label {
-            font-size: 14px;
+            font-size: 0.14rem;
             color: rgba(255, 255, 255, 0.7);
           }
         }
@@ -610,39 +1049,62 @@ export default {
   }
 
   .main-content {
+    padding: 0 0.4rem;
+
     .chart-carousel {
       :deep(.el-carousel__indicators) {
-        bottom: -30px;
+        bottom: -0.3rem;
 
         .el-carousel__button {
-          background-color: rgba(255,255,255,0.5);
+          background-color: rgba(255, 255, 255, 0.5);
+          transition: all 0.3s ease;
+
+          &:hover {
+            background-color: rgba(255, 255, 255, 0.8);
+          }
         }
       }
 
       :deep(.el-carousel__arrow) {
-        background-color: rgba(0,0,0,0.5);
-        border: 1px solid rgba(255,255,255,0.2);
+        background-color: rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
 
         &:hover {
-          background-color: rgba(0,0,0,0.7);
+          background-color: rgba(0, 0, 0, 0.7);
+          transform: scale(1.1);
+        }
+
+        &:active {
+          transform: scale(0.95);
         }
       }
     }
 
     .chart-container {
       height: 100%;
-      padding: 20px;
+      padding: 0.2rem;
       box-sizing: border-box;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 0.1rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+      }
 
       h2 {
         color: #fff;
         text-align: center;
-        margin: 0 0 20px;
-        font-size: 24px;
+        margin: 0 0 0.2rem;
+        font-size: 0.24rem;
+        text-shadow: 0 0 0.1rem rgba(255, 255, 255, 0.3);
       }
 
       .chart {
-        height: calc(100% - 60px);
+        height: calc(100% - 0.6rem);
         width: 100%;
       }
     }
@@ -651,19 +1113,42 @@ export default {
 
 :deep(.el-select-dropdown) {
   background: rgba(45, 45, 45, 0.9);
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
 
   .el-select-dropdown__item {
     color: #fff;
+    transition: all 0.3s ease;
 
     &.hover, &:hover {
-      background: rgba(255,255,255,0.1);
+      background: rgba(255, 255, 255, 0.1);
     }
 
     &.selected {
-      background: rgba(255,255,255,0.2);
+      background: rgba(255, 255, 255, 0.2);
       color: #409EFF;
     }
   }
 }
-</style> 
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media screen and (max-width: 1024px) {
+  html {
+    font-size: 42px !important;
+  }
+}
+
+@media screen and (min-width: 1920px) {
+  html {
+    font-size: 80px !important;
+  }
+}
+</style>
