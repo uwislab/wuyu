@@ -5,6 +5,7 @@ import com.fiveup.core.fuScore.model.*;
 import com.fiveup.core.fuScore.service.ClassFuScoreService;
 import com.fiveup.core.fuScore.service.GradeFuScoreService;
 import com.fiveup.core.fuScore.service.StudentFuScoreService;
+import com.fiveup.core.fuScore.utils.SemesterUtils;
 import com.fiveup.core.management.common.CommonResponse;
 import com.fiveup.core.miniapp.service.StuInfoService;
 import com.fiveup.core.teacherworkspace.model.Lesson;
@@ -144,24 +145,6 @@ public class FuScoreController {
         List<StudentFuScore> studentFuScore = studentFuScoreService.getStudentsFuScore(studentName, studentIdInt);
         return CommonResponse.ok(studentFuScore);
     }
-
-    //查询学生学期的五育成绩数据
-    @GetMapping("/getStudentSemesterScores")
-    public StudentSemesterScore getStudentSemesterScores(
-            @RequestParam("studentId") Integer studentId,
-            @RequestParam("studentName") String studentName,
-            @RequestParam("semester") String semester) {
-        return studentFuScoreService.getStudentSemesterScores(studentId, studentName, semester);
-    }
-
-    //查询学生学期的五育成绩数据
-    @GetMapping("/studentScoreSemester")
-    public List<StuSemesterTotalScore> getStuSemester(
-            @RequestParam("studentId") Integer studentId,
-            @RequestParam("studentName") String studentName) {
-        return studentFuScoreService.getStuSemester(studentId, studentName);
-    }
-
 
     // 2.根据学号查询学生的详细信息
     @GetMapping("/getStudentInfo")
@@ -360,4 +343,43 @@ public class FuScoreController {
         return studentFuScoreService.getStudentSemesters(studentId);
     }
 
+    //查询学生学期的五育成绩数据
+    @GetMapping("/getStudentSemesterScores")
+    public StudentSemesterScore getStudentSemesterScores(
+            @RequestParam("studentId") Integer studentId,
+            @RequestParam("studentName") String studentName,
+            @RequestParam("semester") String semester) {
+        return studentFuScoreService.getStudentSemesterScores(studentId, studentName, semester);
+    }
+
+    //查询学生有成绩单学期
+    @GetMapping("/studentScoreSemester")
+    public List<StuSemesterTotalScore> getStuSemester(
+            @RequestParam("studentId") Integer studentId,
+            @RequestParam("studentName") String studentName) {
+        return studentFuScoreService.getStuSemester(studentId, studentName);
+    }
+
+    /**
+     * 获取班级和年级的五育成绩数据
+     * @param studentId
+     * @param semesterName
+     * @return ClassAndGradeScoreResponse
+     */
+    @GetMapping("/classGradeScores")
+    public ClassAndGradeScoreResponse getClassAndGradeScores(
+            @RequestParam Integer studentId,
+            @RequestParam String semesterName) {
+
+        // 使用 SemesterUtils 工具类来提取年级和转换学期编码
+        int gradeLevel = SemesterUtils.extractGradeLevel(semesterName);
+        String semesterCode = SemesterUtils.convertToSemesterCode(studentId, semesterName);
+
+        System.out.println("studentId: " + studentId);
+        System.out.println("semesterName: " + semesterName);
+        System.out.println("gradeLevel: " + gradeLevel);
+        System.out.println("semesterCode: " + semesterCode);
+
+        return studentFuScoreService.getClassAndGradeAvgScores(studentId, semesterCode, gradeLevel);
+    }
 }
