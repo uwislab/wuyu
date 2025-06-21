@@ -15,7 +15,7 @@ const name = defaultSettings.title || "五育后台管理系统"; // page title
 //您可以通过以下方法更改端口：
 //端口=9527 npm run dev或npm run dev--端口=9522
 // const port = 33219; // dev port
-const port = process.env.port || process.env.npm_config_port || 9180; // dev port
+const port = process.env.port || process.env.npm_config_port || 9184; // dev port
 
 //所有配置项说明可在中找到https://cli.vuejs.org/config/
 module.exports = {

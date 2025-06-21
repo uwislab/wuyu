@@ -51,3 +51,51 @@ export function getCourseScoreStatistics() {
     method: 'get'
   })
 }
+
+
+// 获取课程成绩分段数据及选项数据
+export function getCourseScoreDistribution(params) {
+  return request({
+    url: '/coursescore/distribution',
+    method: 'post',
+    data: params,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}
+
+// 获取个人成绩变化数据
+export function getPersonalScoreTrend(params) {
+  return request({
+    url: '/coursescore/personal-trend',
+    method: 'post',
+    data: params,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}
+
+// 获取学生列表（GET）
+export function getStudentList() {
+  return request({
+    url: '/coursescore/student/list',
+    method: 'get'
+  });
+}
+
+
+
+
+// 获取学生多科成绩（POST）
+export function getStudentMultiSubjectScores(params) {
+  return request({
+    url: '/coursescore/getByStudent',
+    method: 'post',
+    data: params,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}
