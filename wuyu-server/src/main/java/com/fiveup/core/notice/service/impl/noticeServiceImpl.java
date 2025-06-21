@@ -204,32 +204,6 @@ public class noticeServiceImpl implements noticeService {
         resultPage.setPageSize(pageInfo.getPageSize());
         return resultPage;
     }
-//    @Override
-//    public void markAsRead(Long noticeId, int userId) {
-//        // 检查是否已读
-//        NoticeReadRecord record = noticeReadRecordMapper.selectByNoticeIdAndUserId(noticeId, userId);
-//        if (record != null) {
-//            return;
-//        }
-//
-//        // 创建阅读记录
-//        NoticeReadRecord newRecord = new NoticeReadRecord();
-//        newRecord.setNoticeId(noticeId);
-//        newRecord.setUserId(userId);
-//        noticeReadRecordMapper.insert(newRecord);
-//    }
-//    @Override
-//    public Map<String, Object> getNoticeStatistics(int userId, String identityId) {
-//        Map<String, Object> result = new HashMap<>();
-//        // 查询该用户已读数量
-//        int readCount = noticeReadRecordMapper.selectCountReadNotice(userId);
-//        // 查询属于该用户身份总的通知数量
-//        int totalCount = noticeIdentityMappingMapper.selectTotalCountByIdentityId(identityId);
-//        // 计算未读数量
-//        result.put("readCount", readCount);
-//        result.put("unreadCount", totalCount-readCount);
-//        return result;
-//    }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
