@@ -2,11 +2,15 @@ package com.fiveup.core.notice.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fiveup.core.excption.AppException;
+import com.fiveup.core.notice.dto.NoticePageQuery;
 import com.fiveup.core.notice.entity.*;
 import com.fiveup.core.notice.mapper.noticeIdentityMappingMapper;
 import com.fiveup.core.notice.mapper.noticeMapper;
+import com.fiveup.core.notice.mapper.noticeMapperExtendBaseMapper;
 import com.fiveup.core.notice.mapper.noticeReadRecordMapper;
 import com.fiveup.core.notice.service.noticeService;
+import com.fiveup.core.notice.vo.NoticeVO;
+import com.fiveup.core.notice.vo.PageResult;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +42,8 @@ public class noticeServiceImpl implements noticeService {
     private noticeIdentityMappingMapper noticeIdentityMappingMapper;
     @Resource
     private noticeMapper noticeMapper;
+    @Autowired
+    private noticeMapperExtendBaseMapper noticeMapperExtendBaseMapper;
 
     @Resource
     private RedissonClient redissonClient;
@@ -168,7 +174,7 @@ public class noticeServiceImpl implements noticeService {
         }
 
         //执行查询。PageHelper 会自动拦截此查询并进行分页
-        List<Notice> noticeList = noticeMapper.selectList(queryWrapper);
+        List<Notice> noticeList = noticeMapperExtendBaseMapper.selectList(queryWrapper);
 
         //使用 PageInfo 封装分页结果
         PageInfo<Notice> pageInfo = new PageInfo<>(noticeList);
