@@ -1,7 +1,10 @@
 package com.fiveup.core.notice.service;
 
+import com.fiveup.core.notice.dto.NoticePageQuery;
 import com.fiveup.core.notice.entity.NoticeEntity;
 import com.fiveup.core.notice.entity.UserIdentity;
+import com.fiveup.core.notice.vo.NoticeVO;
+import com.fiveup.core.notice.vo.PageResult;
 
 import java.util.List;
 import java.util.Map;

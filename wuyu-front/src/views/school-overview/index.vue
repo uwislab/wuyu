@@ -82,10 +82,9 @@
 </template>
 
 <script>
-import {getNoticeList} from "@/api/fuScale";
 import {deleteById} from "@/api/fuScale";
 import axios from 'axios';
-import {addNotice,getIdentityIds} from "@/api/notice";
+import {addNotice,getIdentityIds,getNoticeList} from "@/api/notice";
 import request from "@/utils/request";
 
 export default {
