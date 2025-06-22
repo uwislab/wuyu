@@ -70,11 +70,46 @@ public class teacherFiveupController {
     public teacher searchTeacherById(@RequestParam("id") String id) {
         return teacherService.searchTeacherById(id);
     }
+
     @PostMapping
-    //用户新增
-    public  boolean save(@RequestBody teacher teacher){
-        //新增或者更新
-        return teacherService.saveUser(teacher);
+// 用户新增
+    public boolean save(@RequestBody teacher teacher) {
+        // 声明一个布尔类型的变量，用于存储操作结果
+        boolean isOperationSuccessful;
+
+        // 检查传入的teacher对象是否为null
+        if (teacher != null) {
+            // 如果teacher对象不为null，则继续执行保存操作
+            // 调用teacherService的saveUser方法，尝试保存用户信息
+            boolean saveResult = teacherService.saveUser(teacher);
+
+            // 对保存结果进行判断
+            if (saveResult) {
+                // 如果保存成功，将操作结果设置为true
+                isOperationSuccessful = true;
+            } else {
+                // 如果保存失败，将操作结果设置为false
+                isOperationSuccessful = false;
+            }
+        } else {
+            // 如果teacher对象为null，将操作结果直接设置为false
+            isOperationSuccessful = false;
+        }
+
+        // 声明一个变量，用于存储最终返回的结果
+        boolean finalResult;
+
+        // 再次检查操作结果
+        if (isOperationSuccessful) {
+            // 如果操作成功，将最终结果设置为true
+            finalResult = true;
+        } else {
+            // 如果操作失败，将最终结果设置为false
+            finalResult = false;
+        }
+
+        // 返回最终结果
+        return finalResult;
     }
 
     @GetMapping
