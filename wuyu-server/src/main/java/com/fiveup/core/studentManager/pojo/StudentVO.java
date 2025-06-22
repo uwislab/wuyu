@@ -29,4 +29,6 @@ public class StudentVO {
     private Integer isenter;
 
     private String schoolName;
+
+    private String schoolId;
 }
