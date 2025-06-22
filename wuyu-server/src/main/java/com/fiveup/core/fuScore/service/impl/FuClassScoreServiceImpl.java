@@ -1,5 +1,6 @@
 package com.fiveup.core.fuScore.service.impl;
 
+import cn.hutool.core.collection.ListUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fiveup.core.fuScore.entity.po.FuClassScorePO;
@@ -11,7 +12,9 @@ import com.fiveup.core.fuScore.service.FuClassScoreService;
 import com.fiveup.core.util.CaffeineUtil;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -22,6 +25,7 @@ import java.util.stream.Collectors;
  */
 @Service("fuClassScoreService")
 public class FuClassScoreServiceImpl extends ServiceImpl<FuClassScoreMapper, FuClassScorePO> implements FuClassScoreService {
+    private static final List<Integer> DATE_LIST = ListUtil.of( 2020, 2021, 2022);
 
     @Override
     public List<FuClassAvgScoreVO> getClassAvgScore(Integer semester, String clazz) {
@@ -60,6 +64,18 @@ public class FuClassScoreServiceImpl extends ServiceImpl<FuClassScoreMapper, FuC
             ).stream()
                     .map(FuClassScorePO::getClassName)
                     .collect(Collectors.toList());
+        });
+    }
+    
+    @PostConstruct
+    public void init() {
+        CompletableFuture.runAsync(() -> {
+            List<String> classInfo = getClassInfo();
+            DATE_LIST.forEach(item -> {
+                classInfo.forEach(className -> {
+                    getClassAvgScore(item, className);
+                });
+            });
         });
     }
 }

@@ -24,6 +24,10 @@ public interface FuGradeScoreService extends IService<FuGradeScorePO> {
      */
     List<FuGradeAvgScoreVO> getGradeAvgScore(Integer semester);
 
+    /**
+     * 获取年级信息
+     * @return
+     */
     List<Map<String,Object>> getGradeInfo();
 }
 

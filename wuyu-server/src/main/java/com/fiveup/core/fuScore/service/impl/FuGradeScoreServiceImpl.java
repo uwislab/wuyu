@@ -1,5 +1,6 @@
 package com.fiveup.core.fuScore.service.impl;
 
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.map.MapUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -10,8 +11,10 @@ import com.fiveup.core.fuScore.service.FuGradeScoreService;
 import com.fiveup.core.util.CaffeineUtil;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -22,7 +25,8 @@ import java.util.stream.Collectors;
  */
 @Service("fuGradeScoreService")
 public class FuGradeScoreServiceImpl extends ServiceImpl<FuGradeScoreMapper, FuGradeScorePO> implements FuGradeScoreService {
-
+    
+    private static final List<Integer> DATE_LIST = ListUtil.of( 2020, 2021, 2022);
     @Override
     public List<FuGradeAvgScoreVO> getGradeAvgScore(Integer semester) {
         String cacheKey = "gradeAvgScore:" + semester;
@@ -67,6 +71,13 @@ public class FuGradeScoreServiceImpl extends ServiceImpl<FuGradeScoreMapper, FuG
                                 .build();
                     })
                     .collect(Collectors.toList());
+        });
+    }
+    
+    @PostConstruct
+    public void init() {
+        CompletableFuture.runAsync(() -> {
+            DATE_LIST.forEach(this::getGradeAvgScore);
         });
     }
 }

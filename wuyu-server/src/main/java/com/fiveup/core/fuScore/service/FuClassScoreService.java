@@ -16,8 +16,18 @@ import java.util.List;
  */
 public interface FuClassScoreService extends IService<FuClassScorePO> {
 
+    /**
+     * 获取班级五育成绩平均分
+     * @param semester
+     * @param clazz
+     * @return
+     */
     List<FuClassAvgScoreVO> getClassAvgScore(Integer semester, String clazz);
 
+    /**
+     * 获取班级信息
+     * @return
+     */
     List<String> getClassInfo();
     
 }
