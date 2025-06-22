@@ -251,7 +251,7 @@ export const asyncRoutes = [
     component: () => import("@/views/teacher_workspace/demonstrate/yxbz"),
   },
   {
-    path: "/teacher_workspace/demonstrate/bigDataIndx",
+    path: "/teacher_workspace/demonstrate/bigDataIndex",
     name: "中控大屏",
     component: () =>
       import("@/views/teacher_workspace/demonstrate/bigDataIndex"),
@@ -796,6 +796,12 @@ export const asyncRoutes = [
         component: () => import("@/views/demonstrate/bigDataIndex"),
         name: "中控大屏",
         meta: { title: "中控大屏", role: [0,4] },
+      },
+      {
+        path: "newwyzk",
+        component: () => import("@/views/demonstrate/newwyzk"),
+        name: "新五育中控",
+        meta: { title: "新五育中控", role: [0,4] },
       },
       {
         path: "xxzs",
