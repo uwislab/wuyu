@@ -44,12 +44,12 @@ public class StudentManagerController {
 
     /**
      * 修改学生
-     * @param studentManager
+     * @param studentInsertDTO
      * @return
      */
     @PostMapping("/updateStudent")
-    public Result<Void> updateStudent(@RequestBody StudentManager studentManager){
-        studentManagerService.updateStudent(studentManager);
+    public Result<Void> updateStudent(@RequestBody StudentInsertDTO studentInsertDTO){
+        studentManagerService.updateStudent(studentInsertDTO);
         return Result.SUCCESS;
     }
 
