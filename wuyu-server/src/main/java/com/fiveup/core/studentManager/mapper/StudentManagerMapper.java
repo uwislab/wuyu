@@ -29,6 +29,10 @@ public interface StudentManagerMapper extends BaseMapper<StudentManager> {
     @Select("select id from basic_class where grade_id=#{gradeId} and school_id=#{schoolId} and class_name=#{className}")
     int selectClassId(int gradeId, int schoolId, String className);
 
+    //根据schoolId查询schoolName
+    @Select("select school_name from basic_school where id = #{schoolId}")
+    String getSchoolNameById(int schoolId);
+
     //分页查询学生
     List<StudentVO> getStudentPage(StudentManagerQuery studentManagerQuery);
 
