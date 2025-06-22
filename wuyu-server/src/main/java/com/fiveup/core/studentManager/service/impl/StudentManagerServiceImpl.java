@@ -70,14 +70,15 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
     @Override
     public void addStudent(StudentInsertDTO studentInsertDTO) {
         int classId;
-        //查询class_id
-        if (studentInsertDTO.getGradeId() == 0) {
-            classId = 1;
-        } else {
+
+        //获取classId
+        try {
             classId = studentManagerMapper.selectClassId(
-            studentInsertDTO.getGradeId(),
-            studentInsertDTO.getSchoolId(),
-            studentInsertDTO.getClassName());
+                    studentInsertDTO.getGradeId(),
+                    studentInsertDTO.getSchoolId(),
+                    studentInsertDTO.getClassName());
+        } catch (Exception e) {
+            throw new ApiException("年级" + studentInsertDTO.getGradeId() + "不存在班级" + studentInsertDTO.getClassName());
         }
 
         //创建StudentManager对象
@@ -97,7 +98,35 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
     }
 
     @Override
-    public void updateStudent(StudentManager studentManager) {
+    public void updateStudent(StudentInsertDTO studentInsertDTO) {
+        int classId;
+
+        //获取classId
+        try {
+            classId = studentManagerMapper.selectClassId(
+                    studentInsertDTO.getGradeId(),
+                    studentInsertDTO.getSchoolId(),
+                    studentInsertDTO.getClassName());
+        } catch (Exception e) {
+            String schoolName = studentManagerMapper.getSchoolNameById(studentInsertDTO.getSchoolId());
+            throw new ApiException("学校" + schoolName + "的年级" + studentInsertDTO.getGradeId() + "不存在班级" + studentInsertDTO.getClassName());
+        }
+
+        //创建StudentManager对象
+        StudentManager studentManager = new StudentManager();
+
+        studentManager.setId(studentInsertDTO.getId());
+        studentManager.setStudentName(studentInsertDTO.getStudentName());
+        studentManager.setStudentNum(studentInsertDTO.getStudentNum());
+        studentManager.setGender(studentInsertDTO.getGender());
+        studentManager.setClassId(classId);
+        studentManager.setGradeId(studentInsertDTO.getGradeId());
+        studentManager.setParentPhoneNum(studentInsertDTO.getParentPhoneNum());
+        studentManager.setSchoolId(studentInsertDTO.getSchoolId());
+        studentManager.setIsreview(studentInsertDTO.getIsreview());
+        studentManager.setDeleted(studentInsertDTO.getDeleted());
+        studentManager.setIsenter(studentInsertDTO.getIsenter());
+
         studentManagerMapper.updateById(studentManager);
     }
 
