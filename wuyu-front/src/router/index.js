@@ -405,6 +405,12 @@ export const asyncRoutes = [
         meta: { title: "编辑量表", role: [0,4] },
       },
       {
+        path: "dimensionHistory",
+        name: "量表更新历史",
+        component: () => import("@/views/cultivation/goal/dimensionHistory"),
+        meta: { title: "量表更新历史", role: [0,4] },
+      },
+      {
         path: "implementation",
         name: "执行情况",
         component: () => import("@/views/cultivation/goal/implementation"),
