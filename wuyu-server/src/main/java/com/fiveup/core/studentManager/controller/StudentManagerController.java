@@ -1,9 +1,17 @@
 package com.fiveup.core.studentManager.controller;
 
+<<<<<<< HEAD
 import com.fiveup.core.commentgeneration.utils.Result;
 import com.fiveup.core.studentManager.entity.StudentManager;
 import com.fiveup.core.studentManager.pojo.PageBean;
 import com.fiveup.core.studentManager.pojo.StudentManagerQuery;
+=======
+import com.fiveup.core.fuScale.develop_09.common.R;
+import com.fiveup.core.management.model.School;
+import com.fiveup.core.studentManager.pojo.*;
+import com.fiveup.core.studentManager.entity.StudentManager;
+import com.fiveup.core.studentManager.pojo.Result;
+>>>>>>> bce9104829d01d0a3e3e5a9af9940f0ecd6fcf4c
 import com.fiveup.core.studentManager.service.StudentManagerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +23,7 @@ public class StudentManagerController {
     private StudentManagerService studentManagerService;
 
     /**
+<<<<<<< HEAD
      * 增加学生
      * @param studentManager
      * @return
@@ -26,6 +35,8 @@ public class StudentManagerController {
     }
 
     /**
+=======
+>>>>>>> bce9104829d01d0a3e3e5a9af9940f0ecd6fcf4c
      * 条件分页查询学生
      * @param studentManagerQuery
      * @return
@@ -36,13 +47,24 @@ public class StudentManagerController {
     }
 
     /**
-     * 修改学生
-     * @param studentManager
+     * 增加学生
+     * @param studentInsertDTO
      * @return
      */
-    @PostMapping("updateStudent")
-    public Result<Void> updateStudent(@RequestBody StudentManager studentManager){
-        studentManagerService.updateStudent(studentManager);
+    @PostMapping("/addStudent")
+    public Result<Void> addStudent(@RequestBody StudentInsertDTO studentInsertDTO){
+        studentManagerService.addStudent(studentInsertDTO);
+        return Result.SUCCESS;
+    }
+
+    /**
+     * 修改学生
+     * @param studentInsertDTO
+     * @return
+     */
+    @PostMapping("/updateStudent")
+    public Result<Void> updateStudent(@RequestBody StudentInsertDTO studentInsertDTO){
+        studentManagerService.updateStudent(studentInsertDTO);
         return Result.SUCCESS;
     }
 
@@ -50,7 +72,7 @@ public class StudentManagerController {
      * 删除学生（逻辑删除）
      * @return
      */
-    @GetMapping("removeStudent")
+    @GetMapping("/removeStudent")
     public Result<Void> removeStudent(@RequestParam("id") Integer studentId){
         studentManagerService.removeStudent(studentId);
         return Result.SUCCESS;

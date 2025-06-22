@@ -5,7 +5,7 @@
       <h2 class="page-title">学生管理</h2>
 
       <!-- 搜索框和按钮 -->
-      <el-row class="search-box" gutter="20" type="flex" justify="start" align="middle">
+      <el-row class="search-box" gutter="20" type="flex" justify="start">
         <el-col :span="4">
           <el-input v-model="searchQuery.studentNum" placeholder="学号" size="medium" />
         </el-col>
@@ -201,7 +201,9 @@ import { baseUrl } from "@/api/baseapi"; // 引入 baseUrl
 import XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import * as echarts from "echarts";
+
 import { showLoading, closeLoading } from '@/utils/loading'
+
 export default {
   data() {
     return {
@@ -334,6 +336,7 @@ export default {
         return
       }
       try {
+
         const formData = new FormData()
         formData.append('file', this.uploadFile)
         showLoading('正在上传，请稍候...')
