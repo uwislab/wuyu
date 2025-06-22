@@ -79,7 +79,7 @@ export function getGradeScore(shuju) {
  //获取年级平均数据
 export function gradeScore(semester) {
   return request({
-    url: `http://28634c3e.r20.vip.cpolar.cn/fuScore/grade/avgScore`,
+    url: `/fuScore/grade/avgScore`,
     method: 'get',
     params: {
       semester: semester
@@ -90,11 +90,11 @@ export function gradeScore(semester) {
  //获取班级平均数据
  export function gradeclassScore(semester, clazz) {
   return request({
-    url: 'http://28634c3e.r20.vip.cpolar.cn/fuScore/class/avgScore',
+    url: '/fuScore/class/avgScore',
     method: 'get',
     params: {
       semester,
-      clazz // 关键修改：将参数名从sclass改为clazz
+      clazz 
     }
   });
 }
