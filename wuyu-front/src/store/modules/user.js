@@ -63,6 +63,7 @@ const actions = {
   // user login
   login({ commit }, userInfo) {
     const { username, password, identityId } = userInfo;
+    console.log('登录信息:', { username, identityId });
     return new Promise((resolve, reject) => {
       login({
         username: username.trim(),
@@ -72,9 +73,23 @@ const actions = {
         .then((response) => {
           if (response.code === 200) {
             const { data } = response;
+            console.log('登录成功，用户数据:', data);
             commit("SET_TOKEN", data.token || "admin");
             commit("SET_LOGIN_USER", data);
+            // 确保用户数据被保存到localStorage，使用统一的键名
+            localStorage.setItem('userInfo', JSON.stringify(data));
             setToken(data.token || "admin");
+            
+            // 保存用户名到localStorage，用于权限判断
+            if (data.username) {
+              localStorage.setItem('username', data.username);
+              console.log('保存用户名到localStorage:', data.username);
+            }
+            if (data.realName) {
+              localStorage.setItem('realName', data.realName);
+              console.log('保存真实姓名到localStorage:', data.realName);
+            }
+            
             resolve(response);
           } else {
             reject(new Error(response.message || "登录失败"));
@@ -89,30 +104,114 @@ const actions = {
   // get user info
   getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
-      //调用api/user 里面的getInfo方法获取用户信息和权限信息
-      // getInfo(state.token).then(response => {
+      console.log("state:", state)
+      console.log("token状态:", state.token)
+      
+      // 检查loginUser是否有效，如果无效则尝试从localStorage恢复
+      let currentUser = state.loginUser;
+      console.log('初始loginUser状态:', currentUser);
+      
+      if (!currentUser || currentUser.id === null) {
+        console.log('loginUser为空或ID为null，尝试从localStorage恢复用户信息');
+        const savedUserInfo = localStorage.getItem('userInfo');
+        console.log('localStorage中的userInfo:', savedUserInfo);
+        
+        if (savedUserInfo) {
+          try {
+            currentUser = JSON.parse(savedUserInfo);
+            console.log('从localStorage恢复的用户信息:', currentUser);
+            // 恢复到state中
+            commit("SET_LOGIN_USER", currentUser);
+            console.log('恢复后的loginUser:', state.loginUser);
+          } catch (e) {
+            console.error('解析localStorage中的用户信息失败:', e);
+          }
+        } else {
+          console.log('localStorage中没有保存的用户信息');
+          // 尝试从其他可能的键名获取
+          const oldUserInfo = localStorage.getItem('UserInfo');
+          if (oldUserInfo) {
+            console.log('从旧键名UserInfo中找到用户数据');
+            try {
+              currentUser = JSON.parse(oldUserInfo);
+              console.log('从旧键名恢复的用户信息:', currentUser);
+              commit("SET_LOGIN_USER", currentUser);
+              // 同时更新到新的键名
+              localStorage.setItem('userInfo', oldUserInfo);
+            } catch (e) {
+              console.error('解析旧键名中的用户信息失败:', e);
+            }
+          }
+        }
+      }
+      
+      console.log('获取用户信息，当前loginUser:', currentUser);
+      
+      // 根据用户身份设置不同的角色
+      let roles = [];
+      if (currentUser && currentUser.identity !== null) {
+        // 确保identity是数字类型
+        const identity = parseInt(currentUser.identity, 10);
+        console.log('用户身份ID转换为数字:', identity);
+        
+        // 0:校长 1：教务 2：班主任 3：老师
+        switch (identity) {
+          case 0:
+            roles = ["0"]; // 校长
+            break;
+          case 1:
+            roles = ["1"]; // 教务
+            break;
+          case 2:
+            roles = ["2"]; // 班主任
+            break;
+          case 3:
+            roles = ["3"]; // 老师
+            break;
+          default:
+            // 如果是教务角色但identity值有问题，尝试从其他地方识别
+            if (currentUser.realName && currentUser.realName.includes('教务')) {
+              console.log('通过名称识别为教务角色');
+              roles = ["1"]; 
+            } else {
+              roles = ["admin"];
+            }
+        }
+      } else {
+        // 紧急修复：如果当前是教务账号但没有正确识别，强制指定为教务角色
+        // 这里可以根据实际情况修改判断条件
+        const isJiaowuAccount = false; // 根据实际情况来判断是否为教务账号
+        if (isJiaowuAccount) {
+          roles = ["1"];
+          console.log('强制设置为教务角色');
+        } else {
+          roles = ["admin"];
+        }
+      }
+
+      console.log('用户身份ID:', currentUser?.identity, '分配的角色:', roles);
 
       const data = {
-        roles: ["admin"],
-        introduction: "I am a super administrator",
+        roles: roles,
+        introduction: "用户信息",
         avatar:
           "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif",
-        name: "Super Admin",
+        name: currentUser ? currentUser.realName || "管理员" : "管理员",
       };
 
       if (!data) {
         reject("验证失败，请重新登录。");
       }
 
-      const { roles, name, avatar, introduction } = data;
+      const { roles: userRoles, name, avatar, introduction } = data;
 
       // roles must be a non-empty array
       // roles必须是一个数组
-      if (!roles || roles.length <= 0) {
+      if (!userRoles || userRoles.length <= 0) {
         reject("getInfo:角色必须是非空数组！");
       }
       //把roles存入到store
-      commit("SET_ROLES", roles);
+      commit("SET_ROLES", userRoles);
       commit("SET_NAME", name);
       commit("SET_AVATAR", avatar);
       commit("SET_INTRODUCTION", introduction);
