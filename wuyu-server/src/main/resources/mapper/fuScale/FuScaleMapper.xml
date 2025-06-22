@@ -6,6 +6,11 @@
     <insert id="addExecution">
         insert into fu_execution (grade_id,scale_id) values (#{gradeId},#{scaleId})
     </insert>
+
+    <select id="getExecutionByScaleId" resultType="com.fiveup.core.fuScale.model.Execution" parameterType="com.fiveup.core.fuScale.model.Execution">
+        select * from fu_execution
+        where scale_id = #{scaleId}
+    </select>
     <update id="updateScale">
         update fu_scale_content
         <set>
