@@ -78,7 +78,8 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
                     studentInsertDTO.getSchoolId(),
                     studentInsertDTO.getClassName());
         } catch (Exception e) {
-            throw new ApiException("年级" + studentInsertDTO.getGradeId() + "不存在班级" + studentInsertDTO.getClassName());
+            String schoolName = studentManagerMapper.getSchoolNameById(studentInsertDTO.getSchoolId());
+            throw new ApiException("学校" + schoolName + "的年级" + studentInsertDTO.getGradeId() + "不存在班级" + studentInsertDTO.getClassName());
         }
 
         //创建StudentManager对象
