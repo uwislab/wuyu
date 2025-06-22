@@ -36,3 +36,12 @@ export function getStudentSemesters(id) {
     }
   })
 }
+
+export const getClassAndGradeScores=(studentId, semesterName)=> {
+  return request.get('/fuScore/classGradeScores',{
+    params:{
+      studentId:studentId,
+      semesterName:semesterName
+    }
+  })
+}
