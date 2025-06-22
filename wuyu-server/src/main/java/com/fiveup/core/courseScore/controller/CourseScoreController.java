@@ -27,7 +27,7 @@ public class CourseScoreController {
      * @param
      */
     @PostMapping("/get")
-    public Result search(@RequestParam String courseName,@RequestParam(required = false) Integer courseType,@RequestParam String teacherName,@RequestParam String studentNum,@RequestParam String studentName,@RequestParam Integer page,@RequestParam Integer pageSize){
+    public Result search(@RequestParam String courseName, @RequestParam(required = false) Integer courseType, @RequestParam String teacherName, @RequestParam String studentNum, @RequestParam String studentName, @RequestParam Integer page, @RequestParam Integer pageSize){
 
         log.debug("courseName:{},courseType:{},teacherName:{},studentNum:{},studentName:{},page:{},pageSize:{}",courseName,courseType,teacherName,studentNum,studentName,page,pageSize);
         ResPage<List<CourseScore>> resPage = courseScoreService.search(courseName,courseType,teacherName,studentNum,studentName,page,pageSize);
