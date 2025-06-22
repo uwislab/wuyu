@@ -1,9 +1,13 @@
 package com.fiveup.core.studentManager.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+<<<<<<< HEAD
+=======
 import com.fiveup.core.common.exception.ApiException;
 
 import com.fiveup.core.management.model.School;
+>>>>>>> bce9104829d01d0a3e3e5a9af9940f0ecd6fcf4c
 import com.fiveup.core.studentManager.entity.StudentManager;
 import com.fiveup.core.studentManager.mapper.StudentManagerMapper;
 import com.fiveup.core.studentManager.pojo.PageBean;
@@ -11,30 +15,38 @@ import com.fiveup.core.studentManager.pojo.StudentInsertDTO;
 import com.fiveup.core.studentManager.pojo.StudentManagerQuery;
 import com.fiveup.core.studentManager.pojo.StudentVO;
 import com.fiveup.core.studentManager.service.StudentManagerService;
+<<<<<<< HEAD
+=======
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+>>>>>>> bce9104829d01d0a3e3e5a9af9940f0ecd6fcf4c
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper, StudentManager> implements StudentManagerService {
     @Autowired
     private StudentManagerMapper studentManagerMapper;
+<<<<<<< HEAD
+    @Override
+    public void addStudent(StudentManager studentManager) {
+        studentManager.setDeleted(0);
+        studentManager.setIsreview(0);
+        studentManager.setIsenter(0);
+        studentManagerMapper.insert(studentManager);
+    }
+
+
+    @Override
+    public PageBean<StudentManager> getStudent(StudentManagerQuery studentManagerQuery) {
+=======
 
     private StudentManagerService studentManagerService;
 
@@ -43,11 +55,43 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
         System.out.println("前端传来页码"+studentManagerQuery.getPage());
         System.out.println("前端传来每页显示的条数"+studentManagerQuery.getSizeOfPage());
 
+>>>>>>> bce9104829d01d0a3e3e5a9af9940f0ecd6fcf4c
         int sizeOfPage = studentManagerQuery.getSizeOfPage() == null ? 10 : studentManagerQuery.getSizeOfPage();
-
         if (studentManagerQuery.getPage() == null) {
             studentManagerQuery.setPage(1);
         }
+<<<<<<< HEAD
+        Page<StudentManager> newPage = new Page<>(studentManagerQuery.getPage(), sizeOfPage);
+        QueryWrapper<StudentManager> queryWrapper = new QueryWrapper<>();
+        //学生姓名
+        if (studentManagerQuery.getStudentName() != null && !studentManagerQuery.getStudentName().isEmpty()) {
+            queryWrapper.eq("student_name", studentManagerQuery.getStudentName());
+        }
+        //学号
+        if (studentManagerQuery.getStudentNum() != null && !studentManagerQuery.getStudentNum().isEmpty()) {
+            queryWrapper.eq("student_num", studentManagerQuery.getStudentNum());
+        }
+        //性别
+        if (studentManagerQuery.getGender() != null) {
+            queryWrapper.eq("gender", studentManagerQuery.getGender());
+        }
+        //学生班级
+        if (studentManagerQuery.getClassId() != null) {
+            queryWrapper.eq("class_id", studentManagerQuery.getClassId());
+        }
+        //年级
+        if (studentManagerQuery.getGradeId() != null) {
+            queryWrapper.eq("grade_id", studentManagerQuery.getGradeId());
+        }
+        //学校
+        if (studentManagerQuery.getSchoolId() != null) {
+            queryWrapper.eq("school_id", studentManagerQuery.getSchoolId());
+        }
+        queryWrapper.eq("deleted", 0);
+
+        newPage = studentManagerMapper.selectPage(newPage, queryWrapper);
+=======
+>>>>>>> bce9104829d01d0a3e3e5a9af9940f0ecd6fcf4c
 
         PageHelper.startPage(studentManagerQuery.getPage(), sizeOfPage);
 
@@ -140,11 +184,9 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
         studentManagerMapper.updateById(studentManager);
     }
 
-    @Override
-    public List<School> getSchool() {
-        return studentManagerMapper.getSchool();
-    }
 
+<<<<<<< HEAD
+=======
     @Override
     public List<String> getClassName() {
         return studentManagerMapper.getClassName();
@@ -313,4 +355,5 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
             }
 
         }
+>>>>>>> bce9104829d01d0a3e3e5a9af9940f0ecd6fcf4c
 }

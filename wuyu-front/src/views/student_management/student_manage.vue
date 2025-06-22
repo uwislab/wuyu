@@ -5,7 +5,7 @@
       <h2 class="page-title">学生管理</h2>
 
       <!-- 搜索框和按钮 -->
-      <el-row class="search-box" gutter="20" type="flex" justify="start" align="middle">
+      <el-row class="search-box" gutter="20" type="flex" justify="start">
         <el-col :span="4">
           <el-input v-model="searchQuery.studentNum" placeholder="学号" size="medium" />
         </el-col>
@@ -202,6 +202,8 @@ import XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import * as echarts from "echarts";
 
+import { showLoading, closeLoading } from '@/utils/loading'
+
 export default {
   data() {
     return {
@@ -290,6 +292,7 @@ export default {
       schoolInfro: [],
       gradeInfo: [],
       classInfo: [],
+      apiBaseUrl: process.env.VUE_APP_DEVELOP06_API,
       // Excel导入相关
       importDialogVisible: false,  // 导入进度弹窗
       importProgress: 0,           // 导入进度
@@ -332,10 +335,12 @@ export default {
         this.$message.warning('请先选择文件')
         return
       }
-      const formData = new FormData()
-      formData.append('file', this.uploadFile)
       try {
-        const res = await axios.post(`${baseUrl}/studentExcel/import`, formData)
+
+        const formData = new FormData()
+        formData.append('file', this.uploadFile)
+        showLoading('正在上传，请稍候...')
+        const res = await axios.post(`${this.apiBaseUrl}/studentExcel/import`, formData)
         console.log(res);
         if (res.data.code ===200) {
           this.$message.success('上传成功')
@@ -347,6 +352,8 @@ export default {
         }
       } catch (error) {
         this.$message.error('上传失败：' + error.message)
+      } finally {
+        closeLoading()
       }
     },
     

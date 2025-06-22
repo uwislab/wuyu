@@ -17,4 +17,5 @@ public class StudentManager  {
     private Integer isreview;
     private Integer isenter;
     private Integer schoolId;
+
 }
