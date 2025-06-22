@@ -24,4 +24,6 @@ public interface StudentFuScoreService {
     List<StudentInfo> searchStudents(String keyword);
 
     List<StudentSemesterDto> getStudentSemesters(Integer studentId);
+
+    ClassAndGradeScoreResponse getClassAndGradeAvgScores(Integer studentId, String semesterName , int gradeLevel);
 }
