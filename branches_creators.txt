@@ -70,3 +70,4 @@ feature-03-sgh:sgh186
 feature-03-caimeijia:caimeijia
 revert-218-feature-07-钟豪洋:hqldsb
 dev0622:pavilion-y
+develop-03:pavilion-y
