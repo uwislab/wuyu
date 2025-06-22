@@ -77,26 +77,26 @@ export function getGradeScore(shuju) {
  }
 
  //获取年级平均数据
-export function gradeScore(grade) {
+export function gradeScore(semester) {
   return request({
-    url: `/diagnose/grade/average/scores`,
+    url: `http://28634c3e.r20.vip.cpolar.cn/fuScore/grade/avgScore`,
     method: 'get',
     params: {
-      grade: grade
+      semester: semester
     }
   })
 }
 
  //获取班级平均数据
- export function gradeclassScore(grade, sclass) {
+ export function gradeclassScore(semester, clazz) {
   return request({
-    url: '/diagnose/class/average/scores',
+    url: 'http://28634c3e.r20.vip.cpolar.cn/fuScore/class/avgScore',
     method: 'get',
     params: {
-      grade,
-      sclass
+      semester,
+      clazz // 关键修改：将参数名从sclass改为clazz
     }
-  })
+  });
 }
 
 export function getFuScaleId() {
