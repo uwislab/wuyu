@@ -7,6 +7,7 @@ Vue.use(Router);
 import Layout from "@/layout";
 import Layout2 from "@/views/monitor/Layout/Layout";
 import { getToken } from "@/utils/auth";
+
 /**
  * 固定路由
  * 没有权限要求的基页
@@ -55,7 +56,6 @@ export const constantRoutes = [
         name: "Home2",
         component: () => import("@/views/monitor/views/Home2"),
       },
-
       {
         path: "/Home",
         name: "Home",
@@ -157,6 +157,21 @@ export const asyncRoutes = [
       },
     ],
   },
+  //学生管理
+  {
+    path: "/student",
+    component: Layout,
+    redirect: "/student",
+    meta: { title: "学生管理", icon: "dashboard" },
+    children: [
+      {
+        path: "student",
+        name: "student",
+        component: () => import("@/views/student_management/student_manage.vue"),
+        meta: { title: "学生管理", icon: "dashboard", role: [0] },
+      },
+    ],
+  },
   {
     path: "/teacher_workspace",
     name: "事项",
@@ -170,7 +185,6 @@ export const asyncRoutes = [
       },
     ],
   },
-
   {
     path: "/teacher_workspace/teacherInfo",
     name: "个人信息",
@@ -181,37 +195,31 @@ export const asyncRoutes = [
     name: "班级信息",
     component: () => import("@/views/teacher_workspace/classManagement/index"),
   },
-
   {
     path: "/teacher_workspace/index",
     name: "工作事项",
     component: () => import("@/views/teacher_workspace/index"),
   },
-
   {
     path: "/teacher_workspace/lessonInfo",
     name: "任课信息",
     component: () => import("@/views/teacher_workspace/lessonInfo"),
   },
-
   {
     path: "/teacher_workspace/studentInfo",
     name: "学生信息",
     component: () => import("@/views/teacher_workspace/student/index"),
   },
-
   {
     path: "/teacher_workspace/teacherInfo",
     name: "教师信息",
     component: () => import("@/views/teacher_workspace/teacher/index"),
   },
-
   {
     path: "/teacher_workspace/sportScore",
     name: "体育成绩",
     component: () => import("@/views/teacher_workspace/sportScore/index"),
   },
-
   {
     path: "/teacher_workspace/deploy",
     name: "基础数据运维",
@@ -295,14 +303,12 @@ export const asyncRoutes = [
     name: "密码修改",
     component: () => import("@/views/teacher_workspace/passwordChange"),
   },
-
   //工程实践 古
   {
     path: "/teacher_workspace/index",
     name: "index",
     component: () => import("@/views/teacher_workspace/index"),
   },
-
   //问卷列表
   {
     path: "/questionnaire",
@@ -315,7 +321,6 @@ export const asyncRoutes = [
         component: () => import("@/views/questionnaire/paper/index"),
         meta: { title: "问卷列表", icon: "tab" },
       },
-
       {
         path: "preview",
         name: "预览",
@@ -323,7 +328,6 @@ export const asyncRoutes = [
         meta: { title: "预览", icon: "tab" },
         hidden: true,
       },
-
       {
         path: "question",
         component: () => import("@/views/questionnaire/question/index"),
@@ -354,7 +358,6 @@ export const asyncRoutes = [
       },
     ],
   },
-
   {
     path: "/goal",
     component: Layout,
@@ -437,7 +440,6 @@ export const asyncRoutes = [
       },
     ],
   },
-
   {
     path: "/activityModule",
     component: Layout,
@@ -500,102 +502,46 @@ export const asyncRoutes = [
     path: "/management",
     component: Layout,
     redirect: "/management/baseData",
-    meta: { title: "基础数据", icon: "el-icon-s-management" },
+    meta: { title: "基础数据管理", icon: "el-icon-s-management" },
     children: [
       {
+        path: "baseData",
+        name: "BaseData",
+        component: () => import("@/views/management/baseData/index"),
+        meta: { title: "基础数据", icon: "dashboard", role: [0,4] },
+      },
+      {
         path: "classManagement",
-        name: "班级信息",
+        name: "ClassManagement",
         component: () => import("@/views/management/classManagement/index"),
         meta: { title: "班级信息", icon: "el-icon-s-order", role: [0,4] },
       },
       {
         path: "student",
-        name: "学生信息",
+        name: "StudentManagement",
         component: () => import("@/views/management/student/index"),
         meta: { title: "学生信息", icon: "el-icon-s-data", role: [0,4] },
       },
       {
         path: "teacher",
-        name: "教师信息",
+        name: "TeacherManagement",
         component: () => import("@/views/management/teacher/index"),
         meta: { title: "教师信息", icon: "el-icon-reading", role: [0,4] },
       },
       {
         path: "sportScore",
-        name: "体育成绩",
+        name: "SportScoreManagement",
         component: () => import("@/views/management/sportScore/index"),
         meta: { title: "体育成绩", icon: "el-icon-s-order", role: [0,4] },
       },
       {
         path: "deploy",
-        name: "基础数据运维",
+        name: "DeployManagement",
         component: () => import("@/views/management/deploy/index"),
         meta: { title: "基础数据运维", icon: "el-icon-s-operation", role: [0,4] },
       },
     ],
   },
-
-  // {
-  //   path: "/meeting",
-  //   component: Layout,
-  //   meta: {title: "会议纪要", icon: "el-icon-chat-square"},
-  //   children: [
-  //     {
-  //       path: "index",
-  //       component: () => import("@/views/cultivation/meeting/index"),
-  //       name: "会议主页",
-  //       meta: {title: "会议主页"}
-  //     },
-  //     {
-  //       path: "myMeeting",
-  //       component: () => import("@/views/cultivation/meeting/myMeeting"),
-  //       name: "我的会议",
-  //       meta: {title: "我的会议"}
-  //     },
-  //     {
-  //       path: "meetingDetails",
-  //       component: () => import("@/views/cultivation/meeting/meetingDetails"),
-  //       name: "会议详情",
-  //       meta: {title: "会议详情"},
-  //       hidden: true
-  //     },
-  //     {
-  //       path: "dataStatistics",
-  //       component: () => import("@/views/cultivation/meeting/dataStatistics"),
-  //       name: "数据统计",
-  //       meta: {title: "数据统计"},
-  //       hidden: true
-  //     }
-  //   ]
-  // },
-  // {
-  //   path: "/guidance",
-  //   component: Layout,
-  //   redirect: "/guidance/index",
-  //   meta: {title: "指导文库", icon: "el-icon-document"},
-  //   children: [
-  //     {
-  //       path: "index",
-  //       component: () => import("@/views/cultivation/guidance/index"),
-  //       name: "文库主页",
-  //       meta: {title: "文库主页"}
-  //     },
-  //     {
-  //       path: "myGuidance",
-  //       component: () => import("@/views/cultivation/guidance/myGuidance"),
-  //       name: "我的文库",
-  //       meta: {title: "我的文库"}
-  //     },
-  //     {
-  //       path: "dataStatistics",
-  //       component: () => import("@/views/cultivation/guidance/dataStatistics"),
-  //       name: "数据统计",
-  //       meta: {title: "数据统计"},
-  //       hidden: true
-  //     }
-  //   ]
-  // },
-
   {
     path: "/course_score",
     component: Layout,
@@ -622,52 +568,6 @@ export const asyncRoutes = [
       },
     ],
   },
-  // {
-  //   path: "/analyze",
-  //   component: Layout,
-  //   redirect: "/analyze/Usercharts",
-  //   meta: { title: "学生五育分析", icon: "el-icon-data-analysis" },
-  //   children: [
-  //     {
-  //       path: "DataProcessing",
-  //       component: () => import("@/views/analyze/DataProcessing"),
-  //       name: "DataProcessing",
-  //       meta: { title: "数据更新" }
-  //     },
-  //     {
-  //       path: "Userecharts",
-  //       component: () => import("@/views/analyze/Usercharts"),
-  //       name: "Userecharts",
-  //       meta: { title: "数据分析1" }
-  //     },
-  //     {
-  //       path: "Echarts_Relation",
-  //       component: () => import("@/views/analyze/Echarts_Relation"),
-  //       name: "Echarts_Relation",
-  //       meta: { title: "数据分析2" }
-  //     },
-  //     {
-  //       path: "KMeans_Point",
-  //       component: () => import("@/views/analyze/KMeans_Point"),
-  //       name: "KMeans_Point",
-  //       meta: { title: "K-Means画图" }
-  //     },
-  //     {
-  //       path: "WebInput",
-  //       component: () => import("@/views/analyze/WebInput"),
-  //       name: "WebInput",
-  //       meta: { title: "数据预测" }
-  //     },
-  //     {
-  //       path: "ProcessSet",
-  //       component: () => import("@/views/analyze/ProcessSet"),
-  //       name: "ProcessSet",
-  //       meta: { title: "数据预处理与更新设置" },
-  //       hidden: true
-  //     }
-  //   ]
-  // },
-  /* 学习诊断*/
   {
     path: "/diagnose",
     component: Layout,
@@ -778,7 +678,6 @@ export const asyncRoutes = [
       },
     ],
   },
-
   {
     path: "/performanceevaluation",
     component: Layout,
@@ -843,7 +742,19 @@ export const asyncRoutes = [
       },
     ],
   },
-
+  // 通知册
+  {
+    path: '/notice',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/notice/index'),
+        name: 'Notice',
+        meta: { title: '通知册', icon: 'el-icon-menu' }
+      }
+    ]
+  },
   {
     path: "/demonstrate",
     component: Layout,
@@ -900,14 +811,19 @@ export const asyncRoutes = [
         meta: { title: "年级成绩展示", role: [0,4] },
       },
       {
-        path: "newwyzk",
-        component: () => import("@/views/demonstrate/newwyzk"),
-        name: "新中控大屏",
-        meta: { title: "新中控大屏", role: [0,4] },
+        path: "studentGradeChange",
+        component: () => import("@/views/demonstrate/studentGradeChange"),
+        name: "五育成绩展示",
+        meta: { title: "五育成绩展示", role: [0,4] },
+      },
+      {
+        path: "average-education-achievement",
+        component: () => import("@/views/demonstrate/average-education-achievement"),
+        name: "平均五育成绩展示",
+        meta: { title: "平均五育成绩展示", role: [0,4] },
       },
     ],
   },
-
   {
     path: "/wuyu-overview",
     component: Layout,
@@ -946,12 +862,6 @@ export const asyncRoutes = [
         name: "学生个人详情页",
         meta: { title: "学生个人详情页", role: [0,4] },
       },
-      // {
-      //   path: "year",
-      //   component: () => import("@/views/achievementAnalysis/YearScore.vue"),
-      //   name: "年级情况总览",
-      //   meta: { title: "年级情况总览", role: [0] },
-      // },
     ],
   },
   //总体运行
@@ -967,14 +877,12 @@ export const asyncRoutes = [
         name: "总体运行",
         meta: { title: "班级信息", role: [0,4] },
       },
-
       {
         path: "detail",
         component: () => import("@/views/overview/detail"),
         name: "detail",
         meta: { title: "学生详情", role: [0,4] },
       },
-
       {
         path: "award",
         component: () => import("@/views/overview/award"),
@@ -997,17 +905,29 @@ export const asyncRoutes = [
         meta: {title: "学校公告", role: [0]},
       },
       {
-          path: "statistical",
-          component: () => import("@/views/school-overview/statistical"),
-          name: "统计",
-          meta: {title: "统计", role: [0]},
-        },
+        path: "statistical",
+        component: () => import("@/views/school-overview/statistical"),
+        name: "统计",
+        meta: {title: "统计", role: [0]},
+      },
     ],
   },
-
+  // 排课管理模块
+  {
+    path: "/SchedulingManagement",
+    component: Layout,
+    redirect: "schedulingManagement/index",
+    meta: {title: "排课管理", icon: "edit"},
+    children: [
+      {
+        path: "index",
+        component: () => import("@/views/scheduling-management/index"),
+        name: "排课管理",
+        meta: {title: "排课管理", role: [0]},
+      },
+    ],
+  },
 ];
-
-
 
 const createRouter = (router) =>
   new Router({

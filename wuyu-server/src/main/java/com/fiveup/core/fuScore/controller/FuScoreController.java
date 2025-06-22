@@ -1,23 +1,28 @@
 package com.fiveup.core.fuScore.controller;
 
+import com.fiveup.core.classManage.model.GradeInfo;
 import com.fiveup.core.classManage.service.ClassManageService;
+import com.fiveup.core.fuScore.entity.vo.FuClassAvgScoreVO;
+import com.fiveup.core.fuScore.entity.vo.FuGradeAvgScoreVO;
 import com.fiveup.core.fuScore.model.*;
+import com.fiveup.core.fuScore.service.*;
 import com.fiveup.core.fuScore.service.ClassFuScoreService;
 import com.fiveup.core.fuScore.service.GradeFuScoreService;
 import com.fiveup.core.fuScore.service.StudentFuScoreService;
+import com.fiveup.core.fuScore.utils.SemesterUtils;
 import com.fiveup.core.management.common.CommonResponse;
 import com.fiveup.core.miniapp.service.StuInfoService;
 import com.fiveup.core.teacherworkspace.model.Lesson;
 import com.fiveup.core.teacherworkspace.service.TeacherWorkspaceService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
+import javax.validation.constraints.NotNull;
+import java.util.*;
 
+import org.apache.ibatis.annotations.Param;
 /**
  * @author shilin
  * @date 2022/9/19
@@ -43,12 +48,18 @@ public class FuScoreController {
 
     @Resource
     private TeacherWorkspaceService teacherWorkspaceService;
+    
+    @Autowired
+    private FuClassScoreService fuClassScoreService;    
+    
+    @Autowired
+    private FuGradeScoreService fuGradeScoreService;
 
     // ItemID -- 项目名对应数组
     private String[] fuItem = new String[]{"morality_score", "intelligence_score", "physical_score", "aesthetic_score", "labour_score"};
 
     // 获得某一班级所有学生的某一五育项目成绩
-    // ！！！第二个页面table表中的内容
+    // ！！！第二个页面table表中的内容gh
     @GetMapping("/getStudentsFuScoreList")
     public CommonResponse getStudentsFuScoreList( int gradeId, int classId, int date) {
         List<StudentFuScore> studentFuScore;
@@ -58,7 +69,7 @@ public class FuScoreController {
 
 
     //！！！添加的
-    // 根据学生姓名或学号查询分数
+    // 根据学生姓名或学号查询分数fdsafdafdasfasdfasdf
     @GetMapping("/getScoreByInfo")
     public List<StudentFuScore> getScoreByInfo(@RequestParam String info) {
         return studentFuScoreService.getScoreByInfo(info);
@@ -332,6 +343,93 @@ public class FuScoreController {
         }
     }
 
+    @GetMapping("/student/search")
+    public List<StudentInfo> searchStudent(@RequestParam("keyword") String keyword) {
+        return studentFuScoreService.searchStudents(keyword);
+    }
 
+    @GetMapping("/student/semesters")
+    public List<StudentSemesterDto> getStudentSemesters(@RequestParam("studentId") Integer studentId) {
+        return studentFuScoreService.getStudentSemesters(studentId);
+    }
 
+    /**
+     * 获取年级五育成绩
+     * @param semester
+     * @return
+     */
+    @GetMapping("/grade/avgScore")
+    public CommonResponse<List<FuGradeAvgScoreVO>> getGradeAvgScore(@NotNull(message = "请选择学期") Integer semester) {
+        return CommonResponse.ok(fuGradeScoreService.getGradeAvgScore(semester));
+    }
+
+    /**
+     * 获取年级映射关系
+     * @return
+     */
+    @GetMapping("/gradeInfo")
+    public CommonResponse<List<Map<String, Object>>> getGradeInfo() {
+        return CommonResponse.ok(fuGradeScoreService.getGradeInfo());
+    }
+
+    /**
+     * 获取班级五育成绩
+     * @param semester
+     * @param clazz
+     * @return
+     */
+    @GetMapping("/class/avgScore")
+    public CommonResponse<List<FuClassAvgScoreVO>> getClassAvgScore(@NotNull(message = "请选择学期") Integer semester, 
+                                                                    @NotNull(message = "请选择班级") String clazz) {
+        return CommonResponse.ok(fuClassScoreService.getClassAvgScore(semester, clazz));
+    }
+
+    /**
+     * 班级列表查询
+     * @return
+     */
+    @GetMapping("/classInfo")
+    public CommonResponse<List<String>> getClassInfo() {
+        return CommonResponse.ok(fuClassScoreService.getClassInfo());
+    }
+
+    //查询学生学期的五育成绩数据
+    @GetMapping("/getStudentSemesterScores")
+    public StudentSemesterScore getStudentSemesterScores(
+            @RequestParam("studentId") Integer studentId,
+            @RequestParam("studentName") String studentName,
+            @RequestParam("semester") String semester) {
+        return studentFuScoreService.getStudentSemesterScores(studentId, studentName, semester);
+    }
+
+    //查询学生有成绩单学期
+    @GetMapping("/studentScoreSemester")
+    public List<StuSemesterTotalScore> getStuSemester(
+            @RequestParam("studentId") Integer studentId,
+            @RequestParam("studentName") String studentName) {
+        return studentFuScoreService.getStuSemester(studentId, studentName);
+    }
+
+    /**
+     * 获取班级和年级的五育成绩数据
+     * @param studentId
+     * @param semesterName
+     * @return ClassAndGradeScoreResponse
+     */
+    @GetMapping("/classGradeScores")
+    public ClassAndGradeScoreResponse getClassAndGradeScores(
+            @RequestParam Integer studentId,
+            @RequestParam String semesterName) {
+
+        // 使用 SemesterUtils 工具类来提取年级和转换学期编码
+        int gradeLevel = SemesterUtils.extractGradeLevel(semesterName);
+        String semesterCode = SemesterUtils.convertToSemesterCode(studentId, semesterName);
+
+        System.out.println("studentId: " + studentId);
+        System.out.println("semesterName: " + semesterName);
+        System.out.println("gradeLevel: " + gradeLevel);
+        System.out.println("semesterCode: " + semesterCode);
+
+        return studentFuScoreService.getClassAndGradeAvgScores(studentId, semesterCode, gradeLevel);
+    }
 }

@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.fuScore.mapper.StudentFuScoreMapper">
+    <!-- 获取学生各学期详细评分 -->
+    <select id="getStudentSemesterScores" resultType="com.fiveup.core.fuScore.model.StudentSemesterScore">
+        SELECT * FROM (
+        SELECT
+        s.student_id AS studentId,
+
+        CONCAT(
+        FLOOR((
+        TIMESTAMPDIFF(MONTH, tmp.enrollment_date, tmp.exam_date)
+        + IF(DATE_FORMAT(tmp.exam_date, '%m') IN ('01','08','09','10','11','12'), 0, -1)
+        ) / 12) + 1,
+        '年级',
+        CASE
+        WHEN DATE_FORMAT(tmp.exam_date, '%m') IN ('01','08','09','10','11','12') THEN '上学期'
+        WHEN DATE_FORMAT(tmp.exam_date, '%m') IN ('02','03','04','05','06','07') THEN '下学期'
+        END
+        ) AS semester,
+
+        s.s_deyu AS moralityScore,
+        s.s_zhiyu AS intelligenceScore,
+        s.s_tiyu AS physicalScore,
+        s.s_meiyu AS aestheticScore,
+        s.s_laoyu AS labourScore
+
+        FROM di_studentscore s
+
+        JOIN (
+        SELECT
+        student_id,
+        FROM_UNIXTIME(CAST(s_exdate / 1000 AS UNSIGNED)) AS exam_date,
+        STR_TO_DATE(CONCAT(LEFT(CAST(student_id AS CHAR), 6), '01'), '%Y%m%d') AS enrollment_date
+        FROM di_studentscore
+        GROUP BY student_id, exam_date
+        ) tmp USING (student_id)
+
+        JOIN di_student d ON s.student_id = d.student_id
+
+        WHERE s.student_id = #{studentId}
+        <if test="studentName != null and studentName != ''">
+            AND d.student_name = #{studentName}
+        </if>
+        <if test="semester != null and semester != ''">
+            AND CONCAT(
+            FLOOR((
+            TIMESTAMPDIFF(MONTH, tmp.enrollment_date, tmp.exam_date)
+            + IF(DATE_FORMAT(tmp.exam_date, '%m') IN ('01','08','09','10','11','12'), 0, -1)
+            ) / 12) + 1,
+            '年级',
+            CASE
+            WHEN DATE_FORMAT(tmp.exam_date, '%m') IN ('01','08','09','10','11','12') THEN '上学期'
+            WHEN DATE_FORMAT(tmp.exam_date, '%m') IN ('02','03','04','05','06','07') THEN '下学期'
+            END
+            ) = #{semester}
+        </if>
+
+        ORDER BY tmp.exam_date DESC
+        LIMIT 1
+        ) t
+    </select>
+
+    <!-- 获取学生每学期总成绩及各分项成绩，按年级+上下学期命名 -->
+    <select id="getStudentSemesterTotalScores" resultType="com.fiveup.core.fuScore.model.StuSemesterTotalScore">
+        SELECT
+            CONCAT(
+                    FLOOR((
+                              TIMESTAMPDIFF(MONTH, tmp.enrollment_date, tmp.exam_date)
+                                  + IF(DATE_FORMAT(tmp.exam_date, '%m') IN ('01','08','09','10','11','12'), 0, -1)
+                              ) / 12) + 1,
+                    '年级',
+                    CASE
+                        WHEN DATE_FORMAT(tmp.exam_date, '%m') IN ('01','08','09','10','11','12') THEN '上学期'
+                        WHEN DATE_FORMAT(tmp.exam_date, '%m') IN ('02','03','04','05','06','07') THEN '下学期'
+                        END
+            ) AS semester,
+
+            tmp.s_deyu AS deyu,
+            tmp.s_zhiyu AS zhiyu,
+            tmp.s_tiyu AS tiyu,
+            tmp.s_meiyu AS meiyu,
+            tmp.s_laoyu AS laoyu,
+            (tmp.s_deyu + tmp.s_zhiyu + tmp.s_tiyu + tmp.s_meiyu + tmp.s_laoyu) AS totalScore
+        FROM (
+                 SELECT
+                     s.s_deyu,
+                     s.s_zhiyu,
+                     s.s_tiyu,
+                     s.s_meiyu,
+                     s.s_laoyu,
+
+                     -- 关键修复点：安全构造入学日期
+                     STR_TO_DATE(
+                             CONCAT(LEFT(CAST(d.student_id AS CHAR), 6), '01'),
+                             '%Y%m%d'
+                     ) AS enrollment_date,
+
+                     -- 清洗 exam_date，确保是合法时间戳
+                     FROM_UNIXTIME(
+                             CAST(REGEXP_REPLACE(TRIM(s.s_exdate), '[^0-9]', '') / 1000 AS UNSIGNED)
+                     ) AS exam_date
+
+                 FROM di_studentscore s
+                          JOIN di_student d ON s.student_id = d.student_id
+                 WHERE s.student_id = #{studentId}
+             ) AS tmp
+        ORDER BY tmp.exam_date
+    </select>
+
+    <select id="getAllStudents" resultType="com.fiveup.core.fuScore.model.StudentInfo">
+        SELECT student_id, student_name FROM di_student ORDER BY student_name
+    </select>
+
+    <!-- 搜索学生（姓名/学号） -->
+    <select id="searchStudents" resultType="com.fiveup.core.fuScore.model.StudentInfo">
+        SELECT student_id, student_name
+        FROM di_student
+        WHERE student_name LIKE CONCAT('%', #{keyword}, '%')
+           OR student_id LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY student_name LIMIT 20
+    </select>
+
+    <select id="selectStudentSemesters" resultType="com.fiveup.core.fuScore.model.StudentSemesterDto">
+        SELECT semester FROM (
+                                 SELECT DISTINCT
+                                     CONCAT(
+                                             FLOOR((
+                                                       TIMESTAMPDIFF(MONTH, tmp.enrollment_date, tmp.exam_date)
+                                                           + IF(DATE_FORMAT(tmp.exam_date, '%m') IN ('01','08','09','10','11','12'), 0, -1)
+                                                       ) / 12) + 1,
+                                             '年级',
+                                             CASE
+                                                 WHEN DATE_FORMAT(tmp.exam_date, '%m') IN ('01','08','09','10','11','12') THEN '上学期'
+                                                 WHEN DATE_FORMAT(tmp.exam_date, '%m') IN ('02','03','04','05','06','07') THEN '下学期'
+                                                 END
+                                     ) AS semester,
+
+                                     tmp.exam_date  -- 把 exam_date 放进 SELECT，以便排序使用
+
+                                 FROM (
+                                          SELECT
+                                              FROM_UNIXTIME(CAST(s_exdate / 1000 AS UNSIGNED)) AS exam_date,
+                                              STR_TO_DATE(CONCAT(LEFT(CAST(student_id AS CHAR), 6), '01'), '%Y%m%d') AS enrollment_date
+                                          FROM di_studentscore
+                                          WHERE student_id = #{studentId}
+                                      ) AS tmp
+                             ) AS t
+        ORDER BY t.exam_date DESC
+    </select>
+
+    <select id="getClassAndGradeScores" resultType="com.fiveup.core.fuScore.model.ClassAndGradeScoreResponse">
+        SELECT
+            cls.class_name AS className,
+            cls.morality_score AS classDeYu,
+            cls.intelligence_score AS classZhiYu,
+            cls.physical_score AS classTiYu,
+            cls.aesthetic_score AS classMeiYu,
+            cls.labour_score AS classLaoYu,
+
+            grd.grade_name AS gradeName,
+            grd.morality_score AS gradeDeYu,
+            grd.intelligence_score AS gradeZhiYu,
+            grd.physical_score AS gradeTiYu,
+            grd.aesthetic_score AS gradeMeiYu,
+            grd.labour_score AS gradeLaoYu
+        FROM di_student stu
+                 LEFT JOIN fu_class_score cls
+                           ON cls.class_name = (
+                               CASE stu.student_class_number
+                                   WHEN 1 THEN '一班'
+                                   WHEN 2 THEN '二班'
+                                   WHEN 3 THEN '三班'
+                                   WHEN 4 THEN '四班'
+                                   WHEN 5 THEN '五班'
+                                   WHEN 6 THEN '六班'
+                                   ELSE '未知班级'
+                                   END
+                               )
+                               AND cls.data = #{semesterCode} AND cls.grade_ID=#{gradeLevel}
+                 LEFT JOIN fu_grade_score grd
+                           ON grd.grade_ID = #{gradeLevel}
+                               AND grd.data = #{semesterCode}
+        WHERE stu.student_id = #{studentId}
+    </select>
+</mapper>
