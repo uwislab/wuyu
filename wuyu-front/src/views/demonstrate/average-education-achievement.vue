@@ -1,26 +1,25 @@
 <template>
-  <div>
-    <el-select v-model="selectedGrade" placeholder="请选择年级" @change="handleGradeChange">
-      <el-option v-for="grade in grades" :key="grade.value" :value="grade.value" :label="grade.label"></el-option>
+  <div class="grade-score-chart">
+    <!-- 年份选择器 -->
+    <el-select v-model="selectedYear" placeholder="请选择年份" @change="handleYearChange">
+      <el-option v-for="year in availableYears" :key="year" :value="year" :label="`${year}年`"></el-option>
     </el-select>
-    <el-select v-model="selectedClass" placeholder="请选择班级" @change="handleClassChange" v-if="showClassSelector">
-      <el-option v-for="classNumber in classNumbers" :key="classNumber" :value="classNumber" :label="`${classNumber}班`"></el-option>
+    <!-- 班级选择器-->
+    <el-select v-model="selectedClassName" placeholder="请选择班级" @change="handleClassChange" v-if="showClassSelector">
+      <el-option v-for="className in classNames" :key="className" :value="className" :label="className"></el-option>
       <el-option key="all" value="all" label="全年级"></el-option>
     </el-select>
+    <!-- 查询按钮 -->
     <el-button @click="fetchData" type="primary">查询</el-button>
-    <el-row :gutter="10">
+    <!-- 图表和错误信息展示区域 -->
+    <el-row :gutter="10" class="mt-20">
       <el-col :span="18">
-        <el-card>
-          <div style="width: 100%; height: 400px" id="line"></div>
+        <el-card shadow="hover">
+          <div class="chart-container" id="lineChart"></div>
         </el-card>
       </el-col>
       <el-col :span="6" v-if="errorMessage">
-        <el-alert
-          title="数据加载失败"
-          type="error"
-          :description="errorMessage"
-          show-icon
-        ></el-alert>
+        <el-alert title="数据加载失败" type="error" :description="errorMessage" show-icon class="alert-container"></el-alert>
       </el-col>
     </el-row>
   </div>
@@ -28,217 +27,292 @@
 
 <script>
 import * as echarts from 'echarts';
-import { gradeclassScore, gradeScore } from "@/api/fuScale"; // 引入年级平均分接口
+import { gradeScore, gradeclassScore } from "@/api/fuScale";
 
 export default {
-  name: "grade",
+  name: "GradeScoreChart",
   data() {
     return {
-      selectedGrade: 1,
-      selectedClass: null, // 默认不选择班级
-      grades: [
-        { value: 1, label: '一年级' },
-        { value: 2, label: '二年级' },
-        { value: 3, label: '三年级' },
-        { value: 4, label: '四年级' },
-        { value: 5, label: '五年级' },
-        { value: 6, label: '六年级' }
-      ],
-      classNumbers: [1, 2, 3], // 每个年级3个班
-      showClassSelector: false, // 控制班级选择器是否显示
+      selectedYear: null,
+      selectedClassName: null,
+      availableYears: [2020, 2021, 2022],
+      classNames: ['一班', '二班', '三班'],
+      showClassSelector: false,
       scoreData: [],
       chart: null,
-      errorMessage: ''
-    }
+      errorMessage: '',
+      xAxisLabels: [],
+      scoreDimensions: [
+        { key:'moralityScore', name: '德育', color: '#007BFF' },
+        { key: 'intelligenceScore', name: '智育', color: '#28A745' },
+        { key: 'physicalScore', name: '体育', color: '#FFC107' },
+        { key: 'aestheticScore', name: '美育', color: '#DC3545' },
+        { key: 'labourScore', name: '劳育', color: '#17A2B8' }
+      ],
+      gradeNameMap: {
+        1: '一年级',
+        2: '二年级',
+        3: '三年级',
+        4: '四年级',
+        5: '五年级',
+        6: '六年级'
+      }
+    };
   },
   mounted() {
-    // 初始不自动加载数据，等待用户选择
+    this.initStyles();
   },
   methods: {
+    initStyles() {
+      const style = document.createElement('style');
+      style.textContent = `
+       .grade-score-chart { padding: 20px; }
+       .mt-20 { margin-top: 20px; }
+       .chart-container { width: 100%; height: 600px; }
+       .alert-container { margin-top: 30px; }
+       .el-select-dropdown .el-select-dropdown__item[data-value="all"] { font-weight: bold; color: '#1890ff'; }
+      `;
+      document.head.appendChild(style);
+    },
+    handleYearChange() {
+      this.selectedClassName = null;
+      this.showClassSelector = true;
+    },
+    handleClassChange() { },
     fetchData() {
       this.errorMessage = '';
       this.destroyChart();
-      
-      // 参数校验
-      if (!this.selectedGrade) {
-        this.errorMessage = '请选择年级';
+      if (!this.selectedYear) {
+        this.errorMessage = '请选择年份';
         return;
       }
-      
-      // 转换为字符串类型
-      const grade = this.selectedGrade.toString();
-      
-      // 判断是查询班级还是全年级
-      if (this.selectedClass === 'all') {
-        // 查询全年级平均分
-        console.log('请求全年级数据:', { grade });
-        
-        gradeScore(grade)
-          .then(res => {
-            console.log('全年级平均分接口返回数据:', res);
-            this.processData(res, true); // 第二个参数表示是否为全年级数据
-            this.drawLine();
-          })
-          .catch(error => {
-            console.error('全年级平均分接口调用失败:', error);
-            this.errorMessage = `获取全年级数据失败: ${error.message}`;
-          });
-      } else if (this.selectedClass !== null) {
-        // 查询单个班级平均分
-        const sclass = this.selectedClass.toString();
-        console.log('请求班级数据:', { grade, sclass });
-        
-        gradeclassScore(grade, sclass)
-          .then(res => {
-            console.log('班级平均分接口返回数据:', res);
-            this.processData(res, false); // 第二个参数表示是否为全年级数据
-            this.drawLine();
-          })
-          .catch(error => {
-            console.error('班级平均分接口调用失败:', error);
-            this.errorMessage = `获取班级数据失败: ${error.message}`;
-          });
-      } else {
+      if (!this.selectedClassName) {
         this.errorMessage = '请选择班级或全年级';
+        return;
+      }
+      if (this.selectedClassName === 'all') {
+        this.fetchWholeGradeData();
+      } else {
+        this.fetchClassData();
       }
     },
-    
-    processData(data, isWholeGrade = false) {
-      if (!data || typeof data !== 'object') {
-        this.errorMessage = '数据格式不正确';
+    fetchWholeGradeData() {
+      gradeScore(this.selectedYear)
+       .then(res => {
+          if (res.code === 200 && res.data && Array.isArray(res.data)) {
+            this.processData(res.data, true);
+            this.drawChart();
+          } else {
+            this.errorMessage = '获取全年级数据失败';
+          }
+        })
+       .catch(err => {
+          this.errorMessage = `网络错误: ${err.message}`;
+        });
+    },
+    fetchClassData() {
+      gradeclassScore(this.selectedYear, this.selectedClassName)
+       .then(res => {
+          if (res.code === 200 && res.data && Array.isArray(res.data)) {
+            this.processData(res.data, false);
+            this.drawChart();
+          } else {
+            this.errorMessage = '获取班级数据失败';
+          }
+        })
+       .catch(err => {
+          this.errorMessage = `网络错误: ${err.message}`;
+        });
+    },
+    processData(dataList, isWholeGrade) {
+      if (!dataList || dataList.length === 0) {
+        this.errorMessage = '数据为空，请检查接口返回';
         return;
       }
-      
-      // 定义成绩字段映射
-      const scoreFields = {
-        '德': '德育',
-        '智': '智育',
-        '体': '体育',
-        '美': '美育',
-        '劳': '劳育'
-      };
-      
-      // 处理每个维度的成绩，将无效值转换为null
-      const processedData = Object.keys(scoreFields).map(dimension => {
-        const field = scoreFields[dimension];
-        const value = data[field];
-        
-        // 检查值是否为有效数字
-        if (typeof value === 'number' && !isNaN(value)) {
-          return value;
+
+      const semesterMap = { '12': '上学期', '07': '下学期' };
+      this.xAxisLabels = [];
+
+      // 筛选学年数据（2020年包含202012和202107）
+      const filteredData = dataList.filter(item => {
+        const dataStr = item.data.toString();
+        const year = parseInt(dataStr.substring(0, 4));
+        const month = dataStr.substring(4);
+        return (month === '12' && year === this.selectedYear) ||
+               (month === '07' && year === this.selectedYear + 1);
+      });
+
+      // 班级筛选
+      if (!isWholeGrade && this.selectedClassName!== 'all') {
+        const filteredByClass = filteredData.filter(item => item.className === this.selectedClassName);
+        if (filteredByClass.length === 0) {
+          this.errorMessage = `未找到${this.selectedYear}年${this.selectedClassName}的成绩`;
+          return;
+        }
+      }
+
+      // 按年级和学期排序
+      const sortedData = filteredData.sort((a, b) => {
+        if (a.gradeId!== b.gradeId) return a.gradeId - b.gradeId;
+        return a.data - b.data;
+      });
+
+      // 生成图表数据（包含德育）
+      this.scoreData = this.scoreDimensions.map(dim => ({
+        name: dim.name,
+        type: 'line',
+        data: sortedData.map(item => item[dim.key] || null),
+        symbol: 'circle',
+        symbolSize: 8,
+        lineStyle: { width: 2.5, type:'solid', color: dim.color },
+        itemStyle: { color: dim.color },
+        connectNulls: true // 连接空值确保曲线连续
+      }));
+
+      // 生成横坐标标签
+      this.xAxisLabels = sortedData.map(item => {
+        const dataStr = item.data.toString();
+        const year = dataStr.substring(0, 4);
+        const semesterCode = dataStr.substring(4);
+        const semester = semesterMap[semesterCode] || '未知学期';
+        const gradeName = this.gradeNameMap[item.gradeId] || `年级${item.gradeId}`;
+
+        if (isWholeGrade) {
+          return `${gradeName}${semester}`;
         } else {
-          console.warn(`无效的${dimension}育成绩:`, value);
-          return null; // 返回null表示缺失值，图表会显示为空白
+          return `${gradeName}${this.selectedClassName}${semester}`;
         }
       });
-      
-      let newData = {
-        name: isWholeGrade 
-          ? `${this.getGradeLabel(this.selectedGrade)}全年级平均分` 
-          : `${this.getGradeLabel(this.selectedGrade)}${this.selectedClass}班`,
-        type: 'line',
-        data: processedData
-      };
-      
-      this.scoreData = [newData];
+
+      // 检查数据
+      if (sortedData.length === 0) {
+        this.errorMessage = `未找到${this.selectedYear}年${this.selectedClassName}的成绩`;
+      }
     },
-    
-    getGradeLabel(value) {
-      const grade = this.grades.find(g => g.value === value);
-      return grade ? grade.label : `未知年级(${value})`;
-    },
-    
-    drawLine() {
-      if (this.errorMessage) return;
-      
-      let lineDom = document.getElementById('line');
-      let lineChart = echarts.init(lineDom);
+    drawChart() {
+      if (this.errorMessage ||!this.scoreData.length) return;
+
+      // 计算Y轴范围
+      const allScores = this.scoreData.flatMap(series =>
+        series.data.filter(score => score!== null)
+      );
+      const minScore = allScores.length? Math.min(...allScores) - 5 : 70;
+      let maxScore = allScores.length? Math.max(...allScores) + 5 : 95;
+      if (maxScore > 100) {
+        maxScore = 100;
+      }
+
       const option = {
         title: {
-          text: this.selectedClass === 'all' 
-            ? `${this.getGradeLabel(this.selectedGrade)}全年级平均分` 
-            : `${this.getGradeLabel(this.selectedGrade)}${this.selectedClass}班平均分`
+          text: this.selectedClassName === 'all'
+           ? `${this.selectedYear}年全年级五育成绩趋势`
+            : `${this.selectedYear}年${this.selectedClassName}五育成绩趋势`,
+          left: 'center',
+          textStyle: { fontWeight: 'bold', fontSize: 18 },
+          top: 10
         },
         tooltip: {
           trigger: 'axis',
-          formatter: (params) => {
-            const param = params[0];
-            return param.name + ': ' + (param.value !== null ? param.value + '分' : '成绩缺失');
-          }
+          formatter: (params) => params.map(p => `${p.seriesName}: ${p.value}分`).join('<br>')
+        },
+        legend: {
+          top: 40,
+          type:'scroll',
+          orient: 'horizontal',
+          left: 'center',
+          textStyle: { fontSize: 14, color: '#333' },
+          data: this.scoreData.map(s => s.name)
         },
         xAxis: {
           type: 'category',
-          data: ['德', '智', '体', '美', '劳']
+          data: this.xAxisLabels,
+          axisTick: { alignWithLabel: true },
+          axisLine: { lineStyle: { color: '#666' } },
+          axisLabel: { interval: 0, rotate: 45, fontSize: 12 }
         },
         yAxis: {
           type: 'value',
-          min: 80,
-          max: 95,
-          axisLabel: {
-            formatter: '{value}分'
-          }
+          min: minScore,
+          max: maxScore,
+          axisLabel: { formatter: '{value}分', fontSize: 12 },
+          splitLine: { lineStyle: { color: '#E0E0E0' } }
         },
-        series: [
-          {
-            ...this.scoreData[0],
-            symbol: 'circle', // 显示数据点
-            symbolSize: 10,
-            lineStyle: {
-              width: 3
-            },
-            itemStyle: {
-              color: '#1890ff' // 数据点颜色
-            },
-            // 配置缺失值的显示方式
-            connectNulls: false, // 不连接缺失值
-            markPoint: {
-              data: this.scoreData[0].data.map((value, index) => {
-                if (value === null) {
-                  return {
-                    name: '缺失值',
-                    xAxis: index,
-                    yAxis: 80, // 显示在底部
-                    itemStyle: {
-                      color: 'red'
-                    },
-                    label: {
-                      show: true,
-                      position: 'bottom',
-                      formatter: '缺失'
-                    }
-                  };
-                }
-                return null;
-              }).filter(Boolean) // 过滤掉null
-            }
-          }
-        ]
+        series: this.scoreData,
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '15%',
+          top: 70,
+          containLabel: true
+        }
       };
-      
-      lineChart.setOption(option);
-      this.chart = lineChart;
+
+      const chartDom = document.getElementById('lineChart');
+      this.chart = echarts.init(chartDom);
+      this.chart.setOption(option);
+      window.addEventListener('resize', () => this.chart.resize());
     },
-    
-    handleGradeChange() {
-      // 年级变更时重置班级选择
-      this.selectedClass = null;
-      this.showClassSelector = true; // 显示班级选择器
-    },
-    
-    handleClassChange() {
-      // 班级变更时不自动查询，等待用户点击查询按钮
-    },
-    
     destroyChart() {
       if (this.chart) {
         this.chart.dispose();
+        this.chart = null;
       }
     }
   },
   beforeDestroy() {
     this.destroyChart();
   }
-}
+};
 </script>
 
-<style scoped></style>    
+<style scoped>
+/* 组件私有样式 */
+.grade-score-chart {
+  padding: 30px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+/* 选择器样式调整 */
+.el-select {
+  margin-right: 15px;
+  width: 150px;
+  border-radius: 5px;
+}
+
+/* 查询按钮样式调整 */
+.el-button {
+  border-radius: 5px;
+  padding: 8px 16px;
+  font-size: 14px;
+  background-color: #1890ff;
+  border-color: #1890ff;
+  transition: all 0.3s ease;
+}
+
+.el-button:hover {
+  background-color: #096dd9;
+  border-color: #096dd9;
+}
+
+/* 卡片样式调整 */
+.el-card {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+}
+
+/* 图表容器样式调整 */
+.chart-container {
+  border-radius: 8px;
+  overflow: hidden;
+  height: 700px;
+}
+
+/* 错误提示样式调整 */
+.alert-container {
+  margin-top: 30px;
+  padding: 15px;
+  border-radius: 8px;
+}
+</style>
