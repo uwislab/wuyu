@@ -174,7 +174,7 @@ import axios from "axios";
 import { StudentManagerUrl } from "@/api/baseapi"; // 引入 StudentManagerUrl
 import XLSX from "xlsx";
 import { saveAs } from "file-saver";
-
+import { showLoading, closeLoading } from '@/utils/loading'
 export default {
   data() {
     return {
@@ -245,6 +245,8 @@ export default {
       school: [],
       grade: [],
       class: [],
+      // API基础URL
+      apiBaseUrl: process.env.VUE_APP_DEVELOP06_API,
       // Excel导入相关
       importDialogVisible: false,  // 导入进度弹窗
       importProgress: 0,           // 导入进度
@@ -272,7 +274,6 @@ export default {
       form.action = `${StudentManagerUrl}/studentExcel/export`;
       form.method = 'GET';
       form.style.display = 'none';
-      
       // 添加到文档并提交
       document.body.appendChild(form);
       form.submit();
@@ -286,11 +287,12 @@ export default {
         this.$message.warning('请先选择文件')
         return
       }
-      const formData = new FormData()
-      formData.append('file', this.uploadFile)
       try {
-        const res = await axios.post('http://localhost:9080/studentExcel/import', formData)
-        console.log('2222',res.data.code);
+        showLoading('正在上传，请稍候...')
+        const formData = new FormData()
+        formData.append('file', this.uploadFile)
+        const res = await axios.post(`${this.apiBaseUrl}/studentExcel/import`, formData)
+        // console.log('2222',res.data.code);
         if (res.data.code ===200) {
           this.$message.success('上传成功')
           this.dialogVisible = false
@@ -301,6 +303,8 @@ export default {
         }
       } catch (error) {
         this.$message.error('上传失败：' + (error.message || '未知错误'))
+      } finally {
+        closeLoading()
       }
     },
     cancelExcel() {
