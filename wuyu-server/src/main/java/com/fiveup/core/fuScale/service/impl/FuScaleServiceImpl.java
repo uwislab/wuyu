@@ -13,6 +13,7 @@ import com.fiveup.core.fuScale.service.FuScaleService;
 import com.fiveup.core.management.common.CommonResponse;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,14 +53,24 @@ public class FuScaleServiceImpl implements FuScaleService {
     }
 
     @Override
+    public int updateScaleContent(ScaleContent scaleContent){
+        return fuScaleMapper.updateScaleContent(scaleContent);
+    }
+
+    @Override
     @Transactional
     public int editScaleContent(ScaleContent scaleContent) {
-        int count = fuScaleMapper.updateScaleContent(scaleContent);
-        if (count != 0) {
-            fuScaleMapper.updateItemByPre(scaleContent);
-            return 1;
+        try{
+            int count = fuScaleMapper.updateScaleContent(scaleContent);
+            if (count != 0) {
+                fuScaleMapper.updateItemByPre(scaleContent);
+                return 1;
+            }
+            return 0;
+        }catch (Exception e){
+            e.printStackTrace();
+            return 0;
         }
-        return 0;
     }
 
     @Override
@@ -103,7 +114,15 @@ public class FuScaleServiceImpl implements FuScaleService {
     @Override
     public List<ScaleInfo> getScaleBySate(Integer stateId) {
         List<ScaleInfo> list = fuScaleMapper.getScaleByState(stateId);
-        list.forEach(s -> s.setCreatorName(fuScaleMapper.getCreatorName(s.getCreatorId())));
+        list.forEach(s -> {
+            s.setCreatorName(fuScaleMapper.getCreatorName(s.getCreatorId()));
+            List<Execution> executions = fuScaleMapper.getExecutionByScaleId(s.getScaleId());
+            if (CollectionUtils.isNotEmpty(executions)) {
+                s.setIsExecute(1);
+            } else {
+                s.setIsExecute(0);
+            }
+        });
         return list;
     }
 
