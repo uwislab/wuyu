@@ -169,7 +169,7 @@
         </el-form-item>
         <el-form-item label="班级">
           <el-select v-model="newUser.className" placeholder="选择班级">
-            <el-option v-for="className in classInfo" :key="className" :label="cclassName" :value="className" />
+            <el-option v-for="className in classInfo" :key="className" :label="className" :value="className" />
           </el-select>
         </el-form-item>
         <el-form-item label="学校">
@@ -215,6 +215,7 @@ export default {
       uploadFile: null,
       // 学生信息
       newUser: {
+        id: "",
         studentNum: "",
         studentName: "",
         className: "",
@@ -345,7 +346,7 @@ export default {
           this.$message.error('上传失败' + res.data.message)
         }
       } catch (error) {
-        this.$message.error('上传失败：' + (error.message || '未知错误'))
+        this.$message.error('上传失败：' + error.message)
       }
     },
     
@@ -764,6 +765,13 @@ export default {
     editUser(student) {
       this.editingUser = true;
       this.editingUserId = student.id; // 设置当前编辑学生的 ID
+
+      this.newUser.id = this.editingUserId
+      this.newUser.isenter = student.isenter
+      this.newUser.isreview = student.isreview
+      this.newUser.deleted = student.deleted
+      this.newUser.schoolId = student.schoolId
+
       this.newUser = { ...student }; // 将学生信息复制到 newUser 中
       
       // 加载关联数据
