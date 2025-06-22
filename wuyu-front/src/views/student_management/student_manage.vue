@@ -206,7 +206,7 @@ export default {
   data() {
     return {
       //请求地址
-      baseUrl: "http://localhost:9080",
+      baseUrl: "http://us.uwis.cn:9080",
       // 统计数据
       statisticData: {},
       // 图表实例
