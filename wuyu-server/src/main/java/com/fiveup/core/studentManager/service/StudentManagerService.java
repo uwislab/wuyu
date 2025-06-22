@@ -18,7 +18,7 @@ public interface StudentManagerService extends IService<StudentManager> {
     //分页查询学生
     PageBean<StudentVO> getStudentPage(StudentManagerQuery studentManagerQuery);
 
-    void updateStudent(StudentManager studentManager);
+    void updateStudent(StudentInsertDTO studentInsertDTO);
 
     void removeStudent(Integer studentId);
 
