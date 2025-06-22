@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.sixGroup.mapper.StuIcScoreMapper">
+    <select id="listData" parameterType="com.fiveup.core.sixGroup.entity.IndexScoreQuery" resultType="com.fiveup.core.sixGroup.entity.Ret01">
+        select student_name, c.id as stu_id,c.student_num, b.id as ic_id, b.item_content,c.grade_id, c.class_id,a.score from six_stu_ic_score a, fu_item_content b, basic_student c where a.stu_id = c.id and a.ic_id = b.id and c.grade_id = #{year} and c.class_id = #{cls} and a.ic_id = #{icId}
+        <if test='studentNum != null and studentNum != ""'>and c.student_num like concat('%', #{studentNum}, '%')</if>
+        <if test='studentName != null and studentName != ""'>and c.student_name like concat('%', #{studentName},'%')
+        </if>
+    </select>
+</mapper>

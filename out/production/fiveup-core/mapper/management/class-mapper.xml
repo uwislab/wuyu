@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.management.mapper.ClazzMapper">
+    <sql id="selectAllFields">
+        select id, grade, class_name, monitor_id, deleted
+        from basic_class
+    </sql>
+
+    <delete id="deleteBatch" parameterType="String">
+        delete from basic_class where id in
+        <foreach collection="ids" open="(" close=")" separator="," item="id">
+            #{id}
+        </foreach>
+    </delete>
+
+
+    <resultMap id="classAllFieldsMap" type="com.fiveup.core.management.model.DTO.ClassDTO">
+        <id property="id" column="id"/>
+        <result property="grade" column="grade"/>
+        <result property="className" column="class_name"/>
+        <result property="monitorId" column="monitor_id"/>
+        <result property="deleted" column="deleted"/>
+    </resultMap>
+
+
+    <select id="selectOneById" resultMap="classAllFieldsMap">
+        <include refid="selectAllFields"/>
+        where id = #{id} and deleted = 0
+    </select>
+
+    <select id="getAllSimpleClassList" resultMap="classAllFieldsMap">
+        SELECT id, grade, class_name
+        FROM basic_class
+        WHERE deleted = 0 AND school_id = 1
+        ORDER BY CAST(grade AS SIGNED INTEGER), CAST(class_name AS SIGNED INTEGER)
+    </select>
+
+        <select id="getAllSimpleClassListByGrade" resultMap="classAllFieldsMap">
+        SELECT id, grade, class_name
+        FROM basic_class
+        WHERE deleted = 0 AND school_id = #{schoolId} AND grade = #{grade}
+        ORDER BY CAST(grade AS SIGNED INTEGER), CAST(class_name AS SIGNED INTEGER)
+    </select>
+
+
+    <select id="getClassListByConditions" resultMap="classAllFieldsMap">
+        <include refid="selectAllFields"/>
+        <where>
+            <if test="grade != null and grade != '' ">
+                grade = #{grade}
+            </if>
+            <if test="monitorId != null">
+                and monitor_id = #{monitorId}
+            </if>
+            and deleted = 0 and school_id = #{schoolId}
+        </where>
+    </select>
+
+
+    <insert id="addClass" parameterType="com.fiveup.core.management.model.Req.ClassAddReq">
+        insert into basic_class(grade, class_name, monitor_id,school_id)
+        values (#{grade}, #{className}, #{monitorId},#{schoolId})
+    </insert>
+
+    <update id="DynamicallyUpdateOne" parameterType="com.fiveup.core.management.model.Req.ClassEditReq">
+        update basic_class
+        <set>
+            <if test="grade!=null and grade !=''">
+                grade = #{grade},
+            </if>
+            <if test="className!=null and className !=''">
+                class_name = #{className},
+            </if>
+            <if test="monitorId!=null and monitorId !=''">
+                monitor_id = #{monitorId}
+            </if>
+        </set>
+        where id = #{classId} and deleted = 0
+    </update>
+
+    <update id="softlyDelete">
+        update basic_class set deleted = 1
+        where id = #{id}
+    </update>
+
+    <select id="getGradesBySchoolId" resultType="string">
+        select distinct grade
+        from basic_class
+        where deleted = 0 and school_id = #{schoolId}
+    </select>
+
+    <select id="getClassListByGradeAndSchoolId" resultMap="classAllFieldsMap">
+        <include refid="selectAllFields"/>
+        where grade = #{grade} and school_id = #{schoolId} and deleted = 0
+    </select>
+    <select id="getClassByGradeIdAndClassId" resultType="int">
+        SELECT count(*)
+        FROM basic_class
+        <where>
+            deleted = 0 AND school_id = 1 AND grade = #{gradeId}
+            <if test="classId != null">
+            and class = #{classId}
+            </if>
+        </where>
+    </select>
+</mapper>

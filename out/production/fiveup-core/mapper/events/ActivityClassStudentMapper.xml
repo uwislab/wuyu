@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.events.mapper.ActivityClassStudentMapper">
+
+    <resultMap id="BaseResultMap" type="com.fiveup.core.events.model.ActivityClassStudent">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="activityId" column="activity_id" jdbcType="INTEGER"/>
+            <result property="studentName" column="student_name" jdbcType="VARCHAR"/>
+            <result property="studentNum" column="student_num" jdbcType="VARCHAR"/>
+            <result property="classId" column="class_id" jdbcType="VARCHAR"/>
+            <result property="gender" column="gender" jdbcType="TINYINT"/>
+            <result property="parentPhone" column="parent_phone" jdbcType="VARCHAR"/>
+            <result property="teacherName" column="teacher" jdbcType="VARCHAR"/>
+            <result property="parentScore" column="parent_score" jdbcType="FLOAT"/>
+            <result property="teacherScore" column="teacher_score" jdbcType="FLOAT"/>
+            <result property="totalScore" column="total_score" jdbcType="FLOAT"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,activity_id,student_name,
+        student_num,class_id,gender,
+        parent_phone,teacher,parent_score,
+        teacher_score,total_score,create_time
+    </sql>
+</mapper>

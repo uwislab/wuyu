@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.commentgeneration.mapper.CorpusMapper">
+    <!-- 一个mapper文件对应项目中的一个mapper接口，接口内负责定义一些抽象方法，抽象方法的方法名称就对应
+    配置文件总的一个SQL语句中，mybatis是通过namespace找到mapper接口 -->
+
+    <!-- 一个mapper文件对应数据库表的所有SQL操作，同时项目中bean也有一个和表对应的实体类，所以这个实体
+    类必然和这个文件有联系，mybatis就是通过springboot的配置找到mapper文件，通过解析配置文件，找到数据库表
+    对应的实体类，因此你的数据库表才能和你的实体类产生联系 即resultMap（数据库查询到数据之后对应的封装格式）
+    resultMap标签有两个必须要填写的数学，id->表示的是类名的简称 type->表示关联的实体类，标签内部就是映射
+    实体类属性和-->
+<!--    <resultMap id="CorpusBean" type="com.fiveup.core.commentgeneration.bean.Corpus">-->
+<!--        &lt;!&ndash; id子标签代表数据库表的主键字段 &ndash;&gt;-->
+<!--        <id column="id" jdbcType="NUMERIC" property="id"/>-->
+<!--        &lt;!&ndash; result子标签表示非主键字段的映射关系 &ndash;&gt;-->
+<!--        <result column="subject_id" jdbcType="NUMERIC" property="subject_id"/>-->
+<!--        <result column="score" jdbcType="NUMERIC" property="score"/>-->
+<!--        <result column="comment" jdbcType="VARCHAR" property="comment"/>-->
+<!--    </resultMap>-->
+
+<!--    <resultMap id="CorpusVOBean" type="com.fiveup.core.commentgeneration.vo.CorpusVO">-->
+<!--        &lt;!&ndash; id子标签代表数据库表的主键字段 &ndash;&gt;-->
+<!--        <id column="id" jdbcType="NUMERIC" property="id"/>-->
+<!--        &lt;!&ndash; result子标签表示非主键字段的映射关系 &ndash;&gt;-->
+<!--        <result column="score" jdbcType="NUMERIC" property="score"/>-->
+<!--        <result column="comment" jdbcType="VARCHAR" property="comment"/>-->
+<!--        <association property="subject_id" column="subject_id" select="com.fiveup.core.commentgeneration.mapper.SubjectMapper.selectById"/>-->
+<!--    </resultMap>-->
+
+<!--    &lt;!&ndash; 声明数据库字段 &ndash;&gt;-->
+<!--    <sql id="Corpus_field">-->
+<!--        id,subject_id,score,comment-->
+<!--    </sql>-->
+
+<!--    &lt;!&ndash; 实体类属性 &ndash;&gt;-->
+<!--    <sql id="Corpus_insert">-->
+<!--        #{id},#{subject_id},#{score},#{comment}-->
+<!--    </sql>-->
+
+<!--    &lt;!&ndash; 更新时条件&ndash;&gt;-->
+<!--    <sql id="Corpus_update">-->
+<!--        <if test="subjectId != null">-->
+<!--            subject_id = #{subject_id},-->
+<!--        </if>-->
+<!--        <if test="score != null">-->
+<!--            score = #{score},-->
+<!--        </if>-->
+<!--        <if test="comment != null">-->
+<!--            comment = #{comment},-->
+<!--        </if>-->
+<!--    </sql>-->
+
+    <!-- 查询时条件 -->
+<!--    <sql id="Corpus_where">-->
+<!--        <if test="subjectId != null">-->
+<!--            and subject_id = #{subject_id}-->
+<!--        </if>-->
+<!--        <if test="score != null">-->
+<!--            and score = #{score}-->
+<!--        </if>-->
+<!--        <if test="comment != null">-->
+<!--            and comment = #{comment}-->
+<!--        </if>-->
+<!--    </sql>-->
+
+<!--    <insert id="insert" parameterType="com.fiveup.core.commentgeneration.bean.Corpus" useGeneratedKeys="true" keyProperty="id">-->
+<!--        insert into corpus(-->
+<!--        <include refid="Corpus_field"/>-->
+<!--        ) values(-->
+<!--        <include refid="Corpus_insert"/>-->
+<!--        )-->
+<!--    </insert>-->
+
+<!--   通过id进行删除-->
+<!--    <delete id="deleteById" parameterType="java.lang.Integer">-->
+<!--        update corpus set tid = 0 where id = #{id}-->
+<!--    </delete>-->
+
+<!--    <update id="updateById" parameterType="com.fiveup.core.commentgeneration.bean.Corpus">-->
+<!--        UPDATE corpus-->
+<!--        <set>-->
+<!--            <include refid="Corpus_update"></include>-->
+<!--        </set>-->
+<!--        WHERE id = #{id}-->
+<!--    </update>-->
+
+<!--    <select id="selectAll" resultMap="CorpusVOBean">-->
+<!--        SELECT <include refid="Corpus_field"></include>-->
+<!--        FROM corpus-->
+<!--    </select>-->
+
+<!--    <select id="selectList" resultMap="CorpusBean">-->
+<!--        SELECT <include refid="Corpus_field"></include>-->
+<!--        FROM corpus-->
+<!--    </select>-->
+
+<!--    <select id="selectById" resultMap="CorpusVOBean" parameterType="java.lang.Integer">-->
+<!--        SELECT <include refid="Corpus_field"></include>-->
+<!--        FROM corpus-->
+<!--        WHERE id = #{id}-->
+<!--    </select>-->
+
+
+<!--    <select id="findAll1" resultMap="CorpusBean">-->
+<!--        SELECT <include refid="Corpus_field"></include>-->
+<!--        FROM corpus where tid = 1 LIMIT #{offset},#{pageSize}-->
+<!--    </select>-->
+
+
+<!--    <select id="search" resultType="com.fiveup.core.commentgeneration.vo.CorpusVO">-->
+<!--        SELECT <include refid="Corpus_field"></include>-->
+<!--        FROM corpus-->
+<!--        <where >-->
+<!--            `comment` like concat('%',#{comment},'%') and tid=1-->
+<!--        <if test="subjectId !=null">-->
+<!--            and  subject_id=#{subjectId}-->
+<!--        </if>-->
+
+<!--        </where>-->
+<!--    </select>-->
+
+    <!--   通过id进行批量删除-->
+<!--    <delete id="deleteAll">-->
+<!--        update corpus set tid = 0 where id in-->
+<!--        <foreach collection="ids" item="id" close=")" open="(" separator=",">-->
+<!--            #{id}-->
+<!--        </foreach>-->
+<!--    </delete>-->
+</mapper>
