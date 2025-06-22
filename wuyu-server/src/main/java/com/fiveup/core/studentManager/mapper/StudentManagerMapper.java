@@ -1,11 +1,6 @@
 package com.fiveup.core.studentManager.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-<<<<<<< HEAD
-import com.fiveup.core.studentManager.entity.StudentManager;
-
-public interface StudentManagerMapper extends BaseMapper<StudentManager> {
-=======
 import com.fiveup.core.management.model.School;
 import com.fiveup.core.studentManager.entity.StudentManager;
 import org.apache.ibatis.annotations.Insert;
@@ -52,5 +47,4 @@ public interface StudentManagerMapper extends BaseMapper<StudentManager> {
     //获取年纪列表
     @Select("select DISTINCT grade_id from basic_student order by grade_id")
     List<Integer> getGrade();
->>>>>>> bce9104829d01d0a3e3e5a9af9940f0ecd6fcf4c
 }

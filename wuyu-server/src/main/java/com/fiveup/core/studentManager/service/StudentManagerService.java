@@ -1,21 +1,34 @@
 package com.fiveup.core.studentManager.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-<<<<<<< HEAD
-=======
 import com.fiveup.core.management.model.School;
->>>>>>> bce9104829d01d0a3e3e5a9af9940f0ecd6fcf4c
 import com.fiveup.core.studentManager.entity.StudentManager;
 import com.fiveup.core.studentManager.pojo.PageBean;
 import com.fiveup.core.studentManager.pojo.StudentInsertDTO;
 import com.fiveup.core.studentManager.pojo.StudentManagerQuery;
+import org.springframework.web.multipart.MultipartFile;
+import javax.servlet.http.HttpServletResponse;
+import com.fiveup.core.studentManager.pojo.StudentVO;
+
+import java.util.List;
 
 public interface StudentManagerService extends IService<StudentManager> {
     void addStudent(StudentInsertDTO studentInsertDTO);
 
-    PageBean<StudentManager> getStudent(StudentManagerQuery studentManagerQuery);
+    //分页查询学生
+    PageBean<StudentVO> getStudentPage(StudentManagerQuery studentManagerQuery);
 
     void updateStudent(StudentInsertDTO studentInsertDTO);
 
     void removeStudent(Integer studentId);
+
+    List<School> getSchool();
+
+    List<String> getClassName();
+
+    List<Integer> getGrade();
+
+    void export(HttpServletResponse response);
+
+    void importstudent(MultipartFile file);
 }
