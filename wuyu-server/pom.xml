@@ -94,19 +94,6 @@
             <version>${swagger-bootstrap-ui.version}</version>
         </dependency>
 
-        <!--redis依赖配置-->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
-            <exclusions>
-                <!-- 排除自带的logback依赖 -->
-                <exclusion>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-logging</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
         <!--web依赖-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -352,11 +339,6 @@
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml-schemas</artifactId>
             <version>4.1.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.redisson</groupId>
-            <artifactId>redisson-spring-boot-starter</artifactId>
-            <version>3.16.5</version>  <!-- 兼容 Spring Boot 2.4.x -->
         </dependency>
         <!-- 全量包（推荐） -->
         <dependency>
