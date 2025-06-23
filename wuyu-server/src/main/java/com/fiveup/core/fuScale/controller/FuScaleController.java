@@ -44,10 +44,8 @@ public class FuScaleController {
     @PostMapping(value = "/insertFuScale")
     @Log(name = "新增量表")
     public CommonResponse insertFuScale(@RequestBody ScaleInfo scaleInfo) {
-//        BasicTeacher basicTeacher = basicTeacherMapper.selectById(scaleInfo.getCreatorId());
-//        if(basicTeacher == null){
-            scaleInfo.setCreatorId(2018083065);
-//        }
+        //TODO 换成登录用户id
+        scaleInfo.setCreatorId(2018083065);
         int code = fuScaleService.insertFuScale(scaleInfo);
         return CommonResponse.ok(code);
     }
@@ -63,14 +61,6 @@ public class FuScaleController {
         System.out.println("insert item:");
         System.out.println(scaleContent);
         int code = fuScaleService.insertScaleContent(scaleContent);
-        return CommonResponse.ok(code);
-    }
-
-    @PostMapping(value = "/updateScaleContent")
-    public CommonResponse updateScaleContent(@RequestBody ScaleContent scaleContent) {
-        System.out.println("update item:");
-        System.out.println(scaleContent);
-        int code = fuScaleService.updateScaleContent(scaleContent);
         return CommonResponse.ok(code);
     }
 

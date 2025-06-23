@@ -215,7 +215,7 @@ export default {
           setTimeout(() => {
             document.body.removeChild(iframe);
             resolve();
-          }, this.totalCount*3500); // 设置最大等待时间（可根据实际文件大小调整）
+          }, this.totalCount*3000); // 设置最大等待时间（可根据实际文件大小调整）
         });
         // 等待下载完成或超时
         await downloadTimeout;

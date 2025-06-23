@@ -7,16 +7,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fiveup.core.common.result.PageResult;
+import com.fiveup.core.fuScale.mapper.FuScaleHisCacheMapper;
+import com.fiveup.core.fuScale.mapper.FuScaleHisMapper;
 import com.fiveup.core.fuScale.mapper.FuScaleMapper;
 import com.fiveup.core.fuScale.model.*;
 import com.fiveup.core.fuScale.service.FuScaleService;
 import com.fiveup.core.management.common.CommonResponse;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -39,27 +44,59 @@ public class FuScaleServiceImpl implements FuScaleService {
         return domainList;
     }
 
+    @Resource
+    private FuScaleHisMapper fuScaleHisMapper;
+    @Resource
+    private FuScaleHisCacheMapper fuScaleHisCacheMapper;
+
     //新增表头并返回自增id
     @Override
     public int insertFuScale(ScaleInfo scaleInfo) {
         fuScaleMapper.insertFuScale(scaleInfo);
+
+        ScaleHisInfo scaleHisInfo = new ScaleHisInfo();
+        BeanUtils.copyProperties(scaleInfo, scaleHisInfo);
+        scaleHisInfo.setScaleId(scaleInfo.getScaleId());
+        scaleHisInfo.setUpdateId(scaleInfo.getCreatorId());
+        scaleHisInfo.setUpdateDate(scaleInfo.getCreateDate());
+        scaleHisInfo.setUpdateBatch(1);
+//        fuScaleHisMapper.insertFuScale(scaleHisInfo);
+        fuScaleHisCacheMapper.insertFuScale(scaleHisInfo);
         return scaleInfo.getScaleId();
     }
 
     @Override
     public int insertScaleContent(ScaleContent scaleContent) {
-        return fuScaleMapper.insertScaleContent(scaleContent);
+        int res = fuScaleMapper.insertScaleContent(scaleContent);
+
+        ScaleHisContent scaleHisContent = new ScaleHisContent();
+        BeanUtils.copyProperties(scaleContent, scaleHisContent);
+
+
+//        fuScaleHisMapper.insertScaleContent()
+
+        return res;
+    }
+
+    @Override
+    public int updateScaleContent(ScaleContent scaleContent){
+        return fuScaleMapper.updateScaleContent(scaleContent);
     }
 
     @Override
     @Transactional
     public int editScaleContent(ScaleContent scaleContent) {
-        int count = fuScaleMapper.updateScaleContent(scaleContent);
-        if (count != 0) {
-            fuScaleMapper.updateItemByPre(scaleContent);
-            return 1;
+        try{
+            int count = fuScaleMapper.updateScaleContent(scaleContent);
+            if (count != 0) {
+                fuScaleMapper.updateItemByPre(scaleContent);
+                return 1;
+            }
+            return 0;
+        }catch (Exception e){
+            e.printStackTrace();
+            return 0;
         }
-        return 0;
     }
 
     @Override
@@ -103,7 +140,15 @@ public class FuScaleServiceImpl implements FuScaleService {
     @Override
     public List<ScaleInfo> getScaleBySate(Integer stateId) {
         List<ScaleInfo> list = fuScaleMapper.getScaleByState(stateId);
-        list.forEach(s -> s.setCreatorName(fuScaleMapper.getCreatorName(s.getCreatorId())));
+        list.forEach(s -> {
+            s.setCreatorName(fuScaleMapper.getCreatorName(s.getCreatorId()));
+            List<Execution> executions = fuScaleMapper.getExecutionByScaleId(s.getScaleId());
+            if (CollectionUtils.isNotEmpty(executions)) {
+                s.setIsExecute(1);
+            } else {
+                s.setIsExecute(0);
+            }
+        });
         return list;
     }
 
@@ -192,7 +237,28 @@ public class FuScaleServiceImpl implements FuScaleService {
 
     @Override
     public CommonResponse editScale(ScaleInfo scaleInfo) {
+        ScaleInfo oldScaleInfo = fuScaleMapper.getFuScaleById(scaleInfo.getScaleId());
+
+        Integer updateId = scaleInfo.getCreatorId();
+        updateId = 2018083065;
+//        BasicTeacher basicTeacher = basicTeacherMapper.selectById(scaleInfo.getCreatorId());
+//        if(basicTeacher == null){
+//        }
+
+        scaleInfo.setCreatorId(null);
         fuScaleMapper.updateScale(scaleInfo);
+
+        ScaleHisInfo scaleHisInfo = new ScaleHisInfo();
+        BeanUtils.copyProperties(scaleInfo, scaleHisInfo);
+        scaleHisInfo.setCreatorId(oldScaleInfo.getCreatorId());
+        scaleHisInfo.setCreateDate(oldScaleInfo.getCreateDate());
+        scaleHisInfo.setUpdateId(updateId);
+        scaleHisInfo.setUpdateDate(scaleInfo.getCreateDate());
+
+        List<ScaleHisInfo> list = fuScaleHisCacheMapper.getScaleHisListById(scaleInfo.getScaleId());
+        scaleHisInfo.setUpdateBatch(list.size() + 1);
+        fuScaleHisCacheMapper.insertFuScale(scaleHisInfo);
+//        fuScaleHisMapper.insertFuScale(scaleHisInfo);
         return CommonResponse.ok();
     }
 
@@ -299,4 +365,3 @@ public class FuScaleServiceImpl implements FuScaleService {
 
     }
 }
-
