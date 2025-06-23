@@ -61,8 +61,11 @@
       <el-menu-item index="/teacher_workspace/demonstrate/yxbz">
         <i class="el-icon-s-operation"></i>优秀表彰
       </el-menu-item>
-      <el-menu-item index="/teacher_workspace/demonstrate/bigDataIndx">
+      <el-menu-item index="/teacher_workspace/demonstrate/bigDataIndex">
         <i class="el-icon-s-operation"></i>中控大屏
+      </el-menu-item>
+      <el-menu-item index="/teacher_workspace/demonstrate/newwyzk">
+        <i class="el-icon-s-platform"></i>新五育中控
       </el-menu-item>
     </el-submenu>
 

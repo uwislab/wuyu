@@ -405,6 +405,12 @@ export const asyncRoutes = [
         meta: { title: "编辑量表", role: [0,4] },
       },
       {
+        path: "dimensionHistory",
+        name: "量表更新历史",
+        component: () => import("@/views/cultivation/goal/dimensionHistory"),
+        meta: { title: "量表更新历史", role: [0,4] },
+      },
+      {
         path: "implementation",
         name: "执行情况",
         component: () => import("@/views/cultivation/goal/implementation"),
@@ -637,6 +643,12 @@ export const asyncRoutes = [
         component: () => import("@/views/course_score/table"),
         name: "数据展示",
         meta: { title: "数据展示", role: [0, 1, 2,4] },
+      },
+      {
+        path: "charts",
+        component: () => import("@/views/course_score/charts"),
+        name: "成绩图表",
+        meta: { title: "成绩图表", role: [0, 1, 2,4] },
       },
       {
         path: "view",
