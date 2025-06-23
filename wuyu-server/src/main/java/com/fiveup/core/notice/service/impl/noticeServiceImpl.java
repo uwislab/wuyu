@@ -27,10 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -121,21 +118,8 @@ public class noticeServiceImpl implements noticeService {
 
     @Override
     public PageResult<NoticeVO> getPaginatedNoticeList(NoticePageQuery queryParams) {
-        // 开启 PageHelper 分页
-        PageHelper.startPage(queryParams.getPageNum(), queryParams.getPageSize());
-
         // 构建查询条件 (MyBatis-Plus 的 LambdaQueryWrapper)
         LambdaQueryWrapper<Notice> queryWrapper = new LambdaQueryWrapper<>();
-        // 默认按发布时间倒序
-        queryWrapper.orderByDesc(Notice::getReleaseTime);
-
-        // 如果存在搜索关键词，则添加模糊查询条件
-        if (com.baomidou.mybatisplus.core.toolkit.StringUtils.isNotBlank(queryParams.getKeyword())) {
-            queryWrapper.like(Notice::getTheme, queryParams.getKeyword())
-                    .or()
-                    .like(Notice::getContent, queryParams.getKeyword());
-        }
-
         // 如果指定了身份ID，则通过 notice_identity_mapping 表查询相关公告ID
         if (queryParams.getIdentityId() != null) {
             List<Long> filteredNoticeIds = noticeIdentityMappingMapper.selectNoticeIdsByIdentityId(queryParams.getIdentityId());
@@ -149,6 +133,17 @@ public class noticeServiceImpl implements noticeService {
                 return emptyResult;
             }
             queryWrapper.in(Notice::getId, filteredNoticeIds);
+        }
+        // 开启 PageHelper 分页
+        PageHelper.startPage(queryParams.getPageNum(), queryParams.getPageSize());
+        // 默认按发布时间倒序
+        queryWrapper.orderByDesc(Notice::getReleaseTime);
+
+        // 如果存在搜索关键词，则添加模糊查询条件
+        if (com.baomidou.mybatisplus.core.toolkit.StringUtils.isNotBlank(queryParams.getKeyword())) {
+            queryWrapper.like(Notice::getTheme, queryParams.getKeyword())
+                    .or()
+                    .like(Notice::getContent, queryParams.getKeyword());
         }
 
         //执行查询。PageHelper 会自动拦截此查询并进行分页
