@@ -15,7 +15,7 @@ public interface FuScaleService {
 
     int insertScaleContent(ScaleContent scaleContent);
 
-    //加的
+    //添加
     int updateScaleContent(ScaleContent scaleContent);
 
     int editScaleContent(ScaleContent scaleContent);

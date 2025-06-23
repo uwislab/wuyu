@@ -170,9 +170,9 @@ public interface FuScaleMapper {
     List<Execution> getExecution(Execution execution);
 
     int addExecution(Execution execution);
-    //加的
     List<Execution> getExecutionByScaleId(@Param("scaleId") Integer scaleId);
 
+    //添加
     int delExecution(Integer execId);
 
     @Select("select DISTINCT(grade) from basic_class")

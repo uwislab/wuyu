@@ -24,5 +24,6 @@ public class ScaleInfo {
     private String creatorName;
     private Boolean hasChildren;
 
+    //添加
     private Integer isExecute;
 }

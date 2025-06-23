@@ -66,7 +66,7 @@ public class FuScaleController {
         return CommonResponse.ok(code);
     }
 
-    //加的
+    //添加
     @PostMapping(value = "/updateScaleContent")
     public CommonResponse updateScaleContent(@RequestBody ScaleContent scaleContent) {
         System.out.println("update item:");
