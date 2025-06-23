@@ -2,7 +2,7 @@
  * @Author: hezeliangfj
  * @Date: 2025-06-18 22:05:00
  * @LastEditors: hezeliangfj
- * @LastEditTime: 2025-06-19 19:07:56
+ * @LastEditTime: 2025-06-23 16:35:31
  * @version: 0.0.1
  * @FilePath: \wuyu-front\src\views\notice\components\exportdialog.vue
  * @Descripttion: 导出弹框组件
@@ -11,14 +11,14 @@
   <div>
     <!-- 导出确认对话框 -->
     <el-dialog
-      :title="`导出${studentInfo.studentName || ''}同学的通知册`"
+      :title="`导出${studentInfo?.studentName || ''}同学的通知册`"
       :visible="internalVisible"
       width="30%"
       :close-on-click-modal="false"
       :before-close="handleClose"
       class="export-dialog">
       <div class="export-content">
-        <p>确认要导出 <strong>{{ studentInfo.studentName }}</strong> 同学的通知册吗？</p>
+        <p>确认要导出 <strong>{{ studentInfo?.studentName || '' }}</strong> 同学的通知册吗？</p>
         <p class="export-tip">导出格式：Word文档 (.docx)</p>
       </div>
       <span slot="footer" class="dialog-footer">
@@ -45,7 +45,10 @@ export default {
     // 学生信息
     studentInfo: {
       type: Object,
-      default: () => ({})
+      default: () => ({
+        studentName: '',
+        studentId: ''
+      })
     },
     // API基础URL
     apiBaseUrl: {
@@ -87,7 +90,10 @@ export default {
     },
     // 确认导出
     async handleConfirm() {
-      if (this.isExporting) return;
+      if (this.isExporting || !this.studentInfo?.studentId) {
+        this.$message.warning('无法导出：学生信息不完整');
+        return;
+      }
       try {
         this.isExporting = true;
         showLoading('正在导出，请稍候...');
@@ -116,7 +122,7 @@ export default {
         const a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
-        a.download = `${this.studentInfo.studentName}的通知册.docx`;
+        a.download = `${this.studentInfo?.studentName || '未知学生'}的通知册.docx`;
         document.body.appendChild(a);
         a.click();
         setTimeout(() => {
