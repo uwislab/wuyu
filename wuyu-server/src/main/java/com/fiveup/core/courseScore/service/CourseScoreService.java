@@ -22,14 +22,14 @@ public interface CourseScoreService {
 
     /**
      * 条件分页查询
-     * @param courseName
-     * @param courseType
-     * @param teacherName
-     * @param studentNum
-     * @param studentName
-     * @param page
-     * @param pageSize
-     * @return
+     * @param courseName 课程名称
+     * @param courseType 课程类型
+     * @param teacherName 教师名称
+     * @param studentNum 学生学号
+     * @param studentName 学生姓名
+     * @param page 页码
+     * @param pageSize 每页大小
+     * @return 分页结果
      */
     ResPage<List<CourseScore>> search(String courseName, Integer courseType, String teacherName, String studentNum, String studentName, Integer page, Integer pageSize);
 
