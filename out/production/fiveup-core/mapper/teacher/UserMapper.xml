@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.teacher.mapper.teacherFiveupMapper">
+    <update id="update">
+
+        update basic_teacher
+        <set>
+            <if test="teacher_name!=null">
+                teacher_name=#{teacher_name},
+            </if>
+            <if test="gender!=null">
+                gender=#{gender},
+            </if>
+            <if test="phone_num!=null">
+                phone_num=#{phone_num},
+            </if>
+            <if test="position!=null">
+                 position=#{position},
+            </if>
+            <if test="title!=null">
+                title=#{title},
+            </if>
+            <if test="role!=null">
+                role=#{role},
+            </if>
+            <if test="deleted!=null">
+                deleted=#{deleted},
+            </if>
+            <if test="school_id!=null">
+                school_id=#{school_id},
+            </if>
+            <if test="username!=null">
+                username=#{username},
+            </if>
+            <if test="password!=null">
+                password=#{password},
+            </if>
+            <if test="political_appearance!=null">
+                political_appearance=#{political_appearance},
+            </if>
+            <if test="birth_place!=null">
+                birth_place=#{birth_place},
+            </if>
+            <if test="age!=null">
+                age=#{age},
+            </if>
+            <if test="info!=null">
+                info=#{info},
+            </if>
+
+
+        </set>
+        <where>
+            id=#{id}
+        </where>
+    </update>
+    <select id="selectAllUser" resultType="com.fiveup.core.teacher.entity.teacher">
+        select * from basic_teacher
+    </select>
+</mapper>
