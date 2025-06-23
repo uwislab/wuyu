@@ -7,6 +7,7 @@ import com.fiveup.core.classManage.model.request.ClassReq;
 import com.fiveup.core.classManage.model.response.ClassPageResp;
 import com.fiveup.core.classManage.model.*;
 import com.fiveup.core.classManage.service.ClassManageService;
+import com.fiveup.core.common.controller.BaseController;
 import com.fiveup.core.management.common.CommonResponse;
 import com.github.pagehelper.PageInfo;
 import com.fiveup.core.management.service.CommonManagementService;
@@ -18,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
@@ -29,13 +31,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/class")
-public class ClassManageController {
+public class ClassManageController extends BaseController {
     private static final Logger logger = LoggerFactory.getLogger(ClassManageController.class);
 
     @Resource
     private ClassManageService classManageService;
 
-//    @GetMapping("/getClassByGradeId")
+    //    @GetMapping("/getClassByGradeId")
 //    public CommonResponse getClassByGradeId(@RequestParam int gradeId) {
 //        List<Integer> classList;
 //
@@ -48,14 +50,13 @@ public class ClassManageController {
         List<Integer> classList;
         try {
             classList = classManageService.getAllClassByGrade(gradeId);
-            logger.info("！！Successfully retrieved classes by grade ID: {}",classList);
+            logger.info("！！Successfully retrieved classes by grade ID: {}", classList);
             return CommonResponse.ok(classList);
         } catch (Exception e) {
             logger.error("错啦！！Error getting classes by grade ID: {}", gradeId, e);
-            return CommonResponse.fail(404,"Failed to get classes by grade ID");
+            return CommonResponse.fail(404, "Failed to get classes by grade ID");
         }
     }
-
 
 
 //
@@ -122,7 +123,7 @@ public class ClassManageController {
 
     //查询班级列表
     @PostMapping("/getClassListByPage")
-    public CommonResponse<PageInfo<ClassPageResp>> getClassListByPage(@RequestBody ClassPageReq classPageReq) {
+    public CommonResponse<PageInfo<ClassPageResp>> getClassListByPage(@RequestBody ClassPageReq classPageReq, HttpServletRequest request) {
         // 从请求对象中获取页码和每页显示条目数量
         Integer pageNum = classPageReq.getPageNum();
         Integer pageSize = classPageReq.getPageSize();
@@ -130,7 +131,13 @@ public class ClassManageController {
         // 初始化年级和班长ID为默认值-1
         int grade = -1;
         int monitorId = -1;
-
+        List<Integer> classIds = new ArrayList<>();
+        if (this.getCurrentUserIdentity(request) == 2) {
+            classIds = this.getClassId(request);
+            if (classIds.isEmpty()){
+                classIds.add(-1);
+            }
+        }
         // 如果请求中提供了年级信息，则解析并调整（假设这里的+1是根据业务需求进行的特定处理）
         if (classPageReq.getGrade() != null && !classPageReq.getGrade().isEmpty()) {
             grade = Integer.parseInt(classPageReq.getGrade()) + 1;
@@ -149,6 +156,7 @@ public class ClassManageController {
 
         // 调用服务层方法获取班级列表
         PageInfo<ClassPageResp> classPageRespPageInfo = classManageService.getClassListByPage(
+                classIds,
                 grade,
                 monitorId,
                 pageNum,
