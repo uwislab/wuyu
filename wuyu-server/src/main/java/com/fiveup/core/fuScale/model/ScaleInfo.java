@@ -23,6 +23,4 @@ public class ScaleInfo {
     private Integer grade;
     private String creatorName;
     private Boolean hasChildren;
-
-    private Integer isExecute;
 }

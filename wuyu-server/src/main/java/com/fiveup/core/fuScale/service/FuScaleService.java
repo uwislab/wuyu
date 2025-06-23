@@ -15,8 +15,6 @@ public interface FuScaleService {
 
     int insertScaleContent(ScaleContent scaleContent);
 
-    int updateScaleContent(ScaleContent scaleContent);
-
     int editScaleContent(ScaleContent scaleContent);
 
     int getFuScaleId();
