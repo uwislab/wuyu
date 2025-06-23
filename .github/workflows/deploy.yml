@@ -1,8 +1,8 @@
-# name: Build and Deploy
 
-# on:
-#   push:
-#     branches: [ "main" ]
+name: Build and Deploy
+on:
+  push:
+    branches: [ "main" ]
 
 jobs:
   deploy:
