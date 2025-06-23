@@ -66,6 +66,7 @@ public class FuScaleController {
         return CommonResponse.ok(code);
     }
 
+    //加的
     @PostMapping(value = "/updateScaleContent")
     public CommonResponse updateScaleContent(@RequestBody ScaleContent scaleContent) {
         System.out.println("update item:");
@@ -125,7 +126,7 @@ public class FuScaleController {
     /**
      * 根据评价id删除评价内容
      *
-     * @param itemId
+     * @param
      * @return 0或1
      */
     @GetMapping(value = "/deleteItemContent")

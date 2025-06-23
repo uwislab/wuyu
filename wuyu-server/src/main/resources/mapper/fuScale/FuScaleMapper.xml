@@ -11,6 +11,7 @@
         select * from fu_execution
         where scale_id = #{scaleId}
     </select>
+
     <update id="updateScale">
         update fu_scale_content
         <set>
