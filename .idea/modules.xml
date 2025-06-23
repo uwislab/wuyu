@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/wuyu-server/fiveup-core.iml" filepath="$PROJECT_DIR$/wuyu-server/fiveup-core.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/wuyu.iml" filepath="$PROJECT_DIR$/.idea/wuyu.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/工程实践4.iml" filepath="$PROJECT_DIR$/.idea/工程实践4.iml" />
     </modules>
   </component>
 </project>
