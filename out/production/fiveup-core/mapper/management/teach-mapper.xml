@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.management.mapper.TeachMapper">
+
+    <resultMap id="TeacherMap" type="com.fiveup.core.management.pojo.TeacherVo">
+        <id column="id" property="id"></id>
+    </resultMap>
+
+    <resultMap id="total" type="int">
+        <result column="total"></result>
+    </resultMap>
+
+    <!-- 分页查询教师 -->
+    <select id="getTeacherByPage" resultMap="TeacherMap">
+        select a.*, b.class_id, c.grade, c.class_name, c.class
+        from basic_teacher a
+        left join (select * from teacher_class where deleted = 0) b on a.id = b.teacher_id
+        left join (select * from basic_class where deleted = 0) c on c.id = b.class_id
+        <where>
+            <if test="dto.teacherName != null and dto.teacherName != '' ">
+                <bind name="teacherName" value=" '%' + dto.teacherName + '%' "/>
+                teacher_name like #{teacherName}
+            </if>
+            <if test="dto.title != null and dto.title != '' ">
+                and title = #{dto.title}
+            </if>
+            <if test="dto.gender != null">
+                and gender = #{dto.gender}
+            </if>
+            <if test="dto.position != null and dto.position != '' ">
+                and position = #{dto.position}
+            </if>
+
+            <if test="dto.grade !=null and dto.grade != '' and classList!=null and classList.size()>0">
+                and class_id in
+                <foreach collection="classList" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            and (a.deleted = 0 )
+            and a.school_id = #{schoolId}
+        </where>
+        order by a.id asc, c.grade, c.class;
+    </select>
+
+    <!-- 获取教师总数 -->
+    <select id="getTotalTeacherCount" resultType="java.lang.Integer">
+        select found_rows() as total;
+    </select>
+
+    <!-- 获取班级信息 -->
+    <select id="getClassInfo" resultType="com.fiveup.core.management.pojo.ClassInfoVo">
+        select id as class_id, class_name, grade
+        from basic_class
+        order by grade, class;
+    </select>
+
+    <!-- 获取教师列表 -->
+    <select id="getTeachList" resultType="com.fiveup.core.management.pojo.TeacherExcel">
+        select * from basic_teacher
+        <where>
+            <if test="teacherName != null and teacherName != '' ">
+                <bind name="teacherName" value=" '%' + teacherName + '%' "/>
+                teacher_name like #{teacherName}
+            </if>
+            <if test="title != null and title != '' ">
+                and title = #{title}
+            </if>
+            <if test="position != null and position != '' ">
+                and position = #{position}
+            </if>
+            and (deleted = 0)
+            and school_id = #{schoolId}
+        </where>
+    </select>
+
+    <!-- 获取教师总数 -->
+    <select id="getCount" resultType="int">
+        select count(*) as total from basic_teacher;
+    </select>
+
+    <!-- 获取教师详细信息 -->
+    <resultMap id="TeacherInfo" type="com.fiveup.core.management.pojo.TeacherInfoVo">
+        <id property="id" column="id"></id>
+        <collection property="classList" column="id"
+                    select="getClassByTeachId">
+        </collection>
+    </resultMap>
+
+    <select id="getClassByTeachId" resultType="com.fiveup.core.management.pojo.ClassInfoVo">
+        select a.class_id, c.grade, c.class_name, c.class
+        from teacher_class a
+                 left join basic_class c on a.class_id = c.id
+        where a.teacher_id = #{id} and a.deleted = 0 and c.deleted = 0
+        order by c.grade, c.class;
+    </select>
+
+    <select id="getTeacherInfoById" resultMap="TeacherInfo">
+        select * from basic_teacher where id = #{teacherId} and deleted = 0
+    </select>
+</mapper>

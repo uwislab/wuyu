@@ -365,3 +365,4 @@ public class FuScaleServiceImpl implements FuScaleService {
 
     }
 }
+

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.demonstrate.mapper.StudentScoreMapper">
+
+
+    <select id="getScore" resultType="com.fiveup.core.demonstrate.entity.vo.ScoreAndClass13">
+        select fu_student_score.*,basic_class.grade,basic_class.class_name,basic_student.gender
+        from fu_student_score,basic_class,basic_student
+        where fu_student_score.class_ID=basic_class.id
+        and fu_student_score.student_num=basic_student.student_num
+        and fu_student_score.student_name like CONCAT('%',#{student_name},'%')
+        and fu_student_score.student_num like CONCAT('%',#{student_num},'%')
+        and basic_class.grade like CONCAT('%',#{grade},'%')
+        and basic_class.class_name like CONCAT('%',#{class_name},'%')
+        and fu_student_score.evaluate_date = '202012'
+        limit #{page_num},#{page_size};
+    </select>
+    <select id="getTableSize" resultType="java.lang.Integer">
+        select count(*) from fu_student_score,basic_class,basic_student
+        where fu_student_score.class_ID=basic_class.id
+        and fu_student_score.student_num=basic_student.student_num
+          and fu_student_score.student_name like CONCAT('%',#{student_name},'%')
+          and fu_student_score.student_num like CONCAT('%',#{student_num},'%')
+          and basic_class.grade like CONCAT('%',#{grade},'%')
+          and basic_class.class_name like CONCAT('%',#{class_name},'%')
+    </select>
+    <select id="getClassName" resultType="java.lang.String">
+        select distinct class_name from basic_class ;
+    </select>
+    <select id="getGradeName" resultType="java.lang.String">
+        select distinct grade from basic_class;
+    </select>
+    <select id="getAllScore" resultType="com.fiveup.core.demonstrate.entity.vo.ScoreAndClass13">
+        select fu_student_score.*,basic_class.grade,basic_class.class_name,basic_student.gender
+        from fu_student_score,basic_class,basic_student
+        where fu_student_score.class_ID=basic_class.id
+        and fu_student_score.student_num=basic_student.student_num
+        and basic_class.grade like CONCAT('%',#{gradeName},'%')
+        and basic_class.class_name like CONCAT('%',#{className},'%')
+    </select>
+
+
+    <select id="getOneScore" resultType="com.fiveup.core.demonstrate.entity.vo.ScoreAndClass13">
+        select fu_student_score.*,basic_class.grade,basic_class.class_name,basic_student.gender
+        from fu_student_score,basic_class,basic_student
+        where fu_student_score.class_ID=basic_class.id
+          and fu_student_score.student_num=basic_student.student_num
+          and basic_student.id=#{id}
+    </select>
+
+
+</mapper>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.fiveup.core.questionnaire.mapper.OptionsMapper">
+    <insert id="addOption" parameterType="com.fiveup.core.questionnaire.vo.OptionsVO">
+        insert into q_options(question_id,sequence,content) values(#{questionId},#{sequence},#{content})
+    </insert>
+
+    <select id="findOption" resultType="com.fiveup.core.questionnaire.po.Options">
+        select * from q_options where question_id=#{questionId} and sequence=#{sequence}
+    </select>
+
+    <update id="updateOption" parameterType="com.fiveup.core.questionnaire.vo.OptionsVO">
+        update q_options set content=#{content} where question_id=#{questionId} and sequence=#{sequence}
+    </update>
+
+    <delete id="deleteByQuestionId">
+        delete from q_options where question_id=#{questionId}
+    </delete>
+
+    <select id="selectByQuestionId" resultType="com.fiveup.core.questionnaire.po.Options">
+        select * from q_options where question_id=#{questionId} order by sequence
+    </select>
+
+
+
+<!--    <resultMap id="Options" type="com.example.hotel.po.Options">-->
+<!--        <result column="question_id" property="questionId"></result>-->
+<!--        <result column="sequence" property="sequence"></result>-->
+<!--        <result column="content" property="content"></result>-->
+<!--    </resultMap>-->
+</mapper>

@@ -1,0 +1,71 @@
+@font-face {
+  font-family: "iconfont"; /* Project id 3172088 */
+  src: url('iconfont.woff2?t=1645764235440') format('woff2'),
+       url('iconfont.woff?t=1645764235440') format('woff'),
+       url('iconfont.ttf?t=1645764235440') format('truetype');
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-shouye:before {
+  content: "\e751";
+}
+
+.icon-zhanghu:before {
+  content: "\e62a";
+}
+
+.icon-power:before {
+  content: "\e615";
+}
+
+.icon-shouye1:before {
+  content: "\e8b9";
+}
+
+.icon-sousuo_o:before {
+  content: "\eb86";
+}
+
+.icon-zhanghu1:before {
+  content: "\e62b";
+}
+
+.icon-shouye2:before {
+  content: "\e8c6";
+}
+
+.icon-sousuo1:before {
+  content: "\e61a";
+}
+
+.icon-sousuo:before {
+  content: "\e752";
+}
+
+.icon-xiazai5:before {
+  content: "\e605";
+}
+
+.icon-chuyulaji:before {
+  content: "\e626";
+}
+
+.icon-kehuishouwu:before {
+  content: "\e627";
+}
+
+.icon-qitalaji-chongwufenbian:before {
+  content: "\e630";
+}
+
+.icon-qitalaji-pojiutaocipin:before {
+  content: "\e633";
+}
+
