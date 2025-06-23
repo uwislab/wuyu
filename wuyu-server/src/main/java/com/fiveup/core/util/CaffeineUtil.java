@@ -13,7 +13,7 @@ import java.util.function.Function;
  **/
 @RequiredArgsConstructor
 public class CaffeineUtil {
-    private static final Cache<String, Object> cache = SpringUtil.getBean("caffeineCache");
+    private static final Cache<String, Object> cache = SpringUtil.getBean(Cache.class);
 
     /**
      * 获取缓存

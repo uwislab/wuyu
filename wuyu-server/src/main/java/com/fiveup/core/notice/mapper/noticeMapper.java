@@ -1,32 +1,23 @@
 package com.fiveup.core.notice.mapper;
 
-import com.fiveup.core.notice.entity.Notice;
-import com.fiveup.core.notice.entity.NoticeEntity;
-import com.fiveup.core.notice.entity.NoticeIdentityEntity;
-import com.fiveup.core.notice.entity.UserIdentity;
+import com.fiveup.core.notice.info.noticeInfo;
+import jnr.ffi.annotations.In;
+import org.apache.ibatis.annotations.Delete;
+import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
 @Mapper
 public interface noticeMapper {
-    /**
-     * 添加公告
-     * @param noticeEntity
-     */
-    void insertNotice(NoticeEntity noticeEntity);
 
-    /**
-     * 增加公告与发放对象关联记录
-     * @param entity
-     */
-    void insertNoticeIdentityRecord(NoticeIdentityEntity entity);
+    @Select("select * from notice_bord")
+    List<noticeInfo> getNoticeList();
 
-    /**
-     *
-     * @return 获取发放对象集合列表
-     */
-    List<UserIdentity> getIdentityIds();
+    @Delete("delete from notice_bord where id = #{id}")
+    int deleteById(int id);
 
-    Notice selectById(Long noticeId);
+    @Insert("insert into notice_bord(release_time, theme, content) values (#{releaseTime}, #{theme}, #{content})")
+    int addList(noticeInfo info);
 }
