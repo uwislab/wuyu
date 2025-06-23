@@ -22,4 +22,5 @@ public class BasicTeacher {
     private String title;
     private String role;
     private Integer deleted;
+
 }
