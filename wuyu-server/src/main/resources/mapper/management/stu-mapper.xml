@@ -89,7 +89,35 @@
         group by s.id
         order by s.student_num
     </select>
-
+    <select id="getStudentListByConditionsClassIds" resultMap="stuAllFieldsMap">
+        select s.id, s.student_num, s.student_name, s.gender, s.grade_id, s.class_id, s.parent_phone_num, s.deleted, sch.school_name
+        from basic_student s
+        left join basic_class c on s.class_id = c.class and s.grade_id = c.grade_id
+        left join basic_school sch on sch.id = c.school_id
+        <where>
+            <if test="gender!=null">
+                s.gender = #{gender}
+            </if>
+            <if test="classId!= null and classId != '' ">
+                and s.class_id = #{classId}
+            </if>
+            <if test="gradeId!= null and gradeId != '' ">
+                and s.grade_id = #{gradeId}
+            </if>
+            <if test="keyword!=null and keyword!='' ">
+                and ((s.student_num like #{keyword}) or (s.student_name like #{keyword}) or (s.parent_phone_num) like #{keyword})
+            </if>
+        <if test="classIds!=null">
+            and c.id in
+            <foreach item="classId" collection="classIds" separator="," open="(" close=")" index="">
+                #{classId}
+            </foreach>
+        </if>
+            and s.deleted = 0 and c.school_id = #{schoolId} and c.deleted = 0
+        </where>
+        group by s.id
+        order by s.student_num
+    </select>
 
     <insert id="insertOne" parameterType="com.fiveup.core.management.model.DTO.StuDTO">
         insert into basic_student(student_num, student_name, gender, class_id <if test="parentPhoneNum!=null and parentPhoneNum!= '' ">, parent_phone_num</if>)

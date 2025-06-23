@@ -1,5 +1,6 @@
 package com.fiveup.core.management.controller;
 
+import com.fiveup.core.common.controller.BaseController;
 import com.fiveup.core.management.common.CommonResponse;
 import com.fiveup.core.management.common.enums.BizErrorCodeEnum;
 import com.fiveup.core.management.pojo.SportScore;
@@ -8,13 +9,15 @@ import com.fiveup.core.management.service.SportScoreService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 @RestController
 @RequestMapping("/sportScore")
 @CrossOrigin
-public class SportController {
+public class SportController extends BaseController {
     @Resource
     private SportScoreService service;
 
@@ -35,7 +38,17 @@ public class SportController {
      * @return 结果信息
      */
     @GetMapping("/getSportsForSearch")
-    public CommonResponse<List<SportScore>> getSportsForSearch(SportSearchVO sportSearchVO){
+    public CommonResponse<List<SportScore>> getSportsForSearch(SportSearchVO sportSearchVO, HttpServletRequest  request){
+        List<Integer> classIds = new ArrayList<>();
+        if (this.getCurrentUserIdentity(request) == 2) {
+            classIds = this.getClassId(request);
+            if (classIds.isEmpty()) {
+                classIds.add(-1);
+            }
+            sportSearchVO.setClassIds(classIds);
+        }
+
+
         System.out.println(sportSearchVO);
         List<SportScore> scores = service.findSportScoreForSearch(sportSearchVO);
         return CommonResponse.ok(scores);

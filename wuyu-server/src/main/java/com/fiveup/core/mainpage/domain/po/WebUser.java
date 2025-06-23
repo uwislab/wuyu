@@ -22,4 +22,9 @@ public class WebUser {
     private String politicalAppearance;
     private String position;
     private String title;
+    
+    /**
+     * 用户状态：0正常，1禁用
+     */
+    private Integer status;
 }
