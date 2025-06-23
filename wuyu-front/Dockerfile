@@ -1,31 +1,34 @@
-# 构建阶段 - 使用Docker Hub官方Node.js镜像
-FROM node:18 AS build
+# FROM node:18 as build
+# WORKDIR /app
+# COPY package*.json ./
+# RUN npm install
+# COPY . .
+# RUN npm run build
+
+# FROM nginx:alpine
+# COPY --from=build /app/dist /usr/share/nginx/html
+# EXPOSE 80
+# CMD ["nginx", "-g", "daemon off;"]
+
+# 使用Node.js基础镜像
+FROM node:16-alpine
+# 设置工作目录
 WORKDIR /app
-
-# 先复制package.json和package-lock.json，利用缓存加速依赖安装
+# 复制项目的package.json和package-lock.json文件
 COPY package*.json ./
-
-# 配置npm使用淘宝镜像源并安装依赖（添加错误处理）
-RUN npm config set registry https://registry.npmmirror.com && \
-    npm install --production=false --no-fund --no-audit || \
-    (echo "npm安装失败，检查package.json" && exit 1) && \
-    npm cache clean --force
-
-# 复制源代码并构建
+# 安装依赖
+RUN npm install
+# 复制项目源代码
 COPY . .
-RUN npm run build || (echo "前端构建失败，检查构建脚本" && exit 1)
-
-# 运行时阶段 - 使用Docker Hub官方Nginx镜像
-FROM nginx:alpine
-
-# 复制构建产物到Nginx文档根目录
-COPY --from=build /app/dist /usr/share/nginx/html
-
-# 替换默认Nginx配置（可选，若有自定义配置）
-# COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# 暴露端口
+# 构建前端项目
+RUN npm run build:prod
+# 使用Nginx作为静态文件服务器
+FROM nginx:1.21-alpine
+# 复制配置文件
+COPY nginx-conf/default.conf /etc/nginx/conf.d/
+# 复制构建好的前端文件到Nginx的默认静态文件目录
+COPY --from=0 /app/dist /usr/share/nginx/html
+# 暴露前端服务端口
 EXPOSE 80
-
-# 使用更安全的启动方式
+# 启动Nginx服务
 CMD ["nginx", "-g", "daemon off;"]
