@@ -83,10 +83,10 @@ public class teacherFiveupService extends ServiceImpl<teacherFiveupMapper, teach
 
     private void setPageInfo(TeacherList vo, int total, int pageNum, int pageSize) {
         vo.setTotal(total);
-        
+
         int totalPages = calculateTotalPages(total, pageSize);
         vo.setPages(totalPages);
-        
+
         // 设置当前页码
         if (total == 0) {
             vo.setCurPage(1);
@@ -106,10 +106,10 @@ public class teacherFiveupService extends ServiceImpl<teacherFiveupMapper, teach
         if (allData.isEmpty()) {
             return new ArrayList<>();
         }
-        
+
         int fromIndex = (curPage - 1) * pageSize;
         int toIndex = Math.min(fromIndex + pageSize, allData.size());
-        
+
         return allData.subList(fromIndex, toIndex);
     }
 

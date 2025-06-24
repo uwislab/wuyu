@@ -21,6 +21,8 @@
         </el-form-item>
         <el-button style="margin-left: 5px" type="primary" @click="searchTeacher">搜索</el-button>
         <el-button style="margin-left: 5px" type="warning" @click="reset">重置</el-button>
+        <el-button style="margin-left: 5px" type="success" @click="exportExcel">导出</el-button>
+        <el-button style="margin-left: 5px" type="success" @click="downloadTemplate">下载模板</el-button>
         <el-button type="success" round @click="handleAdd">新增<i class="el-icon-circle-plus-outline"></i></el-button>
       <el-popconfirm
         confirm-button-text="确定删除"
@@ -35,6 +37,20 @@
 
       </el-form>
     </div>
+    <!--  <div style="margin: 10px 0">-->
+    <!--    -->
+    <!--&lt;!&ndash;    <el-button type="danger" round @click="delBatch">批量删除<i class="el-icon-remove-outline"></i></el-button>&ndash;&gt;-->
+    <!--&lt;!&ndash;      <el-button type="primary" round @click="exportExcel">导出<i class="el-icon-remove-outline"></i></el-button>&ndash;&gt;-->
+    <!--&lt;!&ndash;    <el-upload&ndash;&gt;-->
+    <!--&lt;!&ndash;     action="http://localhost:9090/teacher/importExcel"&ndash;&gt;-->
+    <!--&lt;!&ndash;     :show-file-list="false"&ndash;&gt;-->
+    <!--&lt;!&ndash;     accept="xlsx"&ndash;&gt;-->
+    <!--&lt;!&ndash;     :on-success="importExcel"&ndash;&gt;-->
+    <!--&lt;!&ndash;     style="display: inline-block"&ndash;&gt;-->
+    <!--&lt;!&ndash;    >&ndash;&gt;-->
+    <!--&lt;!&ndash;        <el-button type="primary" round  style="margin-left: 10px;">导入<i class="el-icon-remove-outline"></i></el-button>&ndash;&gt;-->
+    <!--&lt;!&ndash;    </el-upload>&ndash;&gt;-->
+    <!--  </div>-->
     <!--          表格数据，要关联到数据库-->
     <el-table :data="tableData" border stripe header-cell-class-name="'headerBg'" @selection-change="handleSelectionChange" >
       <!--            在下面有tableData-->
@@ -47,7 +63,7 @@
       <el-table-column prop="position"   align="center"  label="职位"></el-table-column>
       <el-table-column prop="title"  align="center"   label="职称"></el-table-column>
       <el-table-column prop="role"   align="center"  label="角色"></el-table-column>
-     <el-table-column prop="deleted"  align="center"   label="是否已删除"></el-table-column>
+<!--      <el-table-column prop="deleted"  align="center"   label="是否已删除"></el-table-column>-->
 <!--      <el-table-column prop="schoolId"  align="center"   label="学校编号"></el-table-column>-->
       <el-table-column prop="username"  align="center"   label="账户"></el-table-column>
       <el-table-column prop="password"  align="center"   label="密码"></el-table-column>
@@ -317,7 +333,7 @@ export default {
           this.pagination.total = res.data.total;
           this.pagination.currentPage = res.data.curPage;
           this.pagination.pageCount = res.data.pages;
-          
+
           this.tableData = res.data.list.map(item => ({
             ...item,
             gender: item.gender == 0 ? '女' : '男',
@@ -346,7 +362,7 @@ export default {
           if (this.form.birthPlace === '(暂无)') this.form.birthPlace = null;
           if (this.form.age === '(暂无)') this.form.age = null;
           if (this.form.info === '(暂无)') this.form.info = null;
-          
+
           // 从localStorage获取schoolId
           const userInfo = JSON.parse(localStorage.getItem('UserInfo'));
           this.form.schoolId = userInfo.schoolId;
@@ -398,7 +414,7 @@ export default {
             }
         })
     },
-    
+
     handleAnimation: function (anim) {
       this.anim = anim;
     },
@@ -427,13 +443,59 @@ export default {
     //   this.pageNum=pageNum
     //   this.load()
     // },
-    // exportExcel(){
-    //     window.open("http://localhost:9090/teacher/exportExcel")
-    // },
+    exportExcel() {
+      // 从 localStorage 获取 UserInfo
+      const userInfo = JSON.parse(localStorage.getItem('UserInfo'));
+      if (!userInfo || !userInfo.schoolId) {
+        this.$message.error('未获取到学校ID，请重新登录');
+        return;
+      }
+      // 将 schoolId 作为参数传递给导出接口
+      window.open(`http://localhost:9085/teacher/exportExcel?schoolId=${userInfo.schoolId}`);
+    },
     // importExcel(){
     //     this.$message.success("导入成功");
     //     this.load();
     // }
+    downloadTemplate() {
+      try {
+        // 使用正确的端口号
+        const downloadUrl = 'http://localhost:9085/teacher/downloadTemplate';
+
+        // 创建一个临时的 a 标签用于下载
+        const link = document.createElement('a');
+        // 设置下载链接
+        link.href = downloadUrl;
+        // 设置下载文件名
+        link.setAttribute('download', '教师信息导入模板.xlsx');
+        // 设置样式为隐藏
+        link.style.display = 'none';
+
+        // 添加到文档中
+        document.body.appendChild(link);
+
+        // 触发点击事件开始下载
+        link.click();
+
+        // 下载开始后移除该元素
+        document.body.removeChild(link);
+
+        // 显示下载开始提示
+        this.$message({
+          message: '模板下载已开始，请稍候...',
+          type: 'success',
+          duration: 2000
+        });
+      } catch (error) {
+        console.error('下载模板失败:', error);
+        if (error.response) {
+          console.error('错误状态:', error.response.status);
+          console.error('错误信息:', error.response.data);
+        }
+        this.$message.error('下载模板失败，请确保后端服务正常运行');
+      }
+    },
+
 
     // 处理页码变化
     handlePageChange(page) {
