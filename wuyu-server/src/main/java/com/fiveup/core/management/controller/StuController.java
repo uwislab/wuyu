@@ -1,7 +1,6 @@
 package com.fiveup.core.management.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.fiveup.core.common.controller.BaseController;
 import com.fiveup.core.management.common.CommonResponse;
 import com.fiveup.core.management.common.enums.BackendErrorCodeEnum;
 import com.fiveup.core.management.common.exception.BizException;
@@ -17,8 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,7 +27,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/student")
 @CrossOrigin
-public class StuController extends BaseController {
+public class StuController {
 
     @Resource
     private CommonManagementService commonManagementService;
@@ -200,16 +197,9 @@ public class StuController extends BaseController {
     }
     // 7.获取所有学生信息
     @GetMapping("/getAllStudent")
-    public CommonResponse getAllStudent( HttpServletRequest request){
-        List<Integer> classIds = new ArrayList<>();
-        if (this.getCurrentUserIdentity(request) == 2) {
-            classIds = this.getClassId(request);
-            if (classIds.isEmpty()) {
-                classIds.add(-1);
-            }
-        }
-                Long schoolId = commonManagementService.getSchoolId();
-        List<StuDTO> stuDTOList = stuService.getAllStudent(schoolId, classIds);
+    public CommonResponse getAllStudent(){
+        Long schoolId = commonManagementService.getSchoolId();
+        List<StuDTO> stuDTOList = stuService.getAllStudent(schoolId);
         System.out.println("这里的大小:"+stuDTOList.size());
         return CommonResponse.ok(stuDTOList);
     }

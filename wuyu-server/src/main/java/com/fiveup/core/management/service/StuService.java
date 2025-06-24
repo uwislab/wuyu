@@ -52,5 +52,5 @@ public interface StuService {
 
     int deleteBatch(List<Integer> ids);
     // 查询所有学生信息
-    List<StuDTO> getAllStudent(Long schoolId, List<Integer> classIds);
+    List<StuDTO> getAllStudent(Long schoolId);
 }

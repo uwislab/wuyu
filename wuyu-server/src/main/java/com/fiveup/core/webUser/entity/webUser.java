@@ -17,8 +17,4 @@ public class webUser implements Serializable {
     private String phoneNumber;
     private String realName;
     private Long schoolId;
-    /**
-     * 用户状态：0正常，1禁用
-     */
-    private Integer status;
 }

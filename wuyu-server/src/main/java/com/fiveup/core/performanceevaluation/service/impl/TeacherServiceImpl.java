@@ -1,6 +1,5 @@
 package com.fiveup.core.performanceevaluation.service.impl;
 
-import com.fiveup.core.cultivation.entity.BasicTeacher;
 import com.fiveup.core.performanceevaluation.bean.Teacher;
 import com.fiveup.core.performanceevaluation.mapper.TeacherMapper;
 import com.fiveup.core.performanceevaluation.service.TeacherService;
@@ -49,10 +48,5 @@ public class TeacherServiceImpl implements TeacherService {
     @Override
     public List<Integer> selectOtherTeacher(String name) {
         return teacherMapper.selectOtherTeacher(name);
-    }
-
-    @Override
-    public List<BasicTeacher> getTeacherByName(String realName) {
-        return teacherMapper.getTeacherByName(realName);
     }
 }

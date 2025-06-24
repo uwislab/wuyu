@@ -2,7 +2,6 @@ package com.fiveup.core.config;
 
 import com.fiveup.core.questionnaire.interceptor.AuthenticationInterceptor;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -23,20 +22,5 @@ public class FiveupWebMVCConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new AuthenticationInterceptor()).addPathPatterns("/**");
-    }
-    
-    /**
-     * 配置跨域请求
-     * 确保Cookie和会话可以正确传递
-     */
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-                .allowedOriginPatterns("*")  // 允许所有来源
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*")
-                .exposedHeaders("X-User-Name", "X-User-ID")  // 暴露自定义头部
-                .allowCredentials(true)  // 允许发送Cookie
-                .maxAge(3600);  // 预检请求的有效期，单位为秒
     }
 }

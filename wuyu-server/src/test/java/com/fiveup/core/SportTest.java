@@ -24,7 +24,7 @@ public class SportTest {
     }
     @Test
     public void test2(){
-        System.out.println(dao.findSportScoreForSearch(new com.fiveup.core.management.pojo.SportSearchVO("","0","1","1",null)));
+        System.out.println(dao.findSportScoreForSearch(new com.fiveup.core.management.pojo.SportSearchVO("","0","1","1")));
     }
     @Test
     public void test3(){

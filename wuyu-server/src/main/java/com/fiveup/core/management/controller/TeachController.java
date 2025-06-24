@@ -2,7 +2,6 @@ package com.fiveup.core.management.controller;
 
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.support.ExcelTypeEnum;
-import com.fiveup.core.common.controller.BaseController;
 import com.fiveup.core.management.common.CommonResponse;
 import com.fiveup.core.management.pojo.*;
 import com.fiveup.core.management.service.CommonManagementService;
@@ -17,7 +16,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,7 +26,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/teacherQuery")
 @CrossOrigin
-public class TeachController extends BaseController {
+public class TeachController {
 
     @Autowired
     TeachService service;
@@ -86,19 +84,12 @@ public class TeachController extends BaseController {
      * @return 教师列表视图对象
      */
     @PostMapping("/getTeacherByPage")
-    public CommonResponse<TeacherListVo> getTeacherByPage(PageDto search , HttpServletRequest request) {
-        List<Integer> classIds = new ArrayList<>();
-        if (this.getCurrentUserIdentity(request) == 2) {
-            classIds = this.getClassId(request);
-            if (classIds.isEmpty()) {
-                classIds.add(-1);
-            }
-        }
+    public CommonResponse<TeacherListVo> getTeacherByPage(PageDto search) {
         System.out.println("search = " + search);
 //        dto.setSchoolId(1L);
         long schoolId = commonManagementService.getSchoolId();
         System.out.println("schoolId = " + schoolId);
-        TeacherListVo vo = service.getTeacherByPage(search,schoolId,classIds);
+        TeacherListVo vo = service.getTeacherByPage(search,schoolId);
         return CommonResponse.ok(vo);
     }
 

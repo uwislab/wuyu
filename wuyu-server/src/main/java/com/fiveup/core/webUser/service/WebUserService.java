@@ -28,21 +28,5 @@ public interface WebUserService {
     // 修改
     boolean updateWebUser(webUser user);
 
-    /**
-     * 切换用户状态
-     * @param id 用户ID
-     * @param status 目标状态：0正常，1禁用
-     * @return 操作是否成功
-     */
-    boolean updateUserStatus(int id, int status);
-    
-    /**
-     * 批量更新用户状态
-     * @param ids 用户ID列表
-     * @param status 目标状态：0正常，1禁用
-     * @return 操作是否成功
-     */
-    boolean batchUpdateUserStatus(List<Integer> ids, int status);
-
     List<School> getAllSchools();
 }

@@ -7,7 +7,6 @@ import com.fiveup.core.classManage.model.ClassAndMonitor;
 import com.fiveup.core.classManage.model.ClassInfo;
 import com.fiveup.core.classManage.model.StudentInfo;
 import com.fiveup.core.fuScore.model.ClassFuItemScore;
-import com.fiveup.core.sixGroup.entity.BasicClass;
 import jnr.ffi.annotations.In;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
@@ -90,7 +89,7 @@ public interface ClassManageMapper {
 //    List<Integer> getAllClassByGrade(int gradeId);
 
 
-    List<ClassPageResp> getClassByDynamicCondition(int grade, int monitorId,List<Integer> classIds);
+    List<ClassPageResp> getClassByDynamicCondition(int grade, int monitorId);
 
     @Select("select id,teacher_name,gender,phone_num from basic_teacher where id = #{monitorId}")
     Teacher getTeacherByTeacherId(int monitorId);
@@ -114,7 +113,7 @@ public interface ClassManageMapper {
     List<Teacher> getAllTeacher();
 
     @Insert("INSERT into basic_class(grade, class, class_name, monitor_id, deleted, grade_id, school_id)VALUES(#{grade},#{classType},#{className},#{monitorId},0,#{gradeId},1)")
-    int addClassByGrade(Grade grade);
+    int addClass(Grade grade);
 
     @Update("update basic_teacher set role = '班主任' where id = #{monitorId}")
     int updateTeacher(int monitorId);
@@ -169,10 +168,6 @@ public interface ClassManageMapper {
 
     @Update("UPDATE basic_class SET  monitor_id=#{monitorId} where grade=#{grade} and class_name=#{className}")
     Integer updateGrade(GradeInfo gradeInfo);
-
-    @Select("SELECT * FROM basic_class where monitor_id=#{monitorId} and deleted=0;")
-
-    List<BasicClass> getClassByTeacherId(Integer id);
 }
 
 

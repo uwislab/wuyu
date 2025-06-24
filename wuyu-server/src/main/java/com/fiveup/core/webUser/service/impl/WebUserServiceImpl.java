@@ -84,49 +84,6 @@ public class WebUserServiceImpl implements WebUserService {
         return webUserMapper.updateById(user) > 0;
     }
 
-    /**
-     * 切换用户状态
-     * @param id 用户ID
-     * @param status 目标状态：0正常，1禁用
-     * @return 操作是否成功
-     */
-    @Override
-    public boolean updateUserStatus(int id, int status) {
-        webUser user = webUserMapper.selectById(id);
-        if (user == null) {
-            return false;
-        }
-        user.setStatus(status);
-        return webUserMapper.updateById(user) > 0;
-    }
-    
-    /**
-     * 批量更新用户状态
-     * @param ids 用户ID列表
-     * @param status 目标状态：0正常，1禁用
-     * @return 操作是否成功
-     */
-    @Override
-    public boolean batchUpdateUserStatus(List<Integer> ids, int status) {
-        if (ids == null || ids.isEmpty()) {
-            return false;
-        }
-        
-        boolean success = true;
-        for (Integer id : ids) {
-            // 逐个更新用户状态
-            webUser user = webUserMapper.selectById(id);
-            if (user != null) {
-                user.setStatus(status);
-                if (webUserMapper.updateById(user) <= 0) {
-                    success = false;
-                }
-            }
-        }
-        
-        return success;
-    }
-
     @Override
     public List<School> getAllSchools() {
         return schoolMapper.getAllSchools();

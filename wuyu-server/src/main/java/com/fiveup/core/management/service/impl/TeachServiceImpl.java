@@ -1,6 +1,5 @@
 package com.fiveup.core.management.service.impl;
 
-import cn.hutool.core.collection.CollUtil;
 import com.fiveup.core.management.mapper.TeachMapper;
 import com.fiveup.core.management.pojo.*;
 import com.fiveup.core.management.service.TeachService;
@@ -36,7 +35,7 @@ public class TeachServiceImpl implements TeachService {
 
     @Transactional
     @Override
-    public TeacherListVo getTeacherByPage(PageDto dto, long schoolId,List<Integer> classIds ) {
+    public TeacherListVo getTeacherByPage(PageDto dto, long schoolId) {
         //如果页码异常
         if (dto.getPageNum()<=0) {
             dto.setPageNum(1);
@@ -45,24 +44,14 @@ public class TeachServiceImpl implements TeachService {
             dto.setPageSize(1);
         }
 
-        List<Integer> classList = new ArrayList<>();
+        List<Long> classList = new ArrayList<>();
         //判断是否有年级模糊查询
         System.out.println("模糊查询年级:"+dto.getGrade());
         if (dto.getGrade()!=null&&!dto.getGrade().trim().equals("")){
             classList = mapper.getClassByGrade(dto.getGrade());//如果有,获取该年级的所有的班级信息
             System.out.println("输出list:"+classList);
         }
-        if (CollUtil.isNotEmpty(classIds)){
-            if (CollUtil.isNotEmpty(classList)){
-                for (Integer id : classList) {
-                    if (!classIds.contains(id)){
-                        classList.remove(id);
-                    }
-                }
-            }else {
-                classList = classIds;
-            }
-        }
+
         TeacherListVo vo = new TeacherListVo();
         int pageNum = dto.getPageNum();//当前请求页码
 
