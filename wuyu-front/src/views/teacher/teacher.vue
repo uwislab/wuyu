@@ -21,7 +21,7 @@
         </el-form-item>
         <el-button style="margin-left: 5px" type="primary" @click="searchTeacher">搜索</el-button>
         <el-button style="margin-left: 5px" type="warning" @click="reset">重置</el-button>
-        <el-button style="margin-left: 5px" type="success" @click="exportExcel">导出</el-button>
+        <el-button style="margin-left: 5px" type="success" @click="openExportDialog">导出</el-button>
         <el-button style="margin-left: 5px" type="success" @click="downloadTemplate">下载模板</el-button>
         <el-button type="success" round @click="handleAdd">新增<i class="el-icon-circle-plus-outline"></i></el-button>
       </el-form>
@@ -157,6 +157,27 @@
         <el-button type="primary" @click="save">确 定</el-button>
       </div>
     </el-dialog>
+    <el-dialog
+      title="选择导出字段"
+      :visible.sync="exportDialogVisible"
+      width="400px"
+    >
+      <el-checkbox
+        :indeterminate="selectedFields.length > 0 && selectedFields.length < exportFieldOptions.length"
+        :checked="selectedFields.length === exportFieldOptions.length"
+        @change="handleCheckAll"
+        style="margin-bottom: 10px;"
+      >全选</el-checkbox>
+      <el-checkbox-group v-model="selectedFields" style="display: flex; flex-direction: column;">
+        <el-checkbox v-for="item in exportFieldOptions" :key="item.value" :label="item.value">
+          {{ item.label }}
+        </el-checkbox>
+      </el-checkbox-group>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="exportDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="confirmExport">确定导出</el-button>
+      </div>
+    </el-dialog>
     <lottie :options="defaultOptions" style="width: 600px" @animCreated="handleAnimation" />
   </div>
 </template>
@@ -286,6 +307,23 @@ export default {
           {validator: this.validateTeacherName, trigger: 'blur'},
         ],
       },
+      exportDialogVisible: false,
+      exportFieldOptions: [
+        { value: 'id', label: '教师ID' },
+        { value: 'teacherName', label: '老师姓名' },
+        { value: 'gender', label: '性别' },
+        { value: 'phoneNum', label: '电话号码' },
+        { value: 'position', label: '职位' },
+        { value: 'title', label: '职称' },
+        { value: 'role', label: '角色' },
+        { value: 'username', label: '账户' },
+        { value: 'password', label: '密码' },
+        { value: 'politicalAppearance', label: '政治面貌' },
+        { value: 'birthPlace', label: '籍贯' },
+        { value: 'age', label: '出生年份' },
+        { value: 'info', label: '备注信息' }
+      ],
+      selectedFields: [],
     }
   },
   created() {
@@ -509,7 +547,31 @@ export default {
       this.pagination.currentPage = 1;
       this.searchTeacher();
     },
-
+    openExportDialog() {
+      this.selectedFields = [];
+      this.exportDialogVisible = true;
+    },
+    confirmExport() {
+      if (!this.selectedFields.length) {
+        this.$message.warning('请至少选择一个字段');
+        return;
+      }
+      const userInfo = JSON.parse(localStorage.getItem('UserInfo'));
+      if (!userInfo || !userInfo.schoolId) {
+        this.$message.error('未获取到学校ID，请重新登录');
+        return;
+      }
+      const fields = this.selectedFields.join(',');
+      window.open(`http://localhost:9085/teacher/exportExcel?schoolId=${userInfo.schoolId}&fields=${fields}`);
+      this.exportDialogVisible = false;
+    },
+    handleCheckAll(val) {
+      if (val) {
+        this.selectedFields = this.exportFieldOptions.map(item => item.value);
+      } else {
+        this.selectedFields = [];
+      }
+    },
   }
 
 }
