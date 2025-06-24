@@ -296,37 +296,39 @@ public class teacherFiveupService extends ServiceImpl<teacherFiveupMapper, teach
         }
 
         // 3. 如果传入了手机号，检查是否已被其他教师使用
+// 3. 如果传入了手机号，检查是否已被其他教师使用
         if (StringUtils.isNotBlank(teacherInfoParam.getPhoneNum())) {
-            log.debug("开始处理手机号更新，教师ID: {}"+teacherInfoParam.getId());
+            //log.debug("开始处理手机号更新，教师ID: {}", teacherInfoParam.getId());
 
             String newPhone = teacherInfoParam.getPhoneNum().trim();
             String currentPhone = existingTeacher.getPhoneNum();
-            log.debug("新手机号: {}, 当前手机号: {}"+ newPhone+ currentPhone);
+            //log.debug("新手机号: {}, 当前手机号: {}", newPhone, currentPhone);
 
             if (!newPhone.equals(currentPhone)) {
                 log.debug("检测到手机号变更，开始验证新手机号");
 
                 // 3.1 格式验证
                 if (!isValidPhoneNumber(newPhone)) {
-                    log.warn("手机号格式验证失败，无效的手机号: {}"+ newPhone);
+                 //   log.warn("手机号格式验证失败，无效的手机号: {}", newPhone);
                     return Result.fail(400, "手机号格式不正确");
                 }
-                log.debug("手机号格式验证通过: {}"+ newPhone);
+                //log.debug("手机号格式验证通过: {}", newPhone);
 
-                // 3.2 唯一性检查
+                // 3.2 唯一性检查（只对比delete=0的记录）
                 long teacherId = teacherInfoParam.getId();
-                log.debug("开始检查手机号唯一性，排除教师ID: {}"+ teacherId);
+                //log.debug("开始检查手机号唯一性，排除教师ID: {}，仅对比delete=0的记录", teacherId);
 
+                // 修改isPhoneNumberExists方法，增加delete字段过滤条件
                 if (isPhoneNumberExists(newPhone, teacherId)) {
-                    log.warn("手机号唯一性检查失败，手机号已被使用: {}"+ newPhone);
+                   // log.warn("手机号唯一性检查失败，手机号已被使用: {}", newPhone);
                     return Result.fail(501, "手机号已被其他教师使用");
                 }
-                log.debug("手机号唯一性检查通过: {}"+ newPhone);
+                //log.debug("手机号唯一性检查通过: {}", newPhone);
             } else {
-                log.debug("手机号未变更，跳过验证");
+                //log.debug("手机号未变更，跳过验证");
             }
         } else {
-            log.debug("未提供新手机号，跳过手机号验证");
+            //log.debug("未提供新手机号，跳过手机号验证");
         }
         // 3. 构建更新对象（只更新允许修改的字段）
         teacher updateTeacher = new teacher();
