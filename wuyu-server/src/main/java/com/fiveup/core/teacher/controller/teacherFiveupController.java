@@ -266,7 +266,7 @@ public class teacherFiveupController {
     public void downloadTemplate(HttpServletResponse response) throws IOException {
         // 从classpath中读取模板文件
         ClassPathResource resource = new ClassPathResource("templates/教师信息下载模版.xlsx");
-        
+
         // 设置响应头
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
         String fileName = URLEncoder.encode("教师信息导入模板", "UTF-8");
