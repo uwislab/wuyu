@@ -79,6 +79,12 @@
         <if test="classId!=null and classId!=''">
             AND bs.class_id=#{classId}
         </if>
+            <if test="classIds!=null and classIds.size()>0">
+                AND bs.class_id IN
+                <foreach collection="classIds" open="(" close=")" separator="," item="classId">
+                    #{classId}
+                </foreach>
+            </if>
         ORDER BY bs.student_num
     </select>
 <!--    批量删除-->

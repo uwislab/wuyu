@@ -41,7 +41,7 @@
 						<router-link class="el-button el-button--default el-button--primary search_btn_add"
 							to="./view?">添加
 						</router-link>
-						<el-button class="search_btn_del" type="danger" @click="delInfo()">删除</el-button>
+						<el-button v-if="isAcademicDirector" class="search_btn_del" type="danger" @click="delInfo()">撤回</el-button>
 					</el-form-item>
 				</el-col>
 
@@ -182,6 +182,14 @@ export default {
 			chart: null,
 		}
 	},
+	computed: {
+		// 判断当前用户是否为教务角色(identity为1)
+		isAcademicDirector() {
+			// 从store或localStorage获取当前用户信息
+			const userInfo = this.$store.state.user.userInfo || JSON.parse(localStorage.getItem('userInfo') || '{}');
+			return userInfo && userInfo.identity === 1;
+		}
+	},
 	methods: {
 		//api
 		//分页条件查询
@@ -239,7 +247,7 @@ export default {
 				console.log("删除返回数据:" + res.code)
 				if (res.code == 200) {
 					// 前端更新
-					this.$message.success(res.msg)
+					this.$message.success("撤回成功")
 					//成功重新获取数据
 					this.getCourseScoreApi()
 					// 删除数据后重新计算统计数据

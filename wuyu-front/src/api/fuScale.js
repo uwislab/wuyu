@@ -77,26 +77,26 @@ export function getGradeScore(shuju) {
  }
 
  //获取年级平均数据
-export function gradeScore(semester) {
+export function gradeScore(grade) {
   return request({
-    url: `/fuScore/grade/avgScore`,
+    url: `/diagnose/grade/average/scores`,
     method: 'get',
     params: {
-      semester: semester
+      grade: grade
     }
   })
 }
 
  //获取班级平均数据
- export function gradeclassScore(semester, clazz) {
+ export function gradeclassScore(grade, sclass) {
   return request({
-    url: '/fuScore/class/avgScore',
+    url: '/diagnose/class/average/scores',
     method: 'get',
     params: {
-      semester,
-      clazz 
+      grade,
+      sclass
     }
-  });
+  })
 }
 
 export function getFuScaleId() {
@@ -164,6 +164,16 @@ export function insertScaleContent(scaleContent) {
   })
 }
 
+export function updateScaleContent(scaleContent) {
+  return request({
+    url: '/fuScale/updateScaleContent',
+    method: 'post',
+    data: scaleContent,
+
+
+  })
+}
+
 //获取当前与父层级的分数和  参数:评价项id
 //响应参数：CurSum(当前层级分数和),PreSum(上1层级分数和)
 export  function SumScores(ItemId) {
@@ -197,7 +207,7 @@ export  function getAllLevelScore(scaleId) {
   })
 }
 
-export function updateScaleContent(scaleContent) {
+export function editScaleContent(scaleContent) {
   return request({
     url: '/fuScale/editItem',
     method: 'post',
@@ -312,10 +322,11 @@ export function getFuScaleByStates(stateIds) {
   })
 }
 
-export function getAllTeacher() {
+export function getFuScaleHisByStates(stateIds) {
   return request({
-    url: '/teacher/getAllTeacher',
+    url: '/fuScaleHis/getFuScaleByStates',
     method: 'get',
+    params: { stateIds: stateIds },
 
   })
 }
