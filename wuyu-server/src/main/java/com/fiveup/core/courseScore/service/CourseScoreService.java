@@ -18,7 +18,7 @@ public interface CourseScoreService {
      */
     void update85();
 
-    List<CourseScore> getList(String teacher_name,int course_type,int test_number,String course_name);
+    List<CourseScore> getList(String teacherName, int courseType, int testNumber, String courseName);
 
     /**
      * 条件分页查询
@@ -44,4 +44,45 @@ public interface CourseScoreService {
      * @param courseScore
      */
     void edit(CourseScore courseScore);
+
+    /**
+     * 获取所有不同的课程名称
+     * @return 课程名称列表
+     */
+    List<String> getAllDistinctCourseNames();
+
+    /**
+     * 获取所有不同的考试次数
+     * @return 考试次数列表
+     */
+    List<Integer> getAllDistinctTestNumbers();
+
+    /**
+     * 根据课程名称和考试次数查询成绩
+     * @param courseName 课程名称
+     * @param testNumber 考试次数
+     * @return 成绩列表
+     */
+    List<CourseScore> getByCourseNameAndTestNumber(String courseName, Integer testNumber);
+
+    /**
+     * 获取个人成绩趋势
+     * @param courseName 课程名称
+     * @param studentName 学生姓名
+     * @return 成绩列表
+     */
+    List<CourseScore> getPersonalTrend(String courseName, String studentName);
+
+    /**
+     * 获取学生列表
+     * @return 学生成绩列表
+     */
+    List<CourseScore> getStudentList();
+
+    /**
+     * 根据学生学号查询成绩
+     * @param studentNum 学生学号
+     * @return 成绩列表
+     */
+    List<CourseScore> getByStudent(String studentNum);
 }
