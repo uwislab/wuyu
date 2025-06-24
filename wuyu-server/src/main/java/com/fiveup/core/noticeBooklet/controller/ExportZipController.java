@@ -2,6 +2,7 @@ package com.fiveup.core.noticeBooklet.controller;
 
 import com.fiveup.core.noticeBooklet.service.ExportZipService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -11,6 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/export")
 @RequiredArgsConstructor
+@Slf4j
 public class ExportZipController {
 
     // 注入服务
@@ -28,6 +30,8 @@ public class ExportZipController {
                                     @RequestParam(required = false) Integer classId,
                                     @RequestParam(required = false) Integer gradeId)
     {
+        log.info("年级："+ gradeId+"," + "班级："+ classId);
+        //调用exportZipService中exportMultipleWords方法
         exportZipService.exportMultipleWords(response, classId,  gradeId);
     }
 }

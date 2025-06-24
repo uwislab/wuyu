@@ -12,11 +12,11 @@ import java.net.URLEncoder;
  */
 public class FileUtils {
 
-
+    //文件存放地址
     public static final String WORD_PATH="word/";
-
+    //zip存放地址
     public static final String ZIP_PATH="zip/";
-
+    //服务名称
     public static final String SERVICE_NAME="wuyu-server";
 
 
