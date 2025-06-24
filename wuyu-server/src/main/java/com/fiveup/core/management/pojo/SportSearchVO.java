@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data//get,set,以及基本重写
 @NoArgsConstructor//无参构造
 @AllArgsConstructor//全参构造
@@ -12,4 +14,5 @@ public class SportSearchVO {
     private String gender;
     private String gradeId;
     private String classId;
+    private List<Integer> classIds;
 }

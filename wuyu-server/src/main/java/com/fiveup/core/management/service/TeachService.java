@@ -12,11 +12,11 @@ import java.util.List;
 public interface TeachService {
     List<TeacherVo> getAllTeacher();
 
-    TeacherListVo getTeacherByPage(PageDto dto, long schoolId);
+    TeacherListVo getTeacherByPage(PageDto dto, long schoolId,List<Integer> classIds);
 
     List<TeacherExcel> searchTeacherList(PageDto dto, long schoolId);
 
-    TeacherInfoVo getTeacherInfo(Long teacherId);
+        TeacherInfoVo getTeacherInfo(Long teacherId);
 
     FormVo getFormObject();
 
