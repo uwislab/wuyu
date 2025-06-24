@@ -7,6 +7,7 @@ import com.fiveup.core.noticeBooklet.utils.FileUtils;
 import com.fiveup.core.noticeBooklet.utils.WordUtils;
 import com.fiveup.core.noticeBooklet.utils.ZipUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,7 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 /*
  * 批量导出Word
  * 并压缩成Zip功能
@@ -33,13 +35,15 @@ public class ExportZipServiceImpl implements ExportZipService {
     public void exportMultipleWords(HttpServletResponse response, Integer classId, Integer gradeId) {
         try {
 
-            // 获取Word文件保存路径
+            // 获取application文件保存路径
             String path = this.getClass().getClassLoader().getResource("application.yml").getPath();
-            // 获取ZIP文件保存路径
-            String wordPath = FileUtils.getPath(path, FileUtils.WORD_PATH);
+            log.info("获取application文件保存路径："+ path);
             // 获取Word文件保存路径
+            String wordPath = FileUtils.getPath(path, FileUtils.WORD_PATH);
+            log.info("获取ZIP文件保存路径："+ wordPath);
+            // 获取ZIP文件保存路径
             String zipPath = FileUtils.getPath(path, FileUtils.ZIP_PATH);
-
+            log.info("获取ZIP文件保存路径" + zipPath);
             // 存储所有生成的Word文件路径
             List<String> generatedWordPaths = new ArrayList<>();
             //根据ids集合查询通知册数据集合
@@ -48,6 +52,7 @@ public class ExportZipServiceImpl implements ExportZipService {
             List<Map<String, Object>> wordFiles = new ArrayList<>();
             //遍历通知册数据集合
             for (NoticeBooklet noticeBooklet : noticeBooklets) {
+                //创建一个Map对象，用于存储Word文件数据
                 Map<String, Object> map = new HashMap<>();
                 //学生姓名
                 String studentName = noticeBooklet.getStudentName();
@@ -100,6 +105,8 @@ public class ExportZipServiceImpl implements ExportZipService {
                 //备注
                 String remark = noticeBooklet.getRemark()==null? "无" :noticeBooklet.getRemark();
                 map.put("remark", remark);
+                log.info("Word文件数据："+map);
+                //添加Word文件数据
                 wordFiles.add(map);
             }
             // 处理每个Word文件
@@ -123,9 +130,10 @@ public class ExportZipServiceImpl implements ExportZipService {
                 wordData.put("month", DateFormatUtils.format(new Date(), "MM"));
                 // 获取当前日
                 wordData.put("day", DateFormatUtils.format(new Date(), "dd"));
-
+                log.info("Word文件数据：" + wordData);
                 // 生成Word文件
                 WordUtils.saveWord(wordData, wordPath);
+                log.info("Word文件生成成功：" + wordPath);
             }
 
             //zip文件名字
@@ -147,4 +155,5 @@ public class ExportZipServiceImpl implements ExportZipService {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
+
 }

@@ -9,8 +9,8 @@ import java.util.zip.ZipOutputStream;
 /**
  * @program byh-service-referral
  * @description: zip工具类
- * @author: chenmet
- * @create: 2019/01/09 17:13
+ * @author: 张家宝
+ * @create: 2025-05-08 09:09
  */
 public class ZipUtils {
 
