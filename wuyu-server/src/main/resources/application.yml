@@ -21,12 +21,6 @@ spring:
     multipart:
       max-file-size: 128MB #上传文件总大值
       max-request-size: 10MB  #单个文件的最大值
-      # application.yml示例
-
-#management:
-#  health:
-#    redis:
-#      enabled: false  # 禁用Redis健康检查
 
 
 mybatis-plus:
@@ -39,8 +33,6 @@ mybatis-plus:
     auto-mapping-behavior: partial
     map-underscore-to-camel-case: true # 开启驼峰原则，将数据库带下划线的字段自动转为驼峰原则的命名
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #mybatis-plus配置控制台打印完整带参数SQL语句
-
-
 
 
 schedule:
