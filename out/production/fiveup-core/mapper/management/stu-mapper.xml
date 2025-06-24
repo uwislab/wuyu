@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.management.mapper.StuMapper">
+    <sql id="selectAllFields">
+        select id, student_num, student_name, gender, class_id, parent_phone_num, deleted
+        from basic_student
+    </sql>
+
+    <delete id="deleteBatch" parameterType="String">
+        delete from basic_student where id in
+        <foreach collection="ids" open="(" close=")" separator="," item="id">
+            #{id}
+        </foreach>
+    </delete>
+
+
+    <resultMap id="stuAllFieldsMap" type="com.fiveup.core.management.model.DTO.StuDTO">
+        <id property="studentId" column="id"/>
+        <result property="studentNum" column="student_num"/>
+        <result property="studentName" column="student_name"/>
+        <result property="gender" column="gender"/>
+        <result property="classId" column="class_id"/>
+        <result property="parentPhoneNum" column="parent_phone_num"/>
+        <result property="schoolName" column="school_name"/>
+    </resultMap>
+
+    <select id="getStudentListByCondition" resultMap="stuAllFieldsMap">
+        select s.id, s.student_num, s.student_name, s.gender, s.class_id, s.parent_phone_num, s.deleted, sch.school_name
+        from basic_student s
+        left join basic_class c on s.class_id = c.class and s.grade_id = c.grade_id
+        left join basic_school sch on sch.id = c.school_id
+        <where>
+            <if test="gender!=null">
+                s.gender = #{gender}
+            </if>
+            <if test="classId!= null and classId != '' ">
+                and s.class_id = #{classId}
+            </if>
+            <if test="keyword!=null and keyword!='' ">
+                and ((s.student_num like #{keyword}) or (s.student_name like #{keyword}) or (s.parent_phone_num) like #{keyword})
+            </if>
+            and s.deleted = 0 and c.school_id = #{schoolId} and c.deleted = 0
+        </where>
+    </select>
+
+<!--    <select id="getStudentListByConditions" resultMap="stuAllFieldsMap">-->
+<!--        select s.id, s.student_num, s.student_name, s.gender, s.grade_id, s.class_id, s.parent_phone_num, s.deleted, sch.school_name-->
+<!--        from basic_student s-->
+<!--        left join basic_class c on s.class_id = c.class-->
+<!--        left join basic_school sch on sch.id = c.school_id-->
+<!--        <where>-->
+<!--            <if test="gender!=null">-->
+<!--                s.gender = #{gender}-->
+<!--            </if>-->
+<!--            <if test="classId!= null and classId != '' ">-->
+<!--                and s.class_id = #{classId}-->
+<!--            </if>-->
+<!--            <if test="gradeId!= null and gradeId != '' ">-->
+<!--                and s.grade_id = #{gradeId}-->
+<!--            </if>-->
+<!--            <if test="keyword!=null and keyword!='' ">-->
+<!--                and ((s.student_num like #{keyword}) or (s.student_name like #{keyword}) or (s.parent_phone_num) like #{keyword})-->
+<!--            </if>-->
+<!--            and s.deleted = 0 and c.school_id = #{schoolId}-->
+<!--        </where>-->
+<!--    </select>-->
+    <select id="getStudentListByConditions" resultMap="stuAllFieldsMap">
+        select s.id, s.student_num, s.student_name, s.gender, s.grade_id, s.class_id, s.parent_phone_num, s.deleted, sch.school_name
+        from basic_student s
+        left join basic_class c on s.class_id = c.class and s.grade_id = c.grade_id
+        left join basic_school sch on sch.id = c.school_id
+        <where>
+            <if test="gender!=null">
+                s.gender = #{gender}
+            </if>
+            <if test="classId!= null and classId != '' ">
+                and s.class_id = #{classId}
+            </if>
+            <if test="gradeId!= null and gradeId != '' ">
+                and s.grade_id = #{gradeId}
+            </if>
+            <if test="keyword!=null and keyword!='' ">
+                and ((s.student_num like #{keyword}) or (s.student_name like #{keyword}) or (s.parent_phone_num) like #{keyword})
+            </if>
+            and s.deleted = 0 and c.school_id = #{schoolId} and c.deleted = 0
+        </where>
+        group by s.id
+        order by s.student_num
+    </select>
+
+
+    <insert id="insertOne" parameterType="com.fiveup.core.management.model.DTO.StuDTO">
+        insert into basic_student(student_num, student_name, gender, class_id <if test="parentPhoneNum!=null and parentPhoneNum!= '' ">, parent_phone_num</if>)
+         values (#{studentNum}, #{studentName}, #{gender}, #{classId} <if test="parentPhoneNum!=null and parentPhoneNum!= '' ">, #{parentPhoneNum}</if> )
+    </insert>
+
+    <update id="updateOne" parameterType="com.fiveup.core.management.model.DTO.StuDTO">
+        update basic_student
+        <set>
+            <if test="studentNum!=null and studentNum!= '' ">
+                student_num = #{studentNum},
+            </if>
+            <if test="studentName!=null and studentName!= '' ">
+                student_name = #{studentName},
+            </if>
+            <if test="gender!=null">
+                gender = #{gender},
+            </if>
+            <if test="gradeId!=null and gradeId!=''">
+                grade_id = #{gradeId},
+            </if>
+            <if test="classId!=null and classId!= '' ">
+                class_id = #{classId},
+            </if>
+            <if test="parentPhoneNum!=null and parentPhoneNum!= '' ">
+                parent_phone_num = #{parentPhoneNum},
+            </if>
+        </set>
+        where id = #{studentId} and deleted = 0
+    </update>
+
+    <update id="softlyDeleteById">
+        update basic_student
+        set deleted = 1
+        where id = #{studentId}
+    </update>
+
+    <select id="getStuListByClassId" resultMap="stuAllFieldsMap">
+        <include refid="selectAllFields"/>
+        where class_id = #{classId} and deleted = 0
+    </select>
+
+    <select id="getStudentListByName" resultMap="stuAllFieldsMap">
+        <include refid="selectAllFields"/>
+        where student_name = #{studentName} and deleted = 0
+    </select>
+
+
+    <select id="getStuListBySchoolIdAndGradeName" resultMap="stuAllFieldsMap">
+        select s.id, s.student_num, s.student_name, s.gender, s.class_id, s.parent_phone_num, s.deleted
+        from basic_student s
+        inner join basic_class c on s.class_id = c.id
+        where c.school_id = #{schoolId} and c.grade = #{grade} and c.deleted = 0 and s.deleted = 0
+    </select>
+
+    <select id="getStudentInfoWithFuScore" resultType="java.util.HashMap">
+        SELECT bs.*, rs.*
+        FROM basic_student bs
+             LEFT JOIN re_student rs ON bs.student_num = rs.sid
+        WHERE bs.student_num = #{studentId}
+    </select>
+    
+    <select id="getStuListBySchoolIdAndGradeNameClassId"
+            resultType="com.fiveup.core.management.model.DTO.StuDTO">
+        select s.id, s.student_num, s.student_name, s.gender, s.class_id, s.parent_phone_num, s.deleted
+        from basic_student s
+        where s.school_id = #{schoolId} and s.grade_id = #{grade} and s.deleted = 0 and s.class_id = #{classId}
+    </select>
+</mapper>

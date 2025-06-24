@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.events.mapper.ClassActivityMapper">
+    <sql id="selectAllFields">
+        select id, grade, class_name, monitor_id, deleted
+        from basic_class
+    </sql>
+
+    <resultMap id="classAllFieldsMap" type="com.fiveup.core.management.model.DTO.ClassDTO">
+        <id property="id" column="id"/>
+        <result property="grade" column="grade"/>
+        <result property="className" column="class_name"/>
+        <result property="monitorId" column="monitor_id"/>
+        <result property="deleted" column="deleted"/>
+    </resultMap>
+
+    <resultMap id="selectAllFields" type="com.fiveup.core.events.model.ClassActivity">
+        <id property="id" column="id"/>
+        <result property="activityId" column="activity_id"/>
+        <result property="classId" column="class_id"/>
+    </resultMap>
+
+<!--    <select id="getClassActivityByActivityId" resultMap="selectAllFields">-->
+<!--        select id, activity_id, class_id-->
+<!--        from class_activity-->
+<!--        where activity_id = #{activityId}-->
+<!--    </select>-->
+
+    <delete id="deleteItemsByActivityId">
+        delete
+        from class_activity
+        where activity_id = #{activityId}
+    </delete>
+
+    <insert id="inertOne">
+        insert into class_activity(activity_id, class_id)
+        values (#{activityId}, #{classId})
+    </insert>
+</mapper>

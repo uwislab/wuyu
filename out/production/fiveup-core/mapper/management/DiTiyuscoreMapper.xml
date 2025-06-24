@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.management.mapper.DiTiyuscoreMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.fiveup.core.management.model.DiTiyuscore">
+        <id column="student_id" property="studentId" />
+        <result column="student_name" property="studentName" />
+        <result column="sports_morality" property="sportsMorality" />
+        <result column="health_knowledge" property="healthKnowledge" />
+        <result column="mental_health" property="mentalHealth" />
+        <result column="sports_skills" property="sportsSkills" />
+        <result column="sports_activity" property="sportsActivity" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        student_id, student_name, sports_morality, health_knowledge, mental_health, sports_skills, sports_activity
+    </sql>
+
+</mapper>

@@ -9,6 +9,8 @@ import com.fiveup.core.classManage.model.response.ClassPageResp;
 import com.fiveup.core.classManage.model.*;
 import com.fiveup.core.classManage.service.ClassManageService;
 import com.fiveup.core.events.model.response.ActivityPageResp;
+import com.fiveup.core.questionnaire.mapper.ClassMapper;
+import com.fiveup.core.sixGroup.entity.BasicClass;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -70,13 +72,13 @@ public class ClassManageServiceImpl implements ClassManageService {
     }
 
     @Override
-    public PageInfo<ClassPageResp> getClassListByPage(int grade,
+    public PageInfo<ClassPageResp> getClassListByPage( List<Integer> classIds,int grade,
                                                       int monitorId,
                                                       Integer pageNum,
                                                       Integer pageSize) {
         System.out.println("grade: " + grade);
         PageHelper.startPage(pageNum, pageSize);
-        List<ClassPageResp> classPageResps = classManageMapper.getClassByDynamicCondition(grade, monitorId);
+        List<ClassPageResp> classPageResps = classManageMapper.getClassByDynamicCondition(grade, monitorId,classIds);
         System.out.println("classPageResps: " + classPageResps);
         for (ClassPageResp classPageResp : classPageResps) {
             Teacher teacher = classManageMapper.getTeacherByTeacherId(classPageResp.getMonitorId());
@@ -319,6 +321,11 @@ public class ClassManageServiceImpl implements ClassManageService {
 
         }
         return 1;
+    }
+
+    @Override
+    public List<BasicClass> getClassByTeacherId(Integer id) {
+      return   classManageMapper.getClassByTeacherId(id);
     }
 }
 

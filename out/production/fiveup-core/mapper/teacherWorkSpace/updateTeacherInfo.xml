@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.teacherworkspace.mapper.TeacherWorkspaceMapper">
+    <update id="updateTeacherInfo">
+        update basic_teacher
+        <set>
+            <if test="teacherName != null">
+                teacher_name = #{teacherName},
+            </if>
+            <if test="gender != null">
+                gender = #{gender},
+            </if>
+            <if test="phoneNum != null">
+                phone_num = #{phoneNum},
+            </if>
+            <if test="position != null">
+                position = #{position},
+            </if>
+            <if test="title != null">
+                title = #{title},
+            </if>
+            <if test="role != null">
+                role = #{role},
+            </if>
+            <if test="deleted != null">
+                deleted = #{deleted},
+            </if>
+            <if test="schoolId != null">
+                school_id = #{schoolId},
+            </if>
+            <if test="username != null">
+                username = #{username},
+            </if>
+            <if test="password != null">
+                password = #{password},
+            </if>
+            <if test="politicalAppearance != null">
+                political_appearance = #{politicalAppearance},
+            </if>
+            <if test="birthPlace != null">
+                birth_place = #{birthPlace},
+            </if>
+            <if test="age != null">
+                age = #{age},
+            </if>
+            <if test="info != null">
+                info = #{info}
+            </if>
+        </set>
+        <where>
+            id = #{id}
+        </where>
+    </update>
+</mapper>

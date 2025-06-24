@@ -262,6 +262,8 @@ export default {
       this.$refs.scaleInfoFormRef.validate((valid) => {
         if (valid) {
           this.scaleInfoForm.createDate = this.formatDate(new Date());
+
+          this.scaleInfoForm.creatorId  = JSON.parse(window.localStorage.getItem("UserInfo")).id
           insertFuScale(this.scaleInfoForm)
             .then(res => {
               if (res.code === 200) {
@@ -442,7 +444,7 @@ export default {
 .status {
   display: inline;
   font-size: 20px;
-  font: bold;
+  font-weight: bold;
   vertical-align: middle;
   margin-right: 3px;
 }

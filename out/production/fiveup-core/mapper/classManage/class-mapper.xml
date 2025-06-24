@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.classManage.mapper.ClassManageMapper">
+    <select id="getClassByDynamicCondition" resultType="com.fiveup.core.classManage.model.response.ClassPageResp">
+        select id,grade,class as class_Type,class_name,monitor_id,grade_id
+        from basic_class
+        <where>
+            deleted = 0
+            <if test="grade !=-1 ">
+                and grade_id = #{grade}
+            </if>
+            <if test="monitorId !=-1 ">
+                and monitor_id = #{monitorId}
+            </if>
+        </where>
+    </select>
+</mapper>

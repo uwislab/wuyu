@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.management.mapper.PanelMapper">
+
+    <select id="getStuCount" resultType="int">
+        select count(distinct student_num) from basic_student where deleted = 0 and school_id = #{schoolId}
+    </select>
+    <select id="getTeacherCount" resultType="int">
+        select count(*) from basic_teacher where deleted = 0 AND school_id = #{schoolId}
+    </select>
+    <select id="getClassCount" resultType="int">
+        select count(*) from basic_class where deleted = 0 AND school_id = #{schoolId}
+    </select>
+    <select id="getGradeCount" resultType="int">
+        SELECT count(DISTINCT grade)
+        FROM basic_class
+        WHERE deleted = 0
+          AND school_id = #{schoolId}
+    </select>
+
+
+</mapper>
