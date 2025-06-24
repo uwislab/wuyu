@@ -390,6 +390,12 @@ export const asyncRoutes = [
         meta: { title: "编辑量表", role: [0, 1] },
       },
       {
+        path: "dimensionHistory",
+        name: "量表更新历史",
+        component: () => import("@/views/cultivation/goal/dimensionHistory"),
+        meta: { title: "量表更新历史", role: [0,4] },
+      },
+      {
         path: "implementation",
         name: "执行情况",
         component: () => import("@/views/cultivation/goal/implementation"),
@@ -512,6 +518,7 @@ export const asyncRoutes = [
     component: Layout,
     redirect: "/management/baseData",
     meta: { title: "基础数据管理", icon: "dashboard", role: [0, 1,2] },
+
     children: [
       {
         path: "baseData",
@@ -914,6 +921,7 @@ export const asyncRoutes = [
         component: () => import("@/views/demonstrate/bigDataIndex"),
         name: "中控大屏",
         meta: { title: "中控大屏", role: [0, 1] },
+
       },
       {
         path: "xxzs",
@@ -981,6 +989,12 @@ export const asyncRoutes = [
         name: "学生个人详情页",
         meta: { title: "学生个人详情页", role: [0, 1,2] },
       },
+      // {
+      //   path: "year",
+      //   component: () => import("@/views/achievementAnalysis/YearScore.vue"),
+      //   name: "年级情况总览",
+      //   meta: { title: "年级情况总览", role: [0] },
+      // },
     ],
   },
   //总体运行
