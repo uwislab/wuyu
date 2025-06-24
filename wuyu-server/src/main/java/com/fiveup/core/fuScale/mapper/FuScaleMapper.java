@@ -170,6 +170,7 @@ public interface FuScaleMapper {
     List<Execution> getExecution(Execution execution);
 
     int addExecution(Execution execution);
+    List<Execution> getExecutionByScaleId(@Param("scaleId") Integer scaleId);
 
     int delExecution(Integer execId);
 
