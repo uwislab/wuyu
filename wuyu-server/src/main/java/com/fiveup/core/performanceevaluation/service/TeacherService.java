@@ -1,6 +1,7 @@
 package com.fiveup.core.performanceevaluation.service;
 
 
+import com.fiveup.core.cultivation.entity.BasicTeacher;
 import com.fiveup.core.performanceevaluation.bean.Teacher;
 
 import java.util.List;
@@ -36,4 +37,5 @@ public interface TeacherService {
 
     List<Integer> selectOtherTeacher(String name);
 
+    List<BasicTeacher> getTeacherByName(String realName);
 }

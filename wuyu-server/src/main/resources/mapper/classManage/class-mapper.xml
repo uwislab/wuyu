@@ -14,6 +14,12 @@
             <if test="monitorId !=-1 ">
                 and monitor_id = #{monitorId}
             </if>
+        <if test="classIds!=null and  classIds.size()>0">
+            and id in
+            <foreach item="item" index="index" collection="classIds" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
         </where>
     </select>
 </mapper>
