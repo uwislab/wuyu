@@ -75,4 +75,11 @@ public interface StuMapper extends BaseMapper<BasicStudent> {
 
     @Update("update basic_student set isreview=1 where student_num=#{studentNum}")
     void confirmReview(String studentNum);
+
+    List<StuDTO> getStudentListByConditionsClassIds(@Param("keyword") String keyword,
+                                                    @Param("gender") Integer gender,
+                                                    @Param("inclination") Integer inclination,
+                                                    @Param("gradeId") Integer gradeId,
+                                                    @Param("classId") Integer classId,
+                                                    @Param("schoolId") Long schoolId, @Param("classIds") List<Integer> classIds);
 }
