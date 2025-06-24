@@ -78,6 +78,8 @@ public class teacherFiveupController {
     public List<teacher> findAll(){
         return teacherService.list();
     }
+
+    //删除教师
     @DeleteMapping("/{id}")
     public CommonResponse<Boolean> delete(@PathVariable Integer id) {
         try {
@@ -108,10 +110,45 @@ public class teacherFiveupController {
         }
     }
 
+
+    //批量删除
+
     @PostMapping("/del/batch")
-    public boolean deleteBatch(@RequestBody List<Integer> ids){
-        return teacherService.removeByIds(ids);
+    public CommonResponse<Boolean> deleteBatch(@RequestBody List<Integer> ids) {
+        try {
+            if (CollUtil.isEmpty(ids)) {
+                logger.error("批量删除失败：教师ID列表为空");
+                return CommonResponse.fail(BizErrorCodeEnum.PARAMS_VALIDATION_ERRNO, "教师ID列表不能为空");
+            }
+
+            for (Integer id : ids) {
+                if (id == null || id <= 0) {
+                    logger.error("批量删除失败：无效的教师ID: {}", id);
+                    return CommonResponse.fail(BizErrorCodeEnum.PARAMS_VALIDATION_ERRNO, "无效的教师ID");
+                }
+
+                teacher teacher = teacherService.getById(id);
+                if (teacher == null) {
+                    logger.error("批量删除失败：教师不存在，ID: {}", id);
+                    return CommonResponse.fail(BizErrorCodeEnum.ALARM_RECORD_NOT_EXIST, "教师不存在");
+                }
+            }
+
+            // 执行批量删除操作
+            boolean result = teacherService.removeByIds(ids);
+            if (result) {
+                logger.info("教师批量删除成功，IDs: {}", ids);
+                return CommonResponse.ok(true);
+            } else {
+                logger.error("教师批量删除失败，IDs: {}", ids);
+                return CommonResponse.fail(BizErrorCodeEnum.ROLLBACK_PLAN_ERRNO, "批量删除失败");
+            }
+        } catch (Exception e) {
+            logger.error("批量删除教师时发生异常，异常信息: {}", e.getMessage(), e);
+            return CommonResponse.fail(BizErrorCodeEnum.ROLLBACK_PLAN_ERRNO, "系统异常");
+        }
     }
+
 
     @GetMapping("/page") //接口路径user/page
     public IPage<teacher> findPage(@RequestParam("pageNum") Integer pageNum,
