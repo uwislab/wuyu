@@ -7,12 +7,6 @@
 
     <el-container>
       <el-header style="font-size: 12px; border-bottom: 1px solid #ccc; line-height: 60px; ">
-        <!-- <div style="flex: 1;">
-          <span style="font-size: 25px;"><b>>工作事项</b></span>
-        </div>
-
-        <span style="font-size: large;">欢迎：{{teacherName}}（{{title}}）</span>
-        <el-button class="logout_button" @click="logout" style="margin-left: 5px; ">退出</el-button> -->
         <Header></Header>
       </el-header>
 

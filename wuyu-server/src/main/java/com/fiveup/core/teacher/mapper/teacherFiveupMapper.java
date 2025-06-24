@@ -10,6 +10,4 @@ import java.util.List;
 @Mapper
 public interface teacherFiveupMapper extends BaseMapper<teacher> {
      List<teacher> selectAllUser();
-
-
 }
