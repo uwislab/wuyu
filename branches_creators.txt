@@ -80,3 +80,4 @@ feature-03-yzr:yaozir
 feature-03-yzru:yaozir
 feature-03-yzr:pavilion-y
 develop-003:pavilion-y
+feature-003-yuting:pavilion-y
