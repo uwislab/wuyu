@@ -340,13 +340,17 @@ export default {
           // 根据是否有id判断是新增还是编辑
           if (this.form.id) {
             // 编辑操作，调用updateTeacherInfo接口
-            request.post("/teacher/updateTeacherInfo", this.form).then(res => {
-              if (res) {
-                this.$message.success("修改成功")
+            request.post(baseUrl + "/teacher/updateTeacher", this.form).then(res => {
+              if (res && res.code === 200) {
+                this.$message.success(res.message || '修改成功')
                 this.dialogFormVisible = false
                 this.searchTeacher()
               } else {
-                this.$message.error("修改失败")
+                const errorMsg = res?.message || 
+                    res?.data?.message || 
+                    '修改失败，请稍后重试'
+                this.$message.error(res.msg)
+                handleAdd()
               }
             })
           } else {

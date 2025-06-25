@@ -173,7 +173,7 @@ public class teacherFiveupController {
 
 
    //修改教师信息
-    @PostMapping("updateTeacher")
+    @PostMapping("/updateTeacher")
     public Result updateTeacherInfo(@RequestBody teacher teacherInfoParam) {
         Result result = teacherService.updateTeacherInfo(teacherInfoParam);
         return result;
