@@ -342,7 +342,7 @@ export default {
       this.inputStatus = true
     },
     getGradeAndPosition() {
-      axios.get(baseUrl + '/api/teacherQuery/getFormObject').then(res => {
+      axios.get('http://us.uwis.cn:9080/api/teacherQuery/getFormObject').then(res => {
         if (res.data.code === 200) {
           // this.gradeList = res.data.data.gradeList;
           console.log(res.data.data.gradeList)
@@ -402,7 +402,7 @@ export default {
           // 根据是否有id判断是新增还是编辑
           if (this.form.id) {
             // 编辑操作，调用updateTeacherInfo接口
-            request.post(baseUrl + "/teacher/updateTeacher", this.form).then(res => {
+            request.post("/teacher/updateTeacher", this.form).then(res => {
               if (res && res.code === 200) {
                 this.$message.success(res.message || '修改成功')
                 this.dialogFormVisible = false
@@ -494,7 +494,7 @@ export default {
     downloadTemplate() {
       try {
         // 使用正确的端口号
-        const downloadUrl = `${baseUrl}/teacher/downloadTemplate`;
+        const downloadUrl = `http://us.uwis.cn:9080/teacher/downloadTemplate`;
 
         // 创建一个临时的 a 标签用于下载
         const link = document.createElement('a');
@@ -570,7 +570,7 @@ export default {
         return;
       }
       const fields = this.selectedFields.join(',');
-      window.open(`http://localhost:9085/teacher/exportExcel?schoolId=${userInfo.schoolId}&fields=${fields}`);
+      window.open(`http://us.uwis.cn:9080/teacher/exportExcel?schoolId=${userInfo.schoolId}&fields=${fields}`);
       this.exportDialogVisible = false;
     },
     handleCheckAll(val) {
