@@ -21,7 +21,13 @@ public interface StudentFuScoreService {
 
     List<StudentFuScore> getScoreByInfo(String info);
 
-    StudentSemesterScore getStudentSemesterScores(int studentId, String studentName, String semester);
+    StudentSemesterScore getStudentSemesterScores(Integer studentId, String studentName, String semester);
 
-    List<StuSemesterTotalScore> getStuSemester(int studentId, String studentName);
+    List<StuSemesterTotalScore> getStuSemester(Integer studentId, String studentName);
+
+    List<StudentInfo> searchStudents(String keyword);
+
+    List<StudentSemesterDto> getStudentSemesters(Integer studentId);
+
+    ClassAndGradeScoreResponse getClassAndGradeAvgScores(Integer studentId, String semesterName , int gradeLevel);
 }

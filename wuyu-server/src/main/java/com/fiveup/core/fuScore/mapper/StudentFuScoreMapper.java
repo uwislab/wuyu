@@ -1,9 +1,11 @@
 package com.fiveup.core.fuScore.mapper;
 
 import com.fiveup.core.fuScore.model.*;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -45,12 +47,21 @@ public interface StudentFuScoreMapper {
             "FROM fu_student_score f Left Join basic_student  b On f.student_num = b.student_num WHERE f.class_id = #{classId};")
     List<StudentFuScore> getStudentFuScoreByClassId(int classId);
 
-    @Select("SELECT student_num, morality_score, intelligence_score, physical_score, aesthetic_score, labour_score " +
-            "FROM fu_student_score " +
-            "WHERE student_num = #{studentId} and student_name= #{studentName} and evaluate_date=#{semester}")
-    StudentSemesterScore getStudentSemesterScores(int studentId, String studentName, String semester);
+    StudentSemesterScore getStudentSemesterScores(@Param("studentId") int studentId,
+                                                  @Param("studentName") String studentName,
+                                                  @Param("semester") String semester);
 
-    @Select("select evaluate_date as 'semester', morality_score + intelligence_score + physical_score + aesthetic_score + labour_score as 'totalScore' " +
-            "FROM fu_student_score WHERE student_num = #{studentId} and student_name= #{studentName}")
-    List<StuSemesterTotalScore> getStudentSemesterTotalScores(int studentId, String studentName);
+    List<StuSemesterTotalScore> getStudentSemesterTotalScores(@Param("studentId") int studentId,
+                                                              @Param("studentName") String studentName);
+
+    List<StudentInfo> getAllStudents();
+
+    List<StudentInfo> searchStudents(@Param("keyword") String keyword);
+
+    List<StudentSemesterDto> selectStudentSemesters(@Param("studentId") Integer studentId);
+
+    ClassAndGradeScoreResponse getClassAndGradeScores(
+            @Param("studentId") Integer studentId,
+            @Param("semesterCode") String semesterCode,
+            @Param("gradeLevel") int gradeLevel);
 }

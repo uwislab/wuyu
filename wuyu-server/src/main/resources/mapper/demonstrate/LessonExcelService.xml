@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fiveup.core.demonstrate.mapper.MyDataMapper">
+
+    <select id="test" resultType="map">
+        select * from demonstrate_basic_class where id=1
+    </select>
+
+    <insert id="addStudent" useGeneratedKeys="true" keyProperty="id" parameterType="com.fiveup.core.demonstrate.entity.Student">
+        insert into demonstrate_basic_student
+            (
+             student_num,
+             student_name,
+             class_id
+            )
+            values
+            (
+             #{studentNum},
+             #{studentName},
+             #{classId}
+            )
+    </insert>
+
+
+
+
+    <select id="barTj3" resultType="map" >
+        SELECT
+        FORMAT(SUM(s.deyu) / count(1), 0) deyu,
+        FORMAT(SUM(s.zhiyu) / count(1), 0) zhiyu,
+        FORMAT(SUM(s.tiyu) / count(1), 0) tiyu,
+        FORMAT(SUM(s.meiyu) / count(1), 0) meiyu,
+        FORMAT(SUM(s.laoyu) / count(1), 0) laoyu
+        FROM
+        demonstrate_st_score s
+        INNER JOIN demonstrate_basic_student stu ON stu.student_name = s.`name`
+        INNER JOIN demonstrate_basic_class c ON c.id = stu.class_id
+        order by c.id asc
+    </select>
+
+    <select id="barTj2" resultType="map" parameterType="java.util.List">
+        SELECT
+        c.grade,
+        stu.gender,
+        FORMAT(SUM(s.deyu) / count(1), 0) deyu,
+        FORMAT(SUM(s.zhiyu) / count(1), 0) zhiyu,
+        FORMAT(SUM(s.tiyu) / count(1), 0) tiyu,
+        FORMAT(SUM(s.meiyu) / count(1), 0) meiyu,
+        FORMAT(SUM(s.laoyu) / count(1), 0) laoyu
+        FROM
+        demonstrate_st_score s
+        INNER JOIN demonstrate_basic_student stu ON stu.student_name = s.`name`
+        INNER JOIN demonstrate_basic_class c ON c.id = stu.class_id
+        <where>
+            <if test="gradeList!=null and gradeList.size()>0">
+                and c.grade in
+                <foreach item="item" collection="gradeList" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY
+        c.grade,stu.gender
+        order by c.id asc
+    </select>
+
+
+    <select id="lineTj" resultType="map">
+        SELECT
+            c.grade,
+            c.class_name,
+            s.riqi,
+            FORMAT(SUM((s.deyu)+s.zhiyu+s.tiyu+s.meiyu+s.laoyu) / count(1)/5, 0) count
+        FROM
+            demonstrate_st_score s
+            INNER JOIN demonstrate_basic_student stu ON stu.student_name = s.`name`
+            INNER JOIN demonstrate_basic_class c ON c.id = stu.class_id
+        GROUP BY
+            c.grade,
+            c.class_name,
+            s.riqi
+        ORDER BY
+            c.class_name,riqi asc
+    </select>
+
+    <select id="lineTj2" resultType="map">
+        SELECT
+            c.grade,
+            s.riqi,
+            FORMAT(SUM(s.deyu) / count(1), 0) deyu,
+            FORMAT(SUM(s.zhiyu) / count(1), 0) zhiyu,
+            FORMAT(SUM(s.tiyu) / count(1), 0) tiyu,
+            FORMAT(SUM(s.meiyu) / count(1), 0) meiyu,
+            FORMAT(SUM(s.laoyu) / count(1), 0) laoyu
+        FROM
+            demonstrate_st_score s
+                INNER JOIN demonstrate_basic_student stu ON stu.student_name = s.`name`
+                INNER JOIN demonstrate_basic_class c ON c.id = stu.class_id
+        GROUP BY
+            c.grade,s.riqi
+        ORDER BY
+            c.id,s.riqi asc
+    </select>
+
+    <select id="getWanchengdu" resultType="map">
+        <![CDATA[
+        SELECT
+            c.grade,
+            s.riqi,
+            sum(
+                    IF (
+                            s.deyu < 60 || s.zhiyu < 60 || s.tiyu < 60 || s.meiyu < 60 || s.laoyu < 60,
+                            1,
+                            0
+                        )
+                ) fail,
+            sum(
+                    IF (
+                            s.deyu >= 60 && s.zhiyu >= 60 && s.tiyu >= 60 && s.meiyu >= 60 && s.laoyu >= 60,
+                            1,
+                            0
+                        )
+                ) success
+        FROM
+            demonstrate_st_score s
+                INNER JOIN demonstrate_basic_student stu ON stu.student_name = s.`name`
+                INNER JOIN demonstrate_basic_class c ON c.id = stu.class_id
+        WHERE
+            s.riqi = YEAR(NOW())
+        GROUP BY
+            c.grade,
+            s.riqi
+        ORDER BY
+            riqi ASC
+      ]]>
+    </select>
+
+
+    <select id="getTj" resultType="map">
+        SELECT
+            count(1) count,
+	FORMAT(
+		SUM(
+			(s.deyu) + s.zhiyu + s.tiyu + s.meiyu + s.laoyu
+		) / count(1) / 5,
+		0
+	) ava
+        FROM
+            demonstrate_st_score s
+            INNER JOIN demonstrate_basic_student stu ON stu.student_name = s.`name`
+        where s.riqi=YEAR(NOW())
+    </select>
+
+    <select id="tj" resultType="map" parameterType="map">
+        SELECT
+            c.grade,
+            c.class_name,
+            s.riqi,
+            FORMAT(SUM(${type}) / count(1), 0) count
+        FROM
+            demonstrate_st_score s
+            INNER JOIN demonstrate_basic_student stu ON stu.student_name = s.`name`
+            INNER JOIN demonstrate_basic_class c ON c.id = stu.class_id
+        WHERE
+            c.grade != '一年级'
+        GROUP BY
+            c.grade,
+            c.class_name,
+            s.riqi
+        ORDER BY
+            c.id ,c.class_name,riqi asc
+    </select>
+
+    <select id="tj2" resultType="map" parameterType="map">
+        SELECT
+            c.grade,
+            s.riqi,
+            FORMAT(SUM(${type}) / count(1), 0) count
+        FROM
+            demonstrate_st_score s
+            INNER JOIN demonstrate_basic_student stu ON stu.student_name = s.`name`
+            INNER JOIN demonstrate_basic_class c ON c.id = stu.class_id
+        WHERE
+            c.grade != '一年级'
+        GROUP BY
+            c.grade,
+            s.riqi
+        ORDER BY
+            c.id ,riqi asc
+    </select>
+
+
+    <select id="Qxwycj" resultType="map" parameterType="java.util.List">
+    SELECT
+    c.grade,
+    FORMAT(SUM(s.deyu) / count(1), 0) deyu,
+    FORMAT(SUM(s.zhiyu) / count(1), 0) zhiyu,
+    FORMAT(SUM(s.tiyu) / count(1), 0) tiyu,
+    FORMAT(SUM(s.meiyu) / count(1), 0) meiyu,
+    FORMAT(SUM(s.laoyu) / count(1), 0) laoyu
+    FROM
+    demonstrate_st_score s
+    INNER JOIN demonstrate_basic_student stu ON stu.student_name = s.`name`
+    INNER JOIN demonstrate_basic_class c ON c.id = stu.class_id
+    <if test="gradeList!=null and gradeList.size()>0">
+        <where>
+            c.grade in
+            <foreach item="item" collection="gradeList" separator="," open="(" close=")" index="">
+                #{item}
+            </foreach>
+        </where>
+    </if>
+    GROUP BY
+    c.grade
+    order by c.grade
+    </select>
+
+
+    <select id="getNjcz" resultType="map">
+        SELECT
+            c.grade,
+            c.class_name,
+            s.riqi,
+            FORMAT(SUM(s.deyu) / count(1), 2) deyu,
+            FORMAT(SUM(s.zhiyu) / count(1), 2) zhiyu,
+            FORMAT(SUM(s.tiyu) / count(1), 2) tiyu,
+            FORMAT(SUM(s.meiyu) / count(1), 2) meiyu,
+            FORMAT(SUM(s.laoyu) / count(1), 2) laoyu,
+            FORMAT(AVG((s.deyu+s.zhiyu+s.tiyu+s.meiyu+s.laoyu)/5),2) as avgScore
+        FROM
+            demonstrate_st_score s
+            INNER JOIN demonstrate_basic_student stu ON stu.student_name = s.`name`
+            INNER JOIN demonstrate_basic_class c ON c.id = stu.class_id
+        WHERE
+            c.grade != '一年级'
+        GROUP BY
+            c.id,s.riqi
+        ORDER BY
+            c.id,s.riqi asc
+    </select>
+
+
+    <select id="getNjqk" resultType="map" parameterType="map">
+        SELECT
+          c.grade,c.class_name,
+          FORMAT(AVG(s.deyu),2) as deyu,
+          FORMAT(AVG(s.zhiyu),2) as zhiyu,
+          FORMAT(AVG(s.tiyu),2) as tiyu,
+          FORMAT(AVG(s.meiyu),2) as meiyu,
+          FORMAT(AVG(s.laoyu),2) as laoyu,
+          FORMAT(AVG((s.deyu+s.zhiyu+s.tiyu+s.meiyu+s.laoyu)/5),2)	 AS avg_score
+        FROM
+        demonstrate_st_score s
+        INNER JOIN demonstrate_basic_student stu ON stu.student_name = s.`name`
+        INNER JOIN demonstrate_basic_class c ON c.id = stu.class_id
+        WHERE s.riqi=YEAR(NOW())
+        GROUP BY c.id
+    </select>
+
+
+    <select id="getXYStuByAll" resultType="map" parameterType="map">
+        SELECT
+            name,
+            FORMAT((deyu + zhiyu + tiyu + meiyu + laoyu)/5,2) as avg_score
+        FROM
+            demonstrate_st_score
+        WHERE riqi=YEAR(NOW())
+        ORDER BY avg_score DESC
+        LIMIT 10
+    </select>
+
+
+    <select id="getXYStuByOne" resultType="map" parameterType="map">
+        SELECT
+            name,
+            ${one} as score
+        FROM
+            demonstrate_st_score
+        WHERE riqi=YEAR(NOW())
+        ORDER BY score DESC
+        LIMIT 10
+    </select>
+
+
+    <select id="getXYClaByAll" resultType="map" parameterType="map">
+        SELECT
+          c.grade,c.class_name,
+          FORMAT(AVG(s.deyu),2) as deyu,
+          FORMAT(AVG(s.zhiyu),2) as zhiyu,
+          FORMAT(AVG(s.tiyu),2) as tiyu,
+          FORMAT(AVG(s.meiyu),2) as meiyu,
+          FORMAT(AVG(s.laoyu),2) as laoyu,
+          FORMAT(AVG((s.deyu+s.zhiyu+s.tiyu+s.meiyu+s.laoyu)/5),2)	 AS avg_score
+        FROM
+        demonstrate_st_score s
+        INNER JOIN demonstrate_basic_student stu ON stu.student_name = s.`name`
+        INNER JOIN demonstrate_basic_class c ON c.id = stu.class_id
+        WHERE s.riqi=YEAR(NOW())
+        GROUP BY c.id
+        ORDER BY avg_score DESC
+        LIMIT 3
+    </select>
+
+
+    <select id="getSubLineTj" resultType="map">
+        SELECT
+            c.grade,
+            s.riqi,
+            FORMAT(SUM(s.deyu) / count(1), 0) deyu,
+            FORMAT(SUM(s.zhiyu) / count(1), 0) zhiyu,
+            FORMAT(SUM(s.tiyu) / count(1), 0) tiyu,
+            FORMAT(SUM(s.meiyu) / count(1), 0) meiyu,
+            FORMAT(SUM(s.laoyu) / count(1), 0) laoyu
+        FROM
+            demonstrate_st_score s
+                INNER JOIN demonstrate_basic_student stu ON stu.student_name = s.`name`
+                INNER JOIN demonstrate_basic_class c ON c.id = stu.class_id
+        WHERE
+            c.grade != '一年级' AND c.grade != '二年级'
+        GROUP BY
+            c.grade,s.riqi
+        ORDER BY
+            c.id,s.riqi asc
+    </select>
+
+
+    <select id="getTable" resultType="map" parameterType="map">
+        SELECT
+        s.name,
+        s.deyu,
+        s.zhiyu,
+        s.tiyu,
+        s.meiyu,
+        s.laoyu,
+        FORMAT((s.deyu + s.zhiyu + s.tiyu + s.meiyu + s.laoyu)/5,2) as avgScore,
+        s.riqi,
+        c.grade,
+        c.class_name,
+        CONCAT(c.grade,c.class_name) as className
+        FROM
+        demonstrate_st_score s
+        INNER JOIN demonstrate_basic_student stu ON stu.student_name = s.`name`
+        INNER JOIN demonstrate_basic_class c ON c.id = stu.class_id
+        WHERE
+        <if test='range=="class"'>
+            CONCAT(c.grade,c.class_name)= '${queryParm}'
+        </if>
+        <if test='range=="grade"'>
+            c.grade = '${queryParm}'
+        </if>
+    </select>
+
+</mapper>
