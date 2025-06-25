@@ -95,6 +95,13 @@ const componentsRouter = {
       component: () => import('@/views/components-demo/drag-kanban'),
       name: 'DragKanbanDemo',
       meta: { title: 'Drag Kanban' }
+    },
+
+    {
+      path: '/student/wuyu-scores',
+      name: 'WuyuScores',
+      component: () => import('@/views/student/WuyuScores.vue'),
+      meta: { title: '学生五育成绩', icon: 'el-icon-s-marketing' }
     }
   ]
 }
