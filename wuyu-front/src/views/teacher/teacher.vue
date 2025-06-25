@@ -469,16 +469,7 @@ export default {
     //   this.pageNum=pageNum
     //   this.load()
     // },
-    exportExcel() {
-      // 从 localStorage 获取 UserInfo
-      const userInfo = JSON.parse(localStorage.getItem('UserInfo'));
-      if (!userInfo || !userInfo.schoolId) {
-        this.$message.error('未获取到学校ID，请重新登录');
-        return;
-      }
-      // 将 schoolId 作为参数传递给导出接口
-      window.open(`http://localhost:9085/teacher/exportExcel?schoolId=${userInfo.schoolId}`);
-    },
+
     // importExcel(){
     //     this.$message.success("导入成功");
     //     this.load();
@@ -572,6 +563,209 @@ export default {
         this.selectedFields = [];
       }
     },
+    
+//     exportExcel() {
+//       // 从 localStorage 获取 UserInfo
+//       const userInfo = JSON.parse(localStorage.getItem('UserInfo'));
+//       if (!userInfo || !userInfo.schoolId) {
+//         this.$message.error('未获取到学校ID，请重新登录');
+//         return;
+//       }
+//       // 将 schoolId 作为参数传递给导出接口
+//       window.open(`http://localhost:9085/teacher/exportExcel?schoolId=${userInfo.schoolId}`);
+//     }, 
+//     public class ExcelUtils {
+//     /**
+//      * 每个sheet的容量，即超过时就会把数据分sheet
+//      */
+//     private static final int PAGE_SIZE = 10000;
+ 
+//     /**
+//      * 接收一个excel文件，并且进行解析
+//      * 注意一旦传入自定义监听器，则返回的list为空，数据需要在自定义监听器里面获取
+//      *
+//      * @param multipartFile excel文件
+//      * @param clazz         数据类型的class对象
+//      * @param readListener  监听器
+//      * @param <T> 泛型
+//      * @return 解析的Excel文件数据集合
+//      */
+//     public static <T> List<T> resolveExcel(MultipartFile multipartFile, Class<T> clazz, ReadListener<T> readListener) {
+//         try (InputStream inputStream = multipartFile.getInputStream()) {
+//             return read(inputStream, clazz, readListener);
+//         } catch (IOException e) {
+//             log.error("解析文件失败..");
+//             e.printStackTrace();
+//         }
+//         return null;
+//     }
+ 
+//     /**
+//      * 读文件
+//      *
+//      * @param in 输入流
+//      * @param clazz 反射类型
+//      * @param readListener 监听器
+//      * @param <T> 泛型
+//      * @return 解析的Excel文件数据集合
+//      */
+//     private static <T> List<T> read(InputStream in, Class<T> clazz, ReadListener<T> readListener) {
+//         List<T> list = new ArrayList<>();
+//         Optional<ReadListener<T>> optional = Optional.ofNullable(readListener);
+//         EasyExcel.read(in, clazz, optional.orElse(new AnalysisEventListener<T>() {
+//             @Override
+//             public void invoke(T data, AnalysisContext context) {
+//                 list.add(data);
+//             }
+//             @Override
+//             public void doAfterAllAnalysed(AnalysisContext context) {
+//                 log.warn("Parsing is complete");
+//             }
+//         }))
+//                 .sheet().doRead();
+//         return list;
+//     }
+ 
+//     /**
+//      * 下载Excel  流 (推荐使用)
+//      *
+//      * @param response 响应体
+//      * @param list 数据
+//      * @param clazz JavaBean反射对象
+//      * @param fileName 文件名 fileName = fileName + "_" + DateTimeUtils.getCurrentDateTime() + ".xlsx";
+//      * @param <T> 泛型
+//      */
+//     @SuppressWarnings("rawtypes")
+//     public static <T> void downLoad(HttpServletResponse response, List<T> list, Class<T> clazz, String fileName) {
+//         try {
+//             //设置响应的类型
+//             setResponse(response, java.net.URLEncoder.encode(fileName, "UTF-8"));
+//         } catch (UnsupportedEncodingException e) {
+//             e.printStackTrace();
+//         }
+// //        setResponse(response, fileName);
+//         // 头的策略
+//         WriteCellStyle headWriteCellStyle = new WriteCellStyle();
+//         // 背景设置为灰
+//         headWriteCellStyle.setFillForegroundColor(IndexedColors.GREY_40_PERCENT.getIndex());
+//         // 内容的策略
+//         WriteCellStyle contentWriteCellStyle = new WriteCellStyle();
+//         // 默认表头
+//         HorizontalCellStyleStrategy horizontalCellStyleStrategy = new HorizontalCellStyleStrategy(headWriteCellStyle, contentWriteCellStyle);
+//         // 自适应列宽表头
+//         ExcelWidthStyleStrategy excelWidthStyleStrategy = new ExcelWidthStyleStrategy();
+//         try (OutputStream outputStream = response.getOutputStream()) {
+// //            EasyExcelFactory.write(outputStream, clazz).registerWriteHandler(horizontalCellStyleStrategy).sheet("sheet1").doWrite(list);
+//             EasyExcelFactory.write(outputStream, clazz).registerWriteHandler(excelWidthStyleStrategy).sheet("sheet1").doWrite(list);
+//         } catch (Exception e) {
+//             e.printStackTrace();
+//         }
+//     }
+ 
+//     /**
+//      * 下载Excel  地址 (推荐使用)
+//      *
+//      * @param response 响应体
+//      * @param list 数据
+//      * @param clazz JavaBean反射对象
+//      * @param fileName 文件名 fileName = fileName + "_" + DateTimeUtils.getCurrentDateTime() + ".xlsx";
+//      * @param <T> 泛型
+//      */
+//     @SuppressWarnings("rawtypes")
+//     public static <T> InputStream downLoadStr(HttpServletResponse response, List<T> list, Class<T> clazz, String fileName) {
+//         // 单个sheet的容量
+//         List<? extends List<?>> lists = splitList(list, PAGE_SIZE);
+//         ByteArrayOutputStream os = new ByteArrayOutputStream();
+ 
+//         try {
+//             //设置响应的类型
+//             setResponse(response, URLEncoder.encode(fileName, "UTF-8"));
+//         } catch (UnsupportedEncodingException e) {
+//             e.printStackTrace();
+//         }
+// //        setResponse(response, fileName);
+//         // 头的策略
+//         WriteCellStyle headWriteCellStyle = new WriteCellStyle();
+//         // 背景设置为灰
+//         headWriteCellStyle.setFillForegroundColor(IndexedColors.GREY_40_PERCENT.getIndex());
+//         // 内容的策略
+//         WriteCellStyle contentWriteCellStyle = new WriteCellStyle();
+//         // 默认表头
+//         HorizontalCellStyleStrategy horizontalCellStyleStrategy = new HorizontalCellStyleStrategy(headWriteCellStyle, contentWriteCellStyle);
+//         // 自适应列宽表头
+//         ExcelWidthStyleStrategy excelWidthStyleStrategy = new ExcelWidthStyleStrategy();
+//         try (OutputStream outputStream = response.getOutputStream()) {
+// //            EasyExcelFactory.write(outputStream, clazz).registerWriteHandler(horizontalCellStyleStrategy).sheet("sheet1").doWrite(list);
+//             EasyExcelFactory.write(outputStream, clazz).registerWriteHandler(excelWidthStyleStrategy).sheet("sheet1").doWrite(list);
+// //            ExcelWriter excelWriter = EasyExcel.write(os, clazz).registerWriteHandler(excelWidthStyleStrategy).build();
+// //            浏览器访问url直接下载文件的方式
+// //            ExcelWriter excelWriter = EasyExcel.write(response.getOutputStream(), clazz).registerWriteHandler(com.example.utils.easyexcel.EasyExcel.formatExcel()).registerWriteHandler(new com.example.utils.easyexcel.EasyExcel.ExcelWidthStyleStrategy()).build();
+//             ExcelWriter excelWriter = EasyExcelFactory.write(os, clazz).registerWriteHandler(excelWidthStyleStrategy).build();
+//             ExcelWriterSheetBuilder excelWriterSheetBuilder;
+//             WriteSheet writeSheet;
+//             for (int i = 1; i <= lists.size(); ++i) {
+//                 excelWriterSheetBuilder = new ExcelWriterSheetBuilder(excelWriter);
+//                 excelWriterSheetBuilder.sheetNo(i).sheetName("sheet" + i);
+//                 writeSheet = excelWriterSheetBuilder.build();
+//                 excelWriter.write(lists.get(i - 1), writeSheet);
+//             }
+//             // 必须要finish才会写入，不finish只会创建empty的文件
+//             excelWriter.finish();
+ 
+//             byte[] content = os.toByteArray();
+//             // 返回流文件
+//             return new ByteArrayInputStream(content);
+//         } catch (Exception e) {
+//             e.printStackTrace();
+//         }
+//         return null;
+//     }
+ 
+//     /**
+//      * 切割查询的数据
+//      * @param list 需要切割的数据
+//      * @param len 按照什么长度切割
+//      * @param <T> 泛型
+//      * @return 数据
+//      */
+//     public static <T> List<List<T>> splitList(List<T> list, int len) {
+//         if (list == null || list.size() == 0 || len < 1) {
+//             return null;
+//         }
+//         List<List<T>> result = new ArrayList<List<T>>();
+//         int size = list.size();
+//         int count = (size + len - 1) / len;
+//         for (int i = 0; i < count; i++) {
+//             List<T> subList = list.subList(i * len, (Math.min((i + 1) * len, size)));
+//             result.add(subList);
+//         }
+//         return result;
+//     }
+ 
+//     /**
+//      * 获取最终的文件名
+//      *
+//      * @param fileName 文件初始名
+//      * @return 最终的文件名
+//      */
+//     public static String getFileName(String fileName) {
+//         return fileName + "_" + DateTimeUtils.getCurrentDateTime() + ".xlsx";
+//     }
+ 
+//     /**
+//      * 设置响应体参数
+//      *
+//      * @param response 响应对象
+//      * @param fileName 文件名
+//      */
+//     public static void setResponse(HttpServletResponse response, String fileName) {
+//         response.reset();
+//         response.addHeader("content-type", "application/vnd.ms-excel;charset=UTF-8");
+//         response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
+//         response.addHeader("Cache-Control", "no-cache");
+//     }
+// }
+
   }
 
 }
