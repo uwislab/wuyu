@@ -57,6 +57,7 @@ public class CourseScoreController {
 
     /**
      * 获取学生列表（studentName, studentNum）
+     * 修复被删除的提交
      */
     @GetMapping("/student/list")
     public Result getStudentList() {
