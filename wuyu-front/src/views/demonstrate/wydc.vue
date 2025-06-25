@@ -76,7 +76,7 @@ export default {
         { value: '5', label: '五年级' },
         { value: '6', label: '六年级' }
       ],
-      
+ 
       // 班级图表相关数据
       classChart: null,
       classData: {},

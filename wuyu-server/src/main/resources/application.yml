@@ -1,11 +1,10 @@
 server:
-  port: 9084 # master分支端口，合并到master注意别改这个
+  port: 9080 # master分支端口，合并到master注意别改这
 spring:
   application:
     name: fiveup-core
   jackson:
     default-property-inclusion: non_null # springboot默认解析对象为json对象时属性值为null时不予显示此属性
-
   datasource:
     url: jdbc:mysql://49.51.69.99:3306/fiveup?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
     username: Wuyu_Developer
@@ -22,6 +21,12 @@ spring:
     multipart:
       max-file-size: 128MB #上传文件总大值
       max-request-size: 10MB  #单个文件的最大值
+      # application.yml示例
+
+#management:
+#  health:
+#    redis:
+#      enabled: false  # 禁用Redis健康检查
 
 
 mybatis-plus:
@@ -34,3 +39,10 @@ mybatis-plus:
     auto-mapping-behavior: partial
     map-underscore-to-camel-case: true # 开启驼峰原则，将数据库带下划线的字段自动转为驼峰原则的命名
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #mybatis-plus配置控制台打印完整带参数SQL语句
+
+
+
+
+schedule:
+  auto-copy:
+    enabled: true  # 定时任务默认开启

@@ -100,5 +100,4 @@ public interface CourseScoreService {
      */
     List<CourseScore> getByStudent(String studentNum);
 
-
 }

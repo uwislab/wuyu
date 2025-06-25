@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import { getStudentScore, getSemesterScore, getSearchStudent, getStudentSemesters } from '@/api/studentScore';
+import { getStudentScore, getSemesterScore, getSearchStudent, getStudentSemesters, getClassAndGradeScores } from '@/api/studentScore';
 import * as echarts from 'echarts';
 
 export default {
@@ -32,7 +32,9 @@ export default {
       studentKeyword: '',
       selectedStudent: null,
       semesterOptions: [],
-      selectedSemester: ''
+      selectedSemester: '',
+      debounceTimer: null,
+      semesterData: [] // 用于保存所有学期成绩数据
     };
   },
   mounted() {
@@ -42,7 +44,7 @@ export default {
   },
   watch: {
     selectedSemester(newVal) {
-      if (newVal && this.selectedStudent) {
+      if (newVal && this.selectedStudent && this.semesterData.length > 0) {
         this.updateRadarChart();
       }
     },
@@ -54,20 +56,28 @@ export default {
     }
   },
   methods: {
+    debounce(fn, delay = 300) {
+      clearTimeout(this._debounceTimer);
+      this._debounceTimer = setTimeout(() => {
+        fn();
+      }, delay);
+    },
     async querySearchAsync(queryString, cb) {
       if (!queryString.trim()) {
         cb([]);
         return;
       }
-      try {
-        const res = await getSearchStudent(queryString);
-        cb(res);
-      } catch (error) {
-        console.error('搜索学生失败', error);
-        cb([]);
-      }
-    },
 
+      this.debounce(async () => {
+        try {
+          const res = await getSearchStudent(queryString);
+          cb(res);
+        } catch (error) {
+          console.error('搜索学生失败', error);
+          cb([]);
+        }
+      }, 300); // 延迟时间可配置
+    },
     async handleStudentSelect(student) {
       this.selectedStudent = student;
       this.studentKeyword = `${student.studentName} (${student.studentId})`;
@@ -75,11 +85,22 @@ export default {
       try {
         const res = await getStudentSemesters(student.studentId);
         this.semesterOptions = res.map(item => item.semester);
-        this.selectedSemester = this.semesterOptions.length > 0 ? this.semesterOptions[0] : '';
+
+        if (this.semesterOptions.length > 0) {
+          this.selectedSemester = this.semesterOptions[0];
+          // 👇 学生一选中就更新雷达图
+          await this.updateLineChart(); // 先获取 semesterData
+          // console.log('semesterData:', this.semesterData);
+          this.updateRadarChart();     // 然后更新雷达图
+        } else {
+          this.selectedSemester = '';
+          this.showEmptyChart(this.$refs.radarChart, "暂无学期数据");
+        }
       } catch (error) {
         console.error('加载学期失败', error);
         this.semesterOptions = [];
         this.selectedSemester = '';
+        this.showEmptyChart(this.$refs.radarChart, "加载学期失败");
       }
     },
 
@@ -146,45 +167,109 @@ export default {
       };
       lineChart.setOption(option);
     },
-
     async updateRadarChart() {
-      const studentId = this.selectedStudent.studentId;
-      const studentName = this.selectedStudent.studentName;
+      if (this.chartDestroyed) {
+        console.warn('组件已销毁，跳过雷达图更新');
+        return;
+      }
+
       const semester = this.selectedSemester;
 
+      const selectedData = this.semesterData.find(item => item.semester === semester);
+      if (!selectedData) {
+        this.showEmptyChart(this.$refs.radarChart, "暂无数据");
+        return;
+      }
+
+      const studentId = this.selectedStudent.studentId;
       try {
-        const res = await getStudentScore(studentId, studentName, semester);
+        const classAndGradeData = await getClassAndGradeScores(studentId, semester);
+        // console.log('班级和年级平均分数据:', classAndGradeData);
 
         const radarChart = echarts.getInstanceByDom(this.$refs.radarChart);
+        if (!radarChart) {
+          console.error('雷达图实例不存在');
+          return;
+        }
+
         const option = {
+          legend: {
+            show: true,
+            data: ['学生', '班级平均', '年级平均'],
+            bottom: 10
+          },
           title: {
-            text: `五育成绩 - ${semester}`
+            text: `五育成绩 - ${semester}`,
+            x: 'center'
+          },
+          tooltip: {
+          },
+          radar: {
+            indicator: [
+              { name: '德', max: 100 },
+              { name: '智', max: 100 },
+              { name: '体', max: 100 },
+              { name: '美', max: 100 },
+              { name: '劳', max: 100 }
+            ],
+            splitArea: {
+              show: true,
+              areaStyle: {
+                color: ['rgba(255,255,255,0.3)', 'rgba(0,0,0,0.1)']
+              }
+            },
+            axisLine: {
+              lineStyle: {
+                color: '#ccc'
+                // color: '#707070'
+              }
+            }
           },
           series: [{
+            name: '五育成绩对比',
+            type: 'radar',
             data: [
               {
                 value: [
-                  res.moralityScore,
-                  res.intelligenceScore,
-                  res.physicalScore,
-                  res.aestheticScore,
-                  res.labourScore
+                  selectedData.deyu || 0,
+                  selectedData.zhiyu || 0,
+                  selectedData.tiyu || 0,
+                  selectedData.meiyu || 0,
+                  selectedData.laoyu || 0
                 ],
-                name: '成绩',
-                areaStyle: {
-                  color: 'rgba(255, 0, 0, 0.3)' // 可以调整颜色和透明度
-                }
+                name: '学生',
+                areaStyle: { color: 'rgba(255, 0, 0, 0.3)' }
+              },
+              {
+                value: [
+                  classAndGradeData.classDeYu || 0,
+                  classAndGradeData.classZhiYu || 0,
+                  classAndGradeData.classTiYu || 0,
+                  classAndGradeData.classMeiYu || 0,
+                  classAndGradeData.classLaoYu || 0
+                ],
+                name: '班级平均',
+                areaStyle: { color: 'rgba(30, 144, 255, 0.2)' }
+              },
+              {
+                value: [
+                  classAndGradeData.gradeDeYu || 0,
+                  classAndGradeData.gradeZhiYu || 0,
+                  classAndGradeData.gradeTiYu || 0,
+                  classAndGradeData.gradeMeiYu || 0,
+                  classAndGradeData.gradeLaoYu || 0
+                ],
+                name: '年级平均',
+                areaStyle: { color: 'rgba(50, 205, 50, 0.2)' }
               }
             ]
           }]
         };
-        radarChart.setOption(option);
+        radarChart.setOption(option, true);
       } catch (error) {
-        console.error('加载雷达图数据失败', error);
-        this.showEmptyChart(this.$refs.radarChart, "暂无数据");
+        console.error('加载班级/年级数据失败', error);
       }
     },
-
     async updateLineChart() {
       const studentId = this.selectedStudent.studentId;
       const studentName = this.selectedStudent.studentName;
@@ -192,17 +277,61 @@ export default {
       try {
         const res = await getSemesterScore(studentId, studentName);
 
+        // 保存到 data 中供雷达图使用
+        this.semesterData = res;
+
+        const semesterNames = res.map(item => item.semester);
+
+        const dataset = {
+          source: [
+            ['学期', '德育', '智育', '体育', '美育', '劳育', '总成绩'],
+            ...res.map(item => [
+              item.semester,
+              item.deyu,
+              item.zhiyu,
+              item.tiyu,
+              item.meiyu,
+              item.laoyu,
+              item.totalScore
+            ])
+          ]
+        };
+
         const lineChart = echarts.getInstanceByDom(this.$refs.lineChart);
         const option = {
-          xAxis: {
-            data: res.map(item => item.semester)
+          title: {
+            text: '每学期五育成绩变化',
+            left: 'center'
           },
-          series: [{
-            data: res.map(item => item.totalScore),
-            smooth: true,
-          }]
+          tooltip: {
+            trigger: 'axis'
+          },
+          legend: {
+            data: ['德育', '智育', '体育', '美育', '劳育', '总成绩'],
+            top: '5%', // 调整图例顶部距离
+            // right: '10%' // 将图例移到右侧
+          },
+          xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: semesterNames
+          },
+          yAxis: {
+            type: 'value'
+          },
+          dataset,
+          color: ['#facc14', '#3f51b5', '#ff5252', '#4caf50', '#9c27b0', '#e64a19'],
+          series: [
+            { name: '德育', type: 'line', smooth: true, symbol: 'circle', symbolSize: 6 },
+            { name: '智育', type: 'line', smooth: true, symbol: 'circle', symbolSize: 6 },
+            { name: '体育', type: 'line', smooth: true, symbol: 'circle', symbolSize: 6 },
+            { name: '美育', type: 'line', smooth: true, symbol: 'circle', symbolSize: 6 },
+            { name: '劳育', type: 'line', smooth: true, symbol: 'circle', symbolSize: 6 },
+            { name: '总成绩', type: 'line', smooth: true, symbol: 'circle', symbolSize: 8, lineStyle: { width: 2.5 } }
+          ],
+          graphic: null
         };
-        lineChart.setOption(option);
+        lineChart.setOption(option, true); // 第二个参数 true 表示合并配置，避免清空原有内容
       } catch (error) {
         console.error('加载折线图数据失败', error);
         this.showEmptyChart(this.$refs.lineChart, "暂无数据");
