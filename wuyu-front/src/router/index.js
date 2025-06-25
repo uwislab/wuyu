@@ -654,6 +654,12 @@ export const asyncRoutes = [
         meta: { title: "数据展示", role: [0, 1, 2, 3] },
       },
       {
+        path: "charts",
+        component: () => import("@/views/course_score/charts"),
+        name: "成绩图表",
+        meta: { title: "成绩图表", role: [0, 1, 2,4] },
+      },
+      {
         path: "view",
         component: () => import("@/views/course_score/view"),
         name: "成绩录入",
