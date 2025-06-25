@@ -36,6 +36,17 @@
           <el-button style="margin-left: 5px" type="success">导入 Excel</el-button>
         </el-upload>
         <el-button type="success" round @click="handleAdd">新增<i class="el-icon-circle-plus-outline"></i></el-button>
+      <el-popconfirm
+        confirm-button-text="确定删除"
+        cancel-button-text="我再思考一下"
+        icon="el-icon-info"
+        icon-tel="red"
+        title="您确定删除选中的用户吗？"
+        @confirm="delBatch"
+      >
+        <el-button style="margin-left: 5px" type="danger" round slot="reference">批量删除<i class="el-icon-remove-outline"></i></el-button>
+      </el-popconfirm>
+
       </el-form>
     </div>
     <!--          表格数据，要关联到数据库-->
@@ -122,6 +133,17 @@
         <el-form-item label="角色" prop="role">
           <el-input v-model="form.role" autocomplete="off"></el-input>
         </el-form-item>
+
+       <!-- <el-form-item label="是否已删除" prop="deleted">
+          <el-select v-model="form.deleted" placeholder="请选择">
+            <el-option label="是" value="1"></el-option>
+            <el-option label="否" value="0"></el-option>
+          </el-select>
+        </el-form-item> -->
+<!--        <el-form-item label="学校编号" prop="schoolId">
+          <el-input v-model="form.schoolId" autocomplete="off"></el-input>
+        </el-form-item>-->
+
         <el-form-item label="账户" prop="username">
           <el-input v-model="form.username" autocomplete="off"></el-input>
         </el-form-item>
@@ -390,6 +412,21 @@ export default {
         }
       })
     },
+
+    delBatch(){
+      let ids=this.multipleSelection.map(v=>v.id) //[]=>[1.2.3]
+        request.post("/teacher/del/batch",ids).then(res =>{
+            if(res){
+                this.$message.success("批量删除成功")
+                //保存成功后弹窗关闭
+                this.searchTeacher()
+            }else{
+                this.$message.error("批量删除失败")
+            }
+        })
+    },
+
+
     handleAnimation: function (anim) {
       this.anim = anim;
     },
