@@ -1,528 +1,379 @@
 <template>
-  <div>
-    <div style="padding: 10px 0">
-      <!-- 搜索表单 -->
-      <el-form :inline="true" class="demo-form-inline" :rules="searchRules" ref="searchForm">
-        <el-form-item>
-          <el-form-item prop="teacherName">
-            <el-input v-model="searchObj.teacherName" clearable placeholder="教师姓名" @focus="clearTeacherName"/>
-          </el-form-item>
-          <el-form-item>
-            <el-select v-model="searchObj.gender" clearable placeholder="性别">
-              <el-option label="男" value="1">男</el-option>
-              <el-option label="女" value="0">女</el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item>
-            <el-select v-model="searchObj.position" clearable placeholder="职位">
-              <el-option v-for="(item,index) in positionList" :key="index" :label="item" :value="item"></el-option>
-            </el-select>
-          </el-form-item>
-        </el-form-item>
-        <el-button style="margin-left: 5px" type="primary" @click="searchTeacher">搜索</el-button>
-        <el-button style="margin-left: 5px" type="warning" @click="reset">重置</el-button>
-        <el-button style="margin-left: 5px" type="success" @click="exportExcel">导出</el-button>
-        <el-button style="margin-left: 5px" type="success" @click="downloadTemplate">下载模板</el-button>
-        <!-- 新增导入 Excel 按钮 -->
-        <el-upload
-          :action="`http://us.uwis.cn:9080/teacher/importExcel`"
-          :show-file-list="false"
-          accept=".xlsx,.xls"
-          :before-upload="beforeImportUpload"
-          :on-success="importExcelSuccess"
-          :on-error="importExcelError"
-          style="display: inline-block"
-        >
-          <el-button style="margin-left: 5px" type="success">导入 Excel</el-button>
-        </el-upload>
-        <el-button type="success" round @click="handleAdd">新增<i class="el-icon-circle-plus-outline"></i></el-button>
-      </el-form>
-    </div>
-    <!--          表格数据，要关联到数据库-->
-    <el-table :data="tableData" border stripe header-cell-class-name="'headerBg'"
-              @selection-change="handleSelectionChange">
-      <!--            在下面有tableData-->
+  <div class="web-user">
+    <el-card class="box-card">
+      <h2 class="page-title">用户管理</h2>
 
-      <el-table-column type="selection" align="center" width="40"></el-table-column>
-      <el-table-column prop="id" align="center" label="教师ID" width="110"></el-table-column>
-      <el-table-column prop="teacherName" align="center" label="老师姓名" width="110"></el-table-column>
-      <el-table-column prop="gender" align="center" label="性别" width="50"></el-table-column>
-      <el-table-column prop="phoneNum" align="center" label="电话号码"></el-table-column>
-      <el-table-column prop="position" align="center" label="职位"></el-table-column>
-      <el-table-column prop="title" align="center" label="职称"></el-table-column>
-      <el-table-column prop="role" align="center" label="角色"></el-table-column>
-      <!--      <el-table-column prop="deleted"  align="center"   label="是否已删除"></el-table-column>-->
-      <!--      <el-table-column prop="schoolId"  align="center"   label="学校编号"></el-table-column>-->
-      <el-table-column prop="username" align="center" label="账户"></el-table-column>
-      <el-table-column prop="password" align="center" label="密码"></el-table-column>
-      <el-table-column prop="politicalAppearance" align="center" label="政治面貌"></el-table-column>
-      <el-table-column prop="birthPlace" align="center" label="籍贯"></el-table-column>
-      <el-table-column prop="age" align="center" label="出生年份"></el-table-column>
-      <el-table-column prop="info" align="center" show-overflow-tooltip label="备注信息"></el-table-column>
-      <el-table-column label="操作" align="center" width="190px">
-        <template slot-scope="scope">
-          <div style="display: flex; justify-content: flex-start; align-items: center;">
-            <el-button type="success" @click="handleEdit(scope.row)">编辑<i class="el-icon-edit"></i></el-button>
-            <el-popconfirm
-              style="margin-left: 5px"
-              confirm-button-text='确定删除'
-              cancel-button-text='我再思考一下'
-              icon="el-icon-info"
-              icon-tel="red"
-              title="您确定删除此用户吗？"
-              @confirm="del(scope.row.id)">
-              <el-button type="danger" slot="reference">删除<i class="el-icon-remove-outline"></i></el-button>
-            </el-popconfirm>
-          </div>
-        </template>
-      </el-table-column>
-    </el-table>
-    <!-- 分页 -->
-    <div class="block">
+      <!-- 搜索框和按钮 -->
+      <el-row class="search-box" gutter="20" type="flex" justify="start" align="middle">
+        <el-col :span="4">
+          <el-input v-model="searchQuery.username" placeholder="用户名" size="medium" />
+        </el-col>
+        <el-col :span="4">
+          <el-input v-model="searchQuery.realName" placeholder="真实姓名" size="medium" />
+        </el-col>
+        <el-col :span="4">
+          <el-select v-model="searchQuery.identity" placeholder="选择角色" size="medium">
+            <el-option label="校长" value="0" />
+            <el-option label="教务处" value="1" />
+            <el-option label="班主任" value="2" />
+            <el-option label="教师" value="3" />
+          </el-select>
+        </el-col>
+        <el-col :span="4">
+          <el-select v-model="searchQuery.gender" placeholder="选择性别" size="medium">
+            <el-option label="男" value="1" />
+            <el-option label="女" value="0" />
+          </el-select>
+        </el-col>
+        <el-col :span="1.5">
+          <el-button type="primary" @click="searchUsers">搜索</el-button>
+        </el-col>
+        <el-col :span="1.5">
+          <el-button @click="resetSearch">重置</el-button>
+        </el-col>
+        <el-col :span="1.5">
+          <el-button type="success" @click="openAddUserDialog">添加用户</el-button>
+        </el-col>
+      </el-row>
+
+      <!-- 用户列表 -->
+      <el-table :data="users.list" border stripe>
+        <el-table-column label="用户名" prop="username" />
+        <el-table-column label="真实姓名" prop="realName" />
+        <el-table-column label="手机号码" prop="phoneNumber" />
+        <el-table-column label="性别" prop="gender" :formatter="genderFormatter" />
+        <el-table-column label="角色" prop="identity" :formatter="identityFormatter" />
+        <el-table-column label="学校" :formatter="schoolNameFormatter" />
+        <el-table-column label="操作">
+          <template #default="{ row }">
+            <el-button size="small" @click="editUser(row)">编辑</el-button>
+            <el-button type="danger" size="small" @click="confirmDeleteUser(row.id)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <!-- 分页 -->
       <el-pagination
-        background
-        :current-page.sync="pagination.currentPage"
-        layout="sizes,prev, pager, next,total,jumper"
-        style="padding: 30px 0; text-align: center;"
-        :total="pagination.total"
-        :page-count="pagination.pageCount"
-        :page-size="pagination.pageSize"
-        :page-sizes="pagination.pageSizes"
-        @current-change="handlePageChange"
-        @next-click="nextPage()"
-        @prev-click="prePage()"
-        @size-change="handleSizeChange"
-      >
-      </el-pagination>
-    </div>
+        :current-page="users.curPage"
+        :page-size="users.pageSize"
+        :total="users.total"
+        layout="prev, pager, next, jumper"
+        @current-change="changePage"
+      />
+    </el-card>
 
-
-    <el-dialog title="用户信息" :visible.sync="dialogFormVisible" width="30%">
-      <el-form :model="form" :rules="rules" ref="formRef" label-width="100px" size="small">
-        <el-form-item label="老师姓名" prop="teacherName">
-          <el-input v-model="form.teacherName" autocomplete="off"></el-input>
+    <!-- 添加/编辑用户弹窗 -->
+    <el-dialog :visible.sync="showAddUserDialog" width="50%" @close="closeAddUserDialog">
+      <h3>{{ editingUser ? '编辑用户' : '添加用户' }}</h3>
+      <el-form :model="newUser" ref="form" label-width="100px" :rules="rules">
+        <el-form-item label="用户名" prop="username">
+          <el-input v-model="newUser.username" />
         </el-form-item>
-        <el-form-item label="性别" prop="gender">
-          <el-select v-model="form.gender" placeholder="请选择性别">
-            <el-option label="男" value="1"></el-option>
-            <el-option label="女" value="0"></el-option>
+        <el-form-item v-if="!editingUser" label="密码" prop="password">
+          <el-input v-model="newUser.password" type="password" />
+        </el-form-item>
+        <el-form-item label="真实姓名" prop="realName">
+          <el-input v-model="newUser.realName" />
+        </el-form-item>
+        <el-form-item label="手机号码" prop="phoneNumber">
+          <el-input v-model="newUser.phoneNumber" />
+        </el-form-item>
+        <el-form-item label="性别">
+          <el-select v-model="newUser.gender">
+            <el-option v-for="option in genderOptions" :key="option.value" :label="option.label" :value="option.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="电话号码" prop="phoneNum">
-          <el-input v-model="form.phoneNum" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="职位" prop="position">
-          <el-select v-model="form.position" placeholder="请选择职位">
-            <el-option v-for="(item,index) in positionList" :key="index" :label="item" :value="item"></el-option>
+        <el-form-item label="角色">
+          <el-select v-model="newUser.identity">
+            <el-option v-for="option in identityOptions" :key="option.value" :label="option.label" :value="option.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="职称" prop="title">
-          <el-input v-model="form.title" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="角色" prop="role">
-          <el-input v-model="form.role" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="账户" prop="username">
-          <el-input v-model="form.username" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="密码" prop="password">
-          <el-input v-model="form.password" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="政治面貌" prop="politicalAppearance">
-          <el-input v-model="form.politicalAppearance" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="籍贯" prop="birthPlace">
-          <el-input v-model="form.birthPlace" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="出生年份" prop="age">
-          <el-input v-model="form.age" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="备注信息" prop="info">
-          <el-input v-model="form.info" autocomplete="off"></el-input>
+        <el-form-item label="学校">
+          <el-select v-model="newUser.schoolId" placeholder="选择学校">
+            <el-option v-for="school in schools" :key="school.id" :label="school.schoolName" :value="school.id" />
+          </el-select>
         </el-form-item>
       </el-form>
+
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="save">确 定</el-button>
+        <el-button @click="closeAddUserDialog">取消</el-button>
+        <el-button type="primary" @click="validateAndSaveUser">保存</el-button>
       </div>
     </el-dialog>
-    <lottie :options="defaultOptions" style="width: 600px" @animCreated="handleAnimation"/>
   </div>
 </template>
 
 <script>
-import request from "@/utils/request";
-import * as animationData from "@/assets/athletes.json";
 import axios from "axios";
-import {baseUrl} from "@/api/baseapi";
-// import {getTeacherListByPage} from "@/api/managementModule/teacher";
-import {getTeacherListByPage1} from "@/api/teacher";
-import {resetForm} from "@/utils/ruoyi";
+import { baseUrl } from "@/api/baseapi"; // 引入 baseUrl
 
 export default {
-  name: "User",
   data() {
     return {
-      // 分页相关参数
-      pagination: {
-        currentPage: 1,    // 当前页码
-        pageSize: 10,      // 每页显示条数
-        total: 0,          // 总记录数
-        pageCount: 1,      // 总页数
-        pageSizes: [3, 5, 10] // 可选的每页条数
-      },
-      searchObj: {
-        teacherName: "",
-        gender: "",
-        position: "",
-        grade: ""
-      },
-      form: {
-        teacherName: '',
-        gender: '',
-        phoneNum: '',
-        position: '',
-        title: '',
-        role: '',
-        deleted: 0,
-        schoolId: 1,
-        username: '',
-        password: '',
-        politicalAppearance: '',
-        birthPlace: '',
-        age: '',
-        info: '',
+      // 用户信息
+      newUser: {
+        username: "",
+        password: "",
+        realName: "",
+        phoneNumber: "",
+        gender: 1,
+        identity: 3,
+        schoolId: "",
       },
       rules: {
-        teacherName: [{required: true, message: '老师姓名不能为空', trigger: 'blur'}],
-        gender: [{required: true, message: '性别不能为空', trigger: 'blur'}],
-        phoneNum: [
-          {required: true, message: '电话号码不能为空', trigger: 'blur'},
-          {pattern: /^[0-9]{11}$/, message: '电话号码格式不正确', trigger: 'blur'}
+        username: [
+          { required: true, message: "用户名不能为空", trigger: "blur" },
+          { pattern: /^.{1,10}$/, message: "用户名不能超过10个字符", trigger: "blur" },
         ],
-        position: [{required: true, message: '职位不能为空', trigger: 'blur'}],
-        title: [{required: true, message: '职称不能为空', trigger: 'blur'}],
-        role: [{required: true, message: '角色不能为空', trigger: 'blur'}],
-        //deleted: [{ required: true, message: '是否已删除不能为空', trigger: 'blur' }],
-        //schoolId: [{ required: true, message: '学校编号不能为空', trigger: 'blur' }],
-        username: [{min: 1, max: 20, message: '账户长度需在1到20个字符之间', trigger: 'blur'}],
         password: [
-          {min: 6, max: 20, message: '密码长度需在6到20个字符之间', trigger: 'blur'}
+          { required: true, message: "密码不能为空", trigger: "blur" },
+          { pattern: /^.{1,10}$/, message: "密码不能超过10个字符", trigger: "blur" },
+        ],
+        realName: [
+          { required: true, message: "真实姓名不能为空", trigger: "blur" },
+          { pattern: /^.{1,15}$/, message: "真实姓名不能超过15个字符", trigger: "blur" },
+        ],
+        phoneNumber: [
+          { required: true, message: "手机号不能为空", trigger: "blur" },
+          { pattern: /^\d{11}$/, message: "手机号必须是11位数字", trigger: "blur" },
         ],
       },
-
-      positionList: [],
-      tableData: [],
-      currentPage: 1, //当前页
-      pageCount: 1,
-      page: 1, //分页组件页码初始化
-      teacherValue: '',
-      teacherContent: '',
-      teacherSearch: [{
-        value: 'id',
-        label: '教师ID'
-      }, {
-        value: 'teacherName',
-        label: '老师姓名'
-      }, {
-        value: 'gender',
-        label: '性别'
-      }, {
-        value: 'phoneNum',
-        label: '电话号码'
-      }, {
-        value: 'position',
-        label: '职位'
-      }, {
-        value: 'title',
-        label: '职称'
-      }, {
-        value: 'role',
-        label: '角色'
-      }, {
-        value: 'politicalAppearance',
-        label: '政治面貌'
-      }, {
-        value: 'birthPlace',
-        label: '籍贯'
-      }],
-      total: 0,//total的绑定在133行:total="400"
-      pageNum: 1,
-      pageSize: 10,
-      id: "",
-      gender: "",
-      phone_num: "",
-      // form: {},
-      dialogFormVisible: false,
-      multipleSelection: [],
-      headerBg: 'headerBg',
-      defaultOptions: {
-        animationData: animationData
+      editingUser: false, // 是否为编辑模式
+      editingUserId: null, // 编辑的用户ID
+      searchQuery: {
+        username: "",
+        realName: "",
+        identity: "",
+        gender: "",
       },
-      searchRules: {
-        teacherName: [
-          {validator: this.validateTeacherName, trigger: 'blur'},
-        ],
+      allUsers: [],
+      users: {
+        list: [],
+        curPage: 1,
+        pageSize: 10,
+        pages: 1,
+        total: 0,
+        isLast: false,
       },
-    }
-  },
-  created() {
-    this.searchTeacher()
-    this.getGradeAndPosition()
-
+      showAddUserDialog: false, // 弹窗显示状态
+      schools: [], // 存储学校列表
+      // 性别和角色选项
+      genderOptions: [
+        { label: "男", value: 1 },
+        { label: "女", value: 0 },
+      ],
+      identityOptions: [
+        { label: "校长", value: 0 },
+        { label: "教务处", value: 1 },
+        { label: "班主任", value: 2 },
+        { label: "教师", value: 3 },
+      ],
+    };
   },
   methods: {
-    clearTeacherName() {
-      if (this.inputStatus === false) {
-        this.$refs.searchForm.clearValidate('teacherName');
-        this.searchObj.teacherName = '';
-      }
-      this.inputStatus = true
-    },
-    getGradeAndPosition() {
-      axios.get(baseUrl + '/api/teacherQuery/getFormObject').then(res => {
-        if (res.data.code === 200) {
-          // this.gradeList = res.data.data.gradeList;
-          console.log(res.data.data.gradeList)
-          this.positionList = res.data.data.positionList;
-        }
-      })
-    },
-    searchTeacher() {
-      const userInfo = JSON.parse(localStorage.getItem('UserInfo'));
-      const payload = {
-        pageSize: this.pagination.pageSize,
-        pageNum: this.pagination.currentPage,
-        schoolId: userInfo.schoolId,
-        ...this.searchObj,
-      }
-      getTeacherListByPage1(payload).then(res => {
-        if (res.data) {
-          this.pagination.total = res.data.total;
-          this.pagination.currentPage = res.data.curPage;
-          this.pagination.pageCount = res.data.pages;
-
-          this.tableData = res.data.list.map(item => ({
-            ...item,
-            gender: item.gender == 0 ? '女' : '男',
-            username: (item.username == '' || item.username == null) ? '(暂无)' : item.username,
-            politicalAppearance: (item.politicalAppearance == '' || item.politicalAppearance == null) ? '(暂无)' : item.politicalAppearance,
-            birthPlace: (item.birthPlace == '' || item.birthPlace == null) ? '(暂无)' : item.birthPlace,
-            age: (item.age == '' || item.age == null) ? '(暂无)' : item.age,
-            info: (item.info == '' || item.info == null) ? '(暂无)' : item.info,
-          }));
-        }
-      });
-    },
-    resetForm() {
-      this.$refs.formRef.resetFields();
-    },
-    save() {
-      this.$refs.formRef.validate((valid) => {
+    validateAndSaveUser() {
+      this.$refs.form.validate((valid) => {
         if (valid) {
-          // 处理性别值
-          if (this.form.gender === '男') this.form.gender = '1';
-          if (this.form.gender === '女') this.form.gender = '0';
-
-          // 处理空值
-
-          if (this.form.username === '(暂无)') this.form.username = null;
-          if (this.form.politicalAppearance === '(暂无)') this.form.politicalAppearance = null;
-          if (this.form.birthPlace === '(暂无)') this.form.birthPlace = null;
-          if (this.form.age === '(暂无)') this.form.age = null;
-          if (this.form.info === '(暂无)') this.form.info = null;
-
-          // 获取学校ID
-          const userInfo = JSON.parse(localStorage.getItem('UserInfo'));
-          this.form.schoolId = userInfo.schoolId;
-          this.form.deleted = 0;
-
-          // 根据是否有id判断是新增还是编辑
-          if (this.form.id) {
-            // 编辑操作，调用updateTeacherInfo接口
-            request.post("/teacher/updateTeacherInfo", this.form).then(res => {
-              if (res) {
-                this.$message.success("修改成功")
-                this.dialogFormVisible = false
-                this.searchTeacher()
-              } else {
-                this.$message.error("修改失败")
-              }
-            })
-          } else {
-            // 新增操作，调用save接口
-            request.post("/teacher", this.form).then(res => {
-              if (res) {
-                this.$message.success("保存成功")
-                this.dialogFormVisible = false
-                this.searchTeacher()
-              } else {
-                this.$message.error("保存失败")
-              }
-            })
-          }
+          this.saveUser();
         } else {
-          console.log('表单验证失败');
-          return false;
+          this.$message.error("请检查表单输入是否正确");
         }
       });
     },
-    handleAdd() {
-      this.form = {}
-      this.dialogFormVisible = true
+    fetchSchools() {
+      axios
+        .get(`${baseUrl}/webUser/schools`)
+        .then((response) => {
+          this.schools = response.data;
+        })
+        .catch((error) => {
+          console.error("获取学校列表失败：", error);
+        });
     },
-    handleEdit(row) {
-      this.form = row
-      this.dialogFormVisible = true
+    fetchAllUsers() {
+      axios
+        .get(`${baseUrl}/webUser/all`)
+        .then((response) => {
+          this.allUsers = response.data; // 假设接口返回的数据为用户列表
+        })
+        .catch((error) => {
+          console.error("获取所有用户失败：", error);
+        });
     },
-    del(id) {
-      request.delete("/teacher/" + id).then(res => {
-        if (res) {
-          this.$message.success("删除成功")
-          //保存成功后弹窗关闭
-          this.searchTeacher()
-        } else {
-          this.$message.error("删除失败")
-        }
-      })
+    fetchUsers() {
+      const { username, realName, identity, gender } = this.searchQuery;
+      axios
+        .get(`${baseUrl}/webUser/list`, {
+          params: {
+            curPage: this.users.curPage,
+            pageSize: this.users.pageSize,
+            username,
+            realName,
+            identity,
+            gender,
+          },
+        })
+        .then((response) => {
+          this.users = response.data;
+        })
+        .catch((error) => {
+          console.error("获取用户列表出错：", error);
+        });
     },
-    handleAnimation: function (anim) {
-      this.anim = anim;
-    },
-    handleSelectionChange(val) {
-      console.log(val)
-      this.multipleSelection = val
+    saveUser() {
+      // 验证用户名和手机号的唯一性
+      const isDuplicateUsername = this.allUsers.some(
+        (user) =>
+          user.username === this.newUser.username &&
+          (!this.editingUser || user.id !== this.editingUserId) // 排除当前编辑的用户
+      );
 
-    },
-    reset() {
-      this.searchObj = {
-        teacherName: "",
-        gender: "",
-        grade: "",
-        position: ""
-      };
-      this.pagination.currentPage = 1;
-      this.searchTeacher();
-    },
-    handleSizeChange(size) {
-      this.pagination.pageSize = size;
-      this.pagination.currentPage = 1; // 重置到第一页
-      this.searchTeacher();
-    },
-    exportExcel() {
-      // 从 localStorage 获取 UserInfo
-      const userInfo = JSON.parse(localStorage.getItem('UserInfo'));
-      if (!userInfo || !userInfo.schoolId) {
-        this.$message.error('未获取到学校ID，请重新登录');
+      const isDuplicatePhoneNumber = this.allUsers.some(
+        (user) =>
+          user.phoneNumber === this.newUser.phoneNumber &&
+          (!this.editingUser || user.id !== this.editingUserId) // 排除当前编辑的用户
+      );
+
+      if (isDuplicateUsername) {
+        this.$message.error("用户名已存在，请重新输入！");
         return;
       }
-      // 将 schoolId 作为参数传递给导出接口
-      window.open(`${baseUrl}/teacher/exportExcel?schoolId=${userInfo.schoolId}`);
-    },
-    downloadTemplate() {
-      try {
-        // 使用正确的端口号
-        const downloadUrl = `${baseUrl}/teacher/downloadTemplate`;
-
-        // 创建一个临时的 a 标签用于下载
-        const link = document.createElement('a');
-        // 设置下载链接
-        link.href = downloadUrl;
-        // 设置下载文件名
-        link.setAttribute('download', '教师信息导入模板.xlsx');
-        // 设置样式为隐藏
-        link.style.display = 'none';
-
-        // 添加到文档中
-        document.body.appendChild(link);
-
-        // 触发点击事件开始下载
-        link.click();
-
-        // 下载开始后移除该元素
-        document.body.removeChild(link);
-
-        // 显示下载开始提示
-        this.$message({
-          message: '模板下载已开始，请稍候...',
-          type: 'success',
-          duration: 2000
-        });
-      } catch (error) {
-        console.error('下载模板失败:', error);
-        if (error.response) {
-          console.error('错误状态:', error.response.status);
-          console.error('错误信息:', error.response.data);
-        }
-        this.$message.error('下载模板失败，请确保后端服务正常运行');
+      if (isDuplicatePhoneNumber) {
+        this.$message.error("手机号已存在，请重新输入！");
+        return;
       }
-    },
 
-
-    // 处理页码变化
-    handlePageChange(page) {
-      this.pagination.currentPage = page;
-      this.searchTeacher();
-    },
-
-    // 处理每页条数变化
-    handleSizeChange(size) {
-      this.pagination.pageSize = size;
-      this.pagination.currentPage = 1; // 重置到第一页
-      this.searchTeacher();
-    },
-
-    // 重置搜索条件
-    reset() {
-      this.searchObj = {
-        teacherName: "",
-        gender: "",
-        grade: "",
-        position: ""
-      };
-      this.pagination.currentPage = 1;
-      this.searchTeacher();
-    },
-
-    // 导入前的文件校验
-    beforeImportUpload(file)
-    {
-      const isExcel = file.name.endsWith('.xlsx') || file.name.endsWith('.xls');
-      const isLt10M = file.size / 1024 / 1024 < 10;
-
-      if (!isExcel) {
-        this.$message.error('仅支持上传 .xlsx 或 .xls 格式的文件！');
-      }
-      if (!isLt10M) {
-        this.$message.error('文件大小不能超过 10MB！');
-      }
-      return isExcel && isLt10M;
-    }
-    ,
-    // 导入成功回调
-    importExcelSuccess(response)
-    {
-      if (response.code === 200) {
-        this.$message.success('导入成功！');
-        this.searchTeacher(); // 刷新表格数据
+      // 如果是编辑模式，调用更新方法
+      if (this.editingUser) {
+        this.updateWebUser();
       } else {
-        this.$message.error(response.message || '导入失败，请重试！');
+        // 如果是新增模式，调用新增方法
+        this.addWebUser();
       }
-    }
-    ,
-    // 导入失败回调
-    importExcelError()
-    {
-      this.$message.error('导入失败，请检查服务器连接！');
-    }
-    ,
+    },
 
-  }
-
-}
+    addWebUser() {
+      axios
+        .post(`${baseUrl}/webUser/add`, this.newUser)
+        .then(() => {
+          this.$message.success("用户添加成功！");
+          this.fetchUsers();
+          this.closeAddUserDialog();
+        })
+        .catch((error) => {
+          console.error("添加用户出错：", error);
+          this.$message.error("添加用户失败，请重试！");
+        });
+    },
+    confirmDeleteUser(id) {
+      this.$confirm(
+        "此操作将永久删除该用户, 是否继续?",
+        "提示",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        }
+      )
+        .then(() => {
+          // 确认删除
+          this.deleteUser(id);
+        })
+        .catch(() => {
+          // 用户取消删除
+          this.$message.info("已取消删除");
+        });
+    },
+    deleteUser(id) {
+      axios
+        .delete(`${baseUrl}/webUser/delete/${id}`)
+        .then(() => {
+          this.fetchUsers();
+        })
+        .catch((error) => {
+          console.error("删除用户出错：", error);
+        });
+    },
+    changePage(page) {
+      if (page > 0 && page <= this.users.pages) {
+        this.users.curPage = page;
+        this.fetchUsers();
+      }
+    },
+    editUser(user) {
+      this.editingUser = true;
+      this.editingUserId = user.id; // 设置当前编辑用户的 ID
+      this.newUser = { ...user }; // 将用户信息复制到 newUser 中
+      this.showAddUserDialog = true;
+    },
+    updateWebUser() {
+      axios
+        .put(`${baseUrl}/webUser/update`, this.newUser)
+        .then(() => {
+          this.$message.success("用户更新成功！");
+          this.fetchUsers();
+          this.closeAddUserDialog();
+        })
+        .catch((error) => {
+          console.error("更新用户失败：", error);
+          this.$message.error("更新用户失败，请重试！");
+        });
+    },
+    searchUsers() {
+      this.users.curPage = 1;
+      this.fetchUsers();
+    },
+    closeAddUserDialog() {
+      this.showAddUserDialog = false;
+      this.editingUser = false;
+      this.editingUserId = null; // 清空编辑用户 ID
+      this.newUser = {
+        username: "",
+        password: "",
+        realName: "",
+        phoneNumber: "",
+        gender: 1,
+        identity: 3,
+        schoolId: "",
+      };
+    },
+    openAddUserDialog() {
+      this.showAddUserDialog = true;
+    },
+    genderFormatter(row) {
+      return this.genderOptions.find((option) => option.value === row.gender)?.label || "未知";
+    },
+    identityFormatter(row) {
+      return this.identityOptions.find((option) => option.value === row.identity)?.label || "未知";
+    },
+    schoolNameFormatter(row) {
+      const school = this.schools.find((school) => school.id === row.schoolId);
+      return school ? school.schoolName : "未知学校";
+    },
+    resetSearch() {
+      this.searchQuery = {
+        username: "",
+        realName: "",
+        identity: "",
+        gender: "",
+      };
+      this.fetchUsers();
+    },
+  },
+  mounted() {
+    this.fetchSchools();
+    this.fetchAllUsers();
+    this.fetchUsers();
+  },
+};
 </script>
-<style>
-headerBg {
-  background: #eee !important;
+
+<style scoped>
+.page-title {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+.search-box {
+  margin-bottom: 20px;
 }
 </style>
