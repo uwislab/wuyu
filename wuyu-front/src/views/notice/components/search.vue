@@ -2,7 +2,7 @@
  * @Author: hezeliangfj
  * @Date: 2025-06-18 16:05:40
  * @LastEditors: hezeliangfj
- * @LastEditTime: 2025-06-18 22:00:38
+ * @LastEditTime: 2025-06-23 16:19:50
  * @version: 0.0.1
  * @FilePath: \wuyu-front\src\views\notice\components\search.vue
  * @Descripttion: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
@@ -38,7 +38,8 @@
       <!-- <el-input v-model="inputName" placeholder="请输入学生姓名" class="search-item"></el-input> -->
     </div>
     <div class="right_actions">
-      <el-button type="primary" @click="onSearch">查询</el-button>
+      <el-button type="primary" icon="el-icon-search" @click="onSearch">查询</el-button>
+      <el-button icon="el-icon-refresh"  @click="debouncedReSearch" style="margin-left: 20px">重置</el-button>
     </div>
   </div>
 </template>
@@ -46,7 +47,7 @@
 <script>
 import { getStudent, noticeBooklet, noticeBookletStudent } from '@/api/notice.js'
 import { closeLoading,showLoading } from '@/utils/loading'
-
+import { debounce, throttle } from '@/utils/throttle-debounce'
 export default {
   name: 'SearchBar',
   data() {
@@ -154,7 +155,6 @@ export default {
     onSearch() {
       // 构建搜索参数
       const payload = {}
-
       // 添加年级和班级参数
       if (this.gradeId) {
         payload.gradeId = this.gradeId
@@ -173,13 +173,27 @@ export default {
         this.fetchNoticeBooklet()
       }
     },
+    // 重置
+    reSearch() {
+      this.gradeId = null
+      this.classId = null
+      this.findKey = ''
+      this.classes = []
+      this.fetchNoticeBooklet()
+    },
     emitList() {
       this.$emit('update:list', this.filteredList, this.gradeId, this.classId)
     },
     onClearSearch() {
       this.findKey = ''
       this.fetchNoticeBooklet()
-    }
+    },
+    // debouncedOnSearch: debounce(function() {
+    //   this.onSearch();
+    // }, 300),
+    debouncedReSearch: debounce(function() {
+      this.reSearch();
+    }, 300)
   },
   created() {
     this.fetchCourse()

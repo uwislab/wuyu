@@ -5,6 +5,7 @@ import com.fiveup.core.classManage.model.*;
 import com.fiveup.core.classManage.model.dto.ClassResp;
 import com.fiveup.core.classManage.model.request.ClassReq;
 import com.fiveup.core.classManage.model.response.ClassPageResp;
+import com.fiveup.core.sixGroup.entity.BasicClass;
 import com.github.pagehelper.PageInfo;
 import com.fiveup.core.classManage.model.*;
 import com.fiveup.core.classManage.model.CTCorrelation;
@@ -28,7 +29,7 @@ public interface ClassManageService {
 //
 //    List<Integer> getAllClassByGrade(int gradeId);
 
-    PageInfo<ClassPageResp> getClassListByPage(int grade,int monitorId, Integer pageNum, Integer pageSize);
+    PageInfo<ClassPageResp> getClassListByPage( List<Integer> classIds,int grade,int monitorId, Integer pageNum, Integer pageSize);
 
     List<Teacher> getMonitorList();
 
@@ -58,4 +59,6 @@ public interface ClassManageService {
     List<ClassFuItemScore> getClassNameByGrade(int gradeId);
 
     public int addGrade(List<GradeInfo> gradeInfoList);
+
+    List<BasicClass> getClassByTeacherId(Integer id);
 }

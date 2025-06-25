@@ -21,7 +21,7 @@
         </el-form-item>
         <el-button style="margin-left: 5px" type="primary" @click="searchTeacher">搜索</el-button>
         <el-button style="margin-left: 5px" type="warning" @click="reset">重置</el-button>
-        <el-button style="margin-left: 5px" type="success" @click="exportExcel">导出</el-button>
+        <el-button style="margin-left: 5px" type="success" @click="openExportDialog">导出</el-button>
         <el-button style="margin-left: 5px" type="success" @click="downloadTemplate">下载模板</el-button>
         <!-- 新增导入 Excel 按钮 -->
         <el-upload
@@ -36,6 +36,17 @@
           <el-button style="margin-left: 5px" type="success">导入 Excel</el-button>
         </el-upload>
         <el-button type="success" round @click="handleAdd">新增<i class="el-icon-circle-plus-outline"></i></el-button>
+      <el-popconfirm
+        confirm-button-text="确定删除"
+        cancel-button-text="我再思考一下"
+        icon="el-icon-info"
+        icon-tel="red"
+        title="您确定删除选中的用户吗？"
+        @confirm="delBatch"
+      >
+        <el-button style="margin-left: 5px" type="danger" round slot="reference">批量删除<i class="el-icon-remove-outline"></i></el-button>
+      </el-popconfirm>
+
       </el-form>
     </div>
     <!--          表格数据，要关联到数据库-->
@@ -122,6 +133,17 @@
         <el-form-item label="角色" prop="role">
           <el-input v-model="form.role" autocomplete="off"></el-input>
         </el-form-item>
+
+       <!-- <el-form-item label="是否已删除" prop="deleted">
+          <el-select v-model="form.deleted" placeholder="请选择">
+            <el-option label="是" value="1"></el-option>
+            <el-option label="否" value="0"></el-option>
+          </el-select>
+        </el-form-item> -->
+<!--        <el-form-item label="学校编号" prop="schoolId">
+          <el-input v-model="form.schoolId" autocomplete="off"></el-input>
+        </el-form-item>-->
+
         <el-form-item label="账户" prop="username">
           <el-input v-model="form.username" autocomplete="off"></el-input>
         </el-form-item>
@@ -146,7 +168,30 @@
         <el-button type="primary" @click="save">确 定</el-button>
       </div>
     </el-dialog>
-    <lottie :options="defaultOptions" style="width: 600px" @animCreated="handleAnimation"/>
+
+    <el-dialog
+      title="选择导出字段"
+      :visible.sync="exportDialogVisible"
+      width="400px"
+    >
+      <el-checkbox
+        :indeterminate="selectedFields.length > 0 && selectedFields.length < exportFieldOptions.length"
+        :checked="selectedFields.length === exportFieldOptions.length"
+        @change="handleCheckAll"
+        style="margin-bottom: 10px;"
+      >全选</el-checkbox>
+      <el-checkbox-group v-model="selectedFields" style="display: flex; flex-direction: column;">
+        <el-checkbox v-for="item in exportFieldOptions" :key="item.value" :label="item.value">
+          {{ item.label }}
+        </el-checkbox>
+      </el-checkbox-group>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="exportDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="confirmExport">确定导出</el-button>
+      </div>
+    </el-dialog>
+    <lottie :options="defaultOptions" style="width: 600px" @animCreated="handleAnimation" />
+
   </div>
 </template>
 
@@ -264,6 +309,23 @@ export default {
           {validator: this.validateTeacherName, trigger: 'blur'},
         ],
       },
+      exportDialogVisible: false,
+      exportFieldOptions: [
+        { value: 'id', label: '教师ID' },
+        { value: 'teacherName', label: '老师姓名' },
+        { value: 'gender', label: '性别' },
+        { value: 'phoneNum', label: '电话号码' },
+        { value: 'position', label: '职位' },
+        { value: 'title', label: '职称' },
+        { value: 'role', label: '角色' },
+        { value: 'username', label: '账户' },
+        { value: 'password', label: '密码' },
+        { value: 'politicalAppearance', label: '政治面貌' },
+        { value: 'birthPlace', label: '籍贯' },
+        { value: 'age', label: '出生年份' },
+        { value: 'info', label: '备注信息' }
+      ],
+      selectedFields: [],
     }
   },
   created() {
@@ -340,13 +402,17 @@ export default {
           // 根据是否有id判断是新增还是编辑
           if (this.form.id) {
             // 编辑操作，调用updateTeacherInfo接口
-            request.post("/teacher/updateTeacherInfo", this.form).then(res => {
-              if (res) {
-                this.$message.success("修改成功")
+            request.post("/teacher/updateTeacher", this.form).then(res => {
+              if (res && res.code === 200) {
+                this.$message.success(res.message || '修改成功')
                 this.dialogFormVisible = false
                 this.searchTeacher()
               } else {
-                this.$message.error("修改失败")
+                const errorMsg = res?.message || 
+                    res?.data?.message || 
+                    '修改失败，请稍后重试'
+                this.$message.error(res.msg)
+                handleAdd()
               }
             })
           } else {
@@ -386,6 +452,21 @@ export default {
         }
       })
     },
+
+    delBatch(){
+      let ids=this.multipleSelection.map(v=>v.id) //[]=>[1.2.3]
+        request.post("/teacher/del/batch",ids).then(res =>{
+            if(res){
+                this.$message.success("批量删除成功")
+                //保存成功后弹窗关闭
+                this.searchTeacher()
+            }else{
+                this.$message.error("批量删除失败")
+            }
+        })
+    },
+
+
     handleAnimation: function (anim) {
       this.anim = anim;
     },
@@ -409,16 +490,7 @@ export default {
       this.pagination.currentPage = 1; // 重置到第一页
       this.searchTeacher();
     },
-    exportExcel() {
-      // 从 localStorage 获取 UserInfo
-      const userInfo = JSON.parse(localStorage.getItem('UserInfo'));
-      if (!userInfo || !userInfo.schoolId) {
-        this.$message.error('未获取到学校ID，请重新登录');
-        return;
-      }
-      // 将 schoolId 作为参数传递给导出接口
-      window.open(`http://us.uwis.cn:9080/teacher/exportExcel?schoolId=${userInfo.schoolId}`);
-    },
+
     downloadTemplate() {
       try {
         // 使用正确的端口号
@@ -483,6 +555,233 @@ export default {
       this.pagination.currentPage = 1;
       this.searchTeacher();
     },
+    openExportDialog() {
+      this.selectedFields = [];
+      this.exportDialogVisible = true;
+    },
+    confirmExport() {
+      if (!this.selectedFields.length) {
+        this.$message.warning('请至少选择一个字段');
+        return;
+      }
+      const userInfo = JSON.parse(localStorage.getItem('UserInfo'));
+      if (!userInfo || !userInfo.schoolId) {
+        this.$message.error('未获取到学校ID，请重新登录');
+        return;
+      }
+      const fields = this.selectedFields.join(',');
+      window.open(`http://us.uwis.cn:9080/teacher/exportExcel?schoolId=${userInfo.schoolId}&fields=${fields}`);
+      this.exportDialogVisible = false;
+    },
+    handleCheckAll(val) {
+      if (val) {
+        this.selectedFields = this.exportFieldOptions.map(item => item.value);
+      } else {
+        this.selectedFields = [];
+      }
+    },
+    
+//     exportExcel() {
+//       // 从 localStorage 获取 UserInfo
+//       const userInfo = JSON.parse(localStorage.getItem('UserInfo'));
+//       if (!userInfo || !userInfo.schoolId) {
+//         this.$message.error('未获取到学校ID，请重新登录');
+//         return;
+//       }
+//       // 将 schoolId 作为参数传递给导出接口
+//       window.open(`http://localhost:9085/teacher/exportExcel?schoolId=${userInfo.schoolId}`);
+//     }, 
+//     public class ExcelUtils {
+//     /**
+//      * 每个sheet的容量，即超过时就会把数据分sheet
+//      */
+//     private static final int PAGE_SIZE = 10000;
+ 
+//     /**
+//      * 接收一个excel文件，并且进行解析
+//      * 注意一旦传入自定义监听器，则返回的list为空，数据需要在自定义监听器里面获取
+//      *
+//      * @param multipartFile excel文件
+//      * @param clazz         数据类型的class对象
+//      * @param readListener  监听器
+//      * @param <T> 泛型
+//      * @return 解析的Excel文件数据集合
+//      */
+//     public static <T> List<T> resolveExcel(MultipartFile multipartFile, Class<T> clazz, ReadListener<T> readListener) {
+//         try (InputStream inputStream = multipartFile.getInputStream()) {
+//             return read(inputStream, clazz, readListener);
+//         } catch (IOException e) {
+//             log.error("解析文件失败..");
+//             e.printStackTrace();
+//         }
+//         return null;
+//     }
+ 
+//     /**
+//      * 读文件
+//      *
+//      * @param in 输入流
+//      * @param clazz 反射类型
+//      * @param readListener 监听器
+//      * @param <T> 泛型
+//      * @return 解析的Excel文件数据集合
+//      */
+//     private static <T> List<T> read(InputStream in, Class<T> clazz, ReadListener<T> readListener) {
+//         List<T> list = new ArrayList<>();
+//         Optional<ReadListener<T>> optional = Optional.ofNullable(readListener);
+//         EasyExcel.read(in, clazz, optional.orElse(new AnalysisEventListener<T>() {
+//             @Override
+//             public void invoke(T data, AnalysisContext context) {
+//                 list.add(data);
+//             }
+//             @Override
+//             public void doAfterAllAnalysed(AnalysisContext context) {
+//                 log.warn("Parsing is complete");
+//             }
+//         }))
+//                 .sheet().doRead();
+//         return list;
+//     }
+ 
+//     /**
+//      * 下载Excel  流 (推荐使用)
+//      *
+//      * @param response 响应体
+//      * @param list 数据
+//      * @param clazz JavaBean反射对象
+//      * @param fileName 文件名 fileName = fileName + "_" + DateTimeUtils.getCurrentDateTime() + ".xlsx";
+//      * @param <T> 泛型
+//      */
+//     @SuppressWarnings("rawtypes")
+//     public static <T> void downLoad(HttpServletResponse response, List<T> list, Class<T> clazz, String fileName) {
+//         try {
+//             //设置响应的类型
+//             setResponse(response, java.net.URLEncoder.encode(fileName, "UTF-8"));
+//         } catch (UnsupportedEncodingException e) {
+//             e.printStackTrace();
+//         }
+// //        setResponse(response, fileName);
+//         // 头的策略
+//         WriteCellStyle headWriteCellStyle = new WriteCellStyle();
+//         // 背景设置为灰
+//         headWriteCellStyle.setFillForegroundColor(IndexedColors.GREY_40_PERCENT.getIndex());
+//         // 内容的策略
+//         WriteCellStyle contentWriteCellStyle = new WriteCellStyle();
+//         // 默认表头
+//         HorizontalCellStyleStrategy horizontalCellStyleStrategy = new HorizontalCellStyleStrategy(headWriteCellStyle, contentWriteCellStyle);
+//         // 自适应列宽表头
+//         ExcelWidthStyleStrategy excelWidthStyleStrategy = new ExcelWidthStyleStrategy();
+//         try (OutputStream outputStream = response.getOutputStream()) {
+// //            EasyExcelFactory.write(outputStream, clazz).registerWriteHandler(horizontalCellStyleStrategy).sheet("sheet1").doWrite(list);
+//             EasyExcelFactory.write(outputStream, clazz).registerWriteHandler(excelWidthStyleStrategy).sheet("sheet1").doWrite(list);
+//         } catch (Exception e) {
+//             e.printStackTrace();
+//         }
+//     }
+ 
+//     /**
+//      * 下载Excel  地址 (推荐使用)
+//      *
+//      * @param response 响应体
+//      * @param list 数据
+//      * @param clazz JavaBean反射对象
+//      * @param fileName 文件名 fileName = fileName + "_" + DateTimeUtils.getCurrentDateTime() + ".xlsx";
+//      * @param <T> 泛型
+//      */
+//     @SuppressWarnings("rawtypes")
+//     public static <T> InputStream downLoadStr(HttpServletResponse response, List<T> list, Class<T> clazz, String fileName) {
+//         // 单个sheet的容量
+//         List<? extends List<?>> lists = splitList(list, PAGE_SIZE);
+//         ByteArrayOutputStream os = new ByteArrayOutputStream();
+ 
+//         try {
+//             //设置响应的类型
+//             setResponse(response, URLEncoder.encode(fileName, "UTF-8"));
+//         } catch (UnsupportedEncodingException e) {
+//             e.printStackTrace();
+//         }
+// //        setResponse(response, fileName);
+//         // 头的策略
+//         WriteCellStyle headWriteCellStyle = new WriteCellStyle();
+//         // 背景设置为灰
+//         headWriteCellStyle.setFillForegroundColor(IndexedColors.GREY_40_PERCENT.getIndex());
+//         // 内容的策略
+//         WriteCellStyle contentWriteCellStyle = new WriteCellStyle();
+//         // 默认表头
+//         HorizontalCellStyleStrategy horizontalCellStyleStrategy = new HorizontalCellStyleStrategy(headWriteCellStyle, contentWriteCellStyle);
+//         // 自适应列宽表头
+//         ExcelWidthStyleStrategy excelWidthStyleStrategy = new ExcelWidthStyleStrategy();
+//         try (OutputStream outputStream = response.getOutputStream()) {
+// //            EasyExcelFactory.write(outputStream, clazz).registerWriteHandler(horizontalCellStyleStrategy).sheet("sheet1").doWrite(list);
+//             EasyExcelFactory.write(outputStream, clazz).registerWriteHandler(excelWidthStyleStrategy).sheet("sheet1").doWrite(list);
+// //            ExcelWriter excelWriter = EasyExcel.write(os, clazz).registerWriteHandler(excelWidthStyleStrategy).build();
+// //            浏览器访问url直接下载文件的方式
+// //            ExcelWriter excelWriter = EasyExcel.write(response.getOutputStream(), clazz).registerWriteHandler(com.example.utils.easyexcel.EasyExcel.formatExcel()).registerWriteHandler(new com.example.utils.easyexcel.EasyExcel.ExcelWidthStyleStrategy()).build();
+//             ExcelWriter excelWriter = EasyExcelFactory.write(os, clazz).registerWriteHandler(excelWidthStyleStrategy).build();
+//             ExcelWriterSheetBuilder excelWriterSheetBuilder;
+//             WriteSheet writeSheet;
+//             for (int i = 1; i <= lists.size(); ++i) {
+//                 excelWriterSheetBuilder = new ExcelWriterSheetBuilder(excelWriter);
+//                 excelWriterSheetBuilder.sheetNo(i).sheetName("sheet" + i);
+//                 writeSheet = excelWriterSheetBuilder.build();
+//                 excelWriter.write(lists.get(i - 1), writeSheet);
+//             }
+//             // 必须要finish才会写入，不finish只会创建empty的文件
+//             excelWriter.finish();
+ 
+//             byte[] content = os.toByteArray();
+//             // 返回流文件
+//             return new ByteArrayInputStream(content);
+//         } catch (Exception e) {
+//             e.printStackTrace();
+//         }
+//         return null;
+//     }
+ 
+//     /**
+//      * 切割查询的数据
+//      * @param list 需要切割的数据
+//      * @param len 按照什么长度切割
+//      * @param <T> 泛型
+//      * @return 数据
+//      */
+//     public static <T> List<List<T>> splitList(List<T> list, int len) {
+//         if (list == null || list.size() == 0 || len < 1) {
+//             return null;
+//         }
+//         List<List<T>> result = new ArrayList<List<T>>();
+//         int size = list.size();
+//         int count = (size + len - 1) / len;
+//         for (int i = 0; i < count; i++) {
+//             List<T> subList = list.subList(i * len, (Math.min((i + 1) * len, size)));
+//             result.add(subList);
+//         }
+//         return result;
+//     }
+ 
+//     /**
+//      * 获取最终的文件名
+//      *
+//      * @param fileName 文件初始名
+//      * @return 最终的文件名
+//      */
+//     public static String getFileName(String fileName) {
+//         return fileName + "_" + DateTimeUtils.getCurrentDateTime() + ".xlsx";
+//     }
+ 
+//     /**
+//      * 设置响应体参数
+//      *
+//      * @param response 响应对象
+//      * @param fileName 文件名
+//      */
+//     public static void setResponse(HttpServletResponse response, String fileName) {
+//         response.reset();
+//         response.addHeader("content-type", "application/vnd.ms-excel;charset=UTF-8");
+//         response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
+//         response.addHeader("Cache-Control", "no-cache");
+//     }
+// }
 
     // 导入前的文件校验
     beforeImportUpload(file)

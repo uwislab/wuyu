@@ -35,7 +35,8 @@
         </el-table-column>
         <el-table-column label="操作" align="center">
           <template slot-scope="{row, $index}">
-            <el-button style="margin-bottom: 4px;" type="primary" size="mini" @click="selectScale(row.scaleId,row.title)">编辑评价内容</el-button>
+            <el-button v-if="row.isExecute===0" style="margin-bottom: 4px;" type="primary" size="mini" @click="selectScale(row.scaleId,row.title)">编辑评价内容</el-button>
+            <el-button v-if="row.isExecute===1" style="margin-bottom: 4px;" type="warn" size="mini" :disabled="true">已执行无法编辑</el-button>
             <el-button type="warning" size="mini" @click="showUpdateScale(row)">修改量表</el-button>
           </template>
         </el-table-column>
@@ -79,7 +80,7 @@
         <el-table :cell-style="{border: '1px solid black'}" :header-cell-style="{border: '1px solid black', background: '#324157', color: '#ffffff'}"
           :data="structuredData" row-key="itemId" lazy :load="load" :indent="30"
           :tree-props="{ hasChildren: 'hasChildren' }" ref="myTable">
-          
+
           <el-table-column label="评价id" prop="itemId" align="center" />
           <el-table-column label="评价内容(标题)" prop="itemContent" align="center" />
           <el-table-column label="细则层级" prop="itemLevel" align="center" :formatter="formatItemLevel" />
@@ -90,8 +91,11 @@
           <el-table-column label="操作" align="center" >
             <template slot-scope="{row, $index}">
               <div class="threebtn">
-                <el-button  :type="row.itemLevel < 4 ? 'text' : ''" size="mini" :disabled="row.itemLevel >= 4"
-                @click="showItemDialog(row.itemContent, row.itemLevel + 1, row.itemId)">{{ row.itemLevel >= 4 ?'最多四级':'新增下级'}}</el-button>
+                <el-button  :type="row.itemLevel < 2 ? 'text' : ''" type="warning" size="mini"
+                            @click="showItemDialogForEdit(row, row.itemLevel, row.itemId)">编辑</el-button>
+
+                <el-button  :type="row.itemLevel < 2 ? 'text' : ''" size="mini" :disabled="row.itemLevel >= 2"
+                @click="showItemDialog(row.itemContent, row.itemLevel + 1, row.itemId)">{{ row.itemLevel >= 2 ?'最多两级':'新增下级'}}</el-button>
               <!-- <el-button type="warning">修改</el-button> -->
               <el-button type="text" size="mini" style="color: red;"
                 @click="deleteScaleItem(row.itemId, row.itemLevel, row.preItemId)">删除</el-button>
@@ -260,7 +264,7 @@ import {
   deleteItem,
   editScale,
   getAllLevelScore,
-  getFuScaleByStates
+  getFuScaleByStates, updateScaleContent
 } from '@/api/fuScale'
 import {
   insertDetailList,
@@ -275,6 +279,8 @@ export default {
       // 显示控制参数 -- 评价内容创建对话框
       itemDialogVisible: false,
       editItemDialogVisible: false,
+      editItemBoolean: false,
+      oldScore: 0,
       // 显示控制参数 -- 细则内容创建对话框
       detailDialogVisible: false,
       // 细则创建框 -- 是否为全年级
@@ -296,6 +302,7 @@ export default {
       // 评价内容表单
       itemContentForm: {
         scaleId: null,
+        itemId: '',
         itemContent: '',
         itemLevel: 1,
         preItem: '',
@@ -366,16 +373,16 @@ export default {
       scaleDialogVisible: false,
       editDialogVisible: false,
       //这个是量表table的结构
-      scaleInfoForm: {
-        id: null,
-        title: '',
-        createDate: null,
-        state: 0,
-        creatorId: null,
-        domain: null,
-        creatorName: null,
-        grade: null
-      },
+      // scaleInfoForm: {
+      //   id: null,
+      //   title: '',
+      //   createDate: null,
+      //   state: 0,
+      //   creatorId: null,
+      //   domain: null,
+      //   creatorName: null,
+      //   grade: null
+      // },
       rules: {
         title: [{ required: true, message: '请输入量表名称(2~20字符)', pattern: /^[\u4e00-\u9fa5_a-zA-Z0-9.·-]{2,20}$/ }],
         grade: [{ required: true, message: '请选择绑定年级' }],
@@ -393,7 +400,7 @@ export default {
   },
   mounted() {
     this.loading = true;
-    let states = "0,3";
+    let states = "0,2,3";
     // 读取编辑中和审核驳回
     getFuScaleByStates(states).then(res => {
       // console.log('res.data '+res.data);
@@ -468,6 +475,7 @@ export default {
         return;
       }
 
+      this.editItemBoolean = false;
       // 初始化评价内容对象
       this.itemContentForm = {
         scaleId: this.selectScaleId,
@@ -475,8 +483,8 @@ export default {
         itemLevel: level || 1,
         preItem: preItem || '',
         itemScore: 0,
-        evaluationMethod: '',
-        evaluators: '',
+        evaluationMethod: '录入成绩',
+        evaluators: '教师',
         remark: '',
         preItemId: preItemId
       };
@@ -506,8 +514,63 @@ export default {
       }
     },
 
+
+    showItemDialogForEdit(preItem, level, preItemId) {
+      console.log('preItem: '+ preItem);
+      if (!this.selectScaleId) {
+        alert("请选择量表后操作");
+        return;
+      }
+
+      this.editItemBoolean = true;
+      this.oldScore = preItem.itemScore;
+
+      // 初始化评价内容对象
+      this.itemContentForm = {
+        scaleId: this.selectScaleId,
+        itemId: preItem.itemId,
+        itemContent: preItem.itemContent,
+        itemLevel: level || 1,
+        preItem: preItem || '',
+        itemScore: preItem.itemScore,
+        evaluationMethod: preItem.evaluationMethod,
+        evaluators: preItem.evaluators,
+        remark: preItem.remark,
+        preItemId: preItemId
+      };
+
+      // 判断是否为一级项目
+      // if (!this.itemContentForm.preItem) {
+      //   // 判断1级项目分数满100没
+      //   getAllLevelScore(this.selectScaleId).then(res => {
+      //     const levelSum = res.data[1] || 0;
+      //     if (levelSum < 100) {
+      //       getIdentity().then(res => {
+      //         this.identityList = res.data;
+      //         this.itemDialogVisible = true;
+      //       });
+      //     } else {
+      //       this.$alert('一级指标分数总和已达到100,无法继续添加', '警告', {
+      //         confirmButtonText: '确定',
+      //         type: 'warning'
+      //       });
+      //     }
+      //   });
+      // } else {
+        getIdentity().then(res => {
+          this.identityList = res.data;
+          this.itemDialogVisible = true;
+        });
+      // }
+    },
+
     // 按钮点击事件 -- 评价内容提交
     createItem() {
+      if(this.editItemBoolean){
+        this.updateItem();
+        return;
+      }
+
       this.$refs.scaleInfoFormRef.validate(valid => {
         if (!valid) return; // 输入不合法，直接返回
 
@@ -519,6 +582,22 @@ export default {
           this.checkLevelOneScale(scaleId, itemScore, preItemId);
         } else {
           this.checkChildScale(preItemId, itemScore, itemLevel);
+        }
+      });
+    },
+
+    updateItem() {
+      this.$refs.scaleInfoFormRef.validate(valid => {
+        if (!valid) return; // 输入不合法，直接返回
+
+        const { scaleId, evaluators, itemScore, itemLevel, preItemId } = this.itemContentForm;
+        this.itemContentForm.evaluators = evaluators.toString();
+
+        // 检查1级项目
+        if (itemLevel === 1) {
+          this.checkLevelOneScaleForUpdate(scaleId, itemScore, preItemId);
+        } else {
+          this.checkChildScaleForUpdate(preItemId, itemScore, itemLevel);
         }
       });
     },
@@ -538,9 +617,25 @@ export default {
       });
     },
 
+    checkLevelOneScaleForUpdate(scaleId, itemScore, preItemId) {
+      getAllLevelScore(scaleId).then(res => {
+        const leveloneSum = res.data[1] || 0;
+        const sum = parseInt(itemScore) + leveloneSum - this.oldScore;
+        if (sum > 100) {
+          this.$alert('1级层级评价项之不能大于100', '警告', {
+            confirmButtonText: '确定',
+            type: 'warning'
+          });
+          return;
+        }
+        this.updateScaleContent(scaleId, preItemId);
+      });
+    },
+
     checkChildScale(preItemId, itemScore, itemLevel) {
       ChildSumScores(preItemId).then(res => {
         if (res.data.ChildSum) { // 有子层级的情况
+          console.log('checkChildScale debug: ', res.data)
           const isEqual = (parseInt(res.data.ChildSum) + parseInt(itemScore)) <= res.data.CurSum;
           if (isEqual) {
             this.insertScaleContent(this.itemContentForm.scaleId, preItemId);
@@ -549,6 +644,12 @@ export default {
           }
         } else {
           SumScores(preItemId).then(res => {
+            const isEqual = parseInt(itemScore) <= res.data.CurSum;
+            if (!isEqual) {
+              this.greaterError();
+              return
+            }
+            console.log('SumScores debug: ', res.data)
             if (itemLevel !== 2 && res.data.CurSum !== res.data.PreSum) {
               this.$alert('本层级评价项分数之和未达到上层级,请继续增加同级', '警告', {
                 confirmButtonText: '确定',
@@ -562,13 +663,59 @@ export default {
       });
     },
 
+
+    checkChildScaleForUpdate(preItemId, itemScore, itemLevel) {
+      ChildSumScores(preItemId).then(res => {
+        if (res.data.ChildSum) { // 有子层级的情况
+          const isEqual = (parseInt(res.data.ChildSum) + parseInt(itemScore) - this.oldScore) <= res.data.CurSum;
+          if (isEqual) {
+            this.updateScaleContent(this.itemContentForm.scaleId, preItemId);
+          } else {
+            this.greaterError();
+          }
+        } else {
+          SumScores(preItemId).then(res => {
+            const isEqual = parseInt(itemScore) <= res.data.CurSum;
+            if (!isEqual) {
+              this.greaterError();
+              return
+            }
+
+            if (itemLevel !== 2 && res.data.CurSum !== res.data.PreSum) {
+              this.$alert('本层级评价项分数之和未达到上层级,请继续增加同级', '警告', {
+                confirmButtonText: '确定',
+                type: 'warning'
+              });
+            } else {
+              this.updateScaleContent(this.itemContentForm.scaleId, preItemId);
+            }
+          });
+        }
+      });
+    },
+
+
     insertScaleContent(scaleId, preItemId) {
       insertScaleContent(this.itemContentForm).then(res => {
         if (res.code === 200) {
           this.selectScale(scaleId);
           getItemByPreCopy(preItemId).then(res => {
             this.$set(this.$refs.myTable.store.states.lazyTreeNodeMap, preItemId, res.data);
+            this.itemDialogVisible = false;
           });
+        }
+      });
+    },
+
+    updateScaleContent(scaleId, preItemId) {
+      this.itemContentForm.preItem = null;
+      updateScaleContent(this.itemContentForm).then(res => {
+        if (res.code === 200) {
+          this.selectScale(scaleId);
+          getItemByPreCopy(preItemId).then(res => {
+            this.$set(this.$refs.myTable.store.states.lazyTreeNodeMap, preItemId, res.data);
+          });
+          this.itemDialogVisible = false;
         }
       });
     },
@@ -729,6 +876,7 @@ export default {
     updateScale() {
       this.$refs.scaleInfoForm.validate((valid) => {
         if (valid) {
+          this.scaleInfoForm.creatorId  = JSON.parse(window.localStorage.getItem("UserInfo")).id
           editScale(this.scaleInfoForm).then(res => {
             if (res.code == 200) {
               this.$message({
@@ -812,7 +960,7 @@ export default {
 
 .notice_01{
   margin: 64px auto 14px auto;
-  font:bold;
+  font-weight:bold;
   position: relative;
 }
 
@@ -836,7 +984,7 @@ export default {
 
 .insert_levle1:hover{
   transform: scale(1.05); /* 鼠标悬停时增大按钮大小 */
-  font: bold;
+  font-weight: bold;
 }
 
 .threebtn {

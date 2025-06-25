@@ -87,7 +87,10 @@ export default {
     // 学生信息
     studentInfo: {
       type: Object,
-      default: () => ({})
+      default: () => ({
+        studentName: '',
+        studentId: ''
+      })
     }
   },
   data() {
@@ -99,7 +102,7 @@ export default {
   },
   watch: {
     dialogVisible(newVal) {
-      if (newVal && this.studentInfo.studentName) {
+      if (newVal && this.studentInfo && this.studentInfo.studentName) {
         this.previewStudentName = this.studentInfo.studentName
       }
     }
@@ -113,6 +116,10 @@ export default {
 
     // 显示导出选项
     showExportOptions() {
+      if (!this.previewStudentName) {
+        this.$message.warning('学生信息不完整，无法导出')
+        return
+      }
       this.exportDialogVisible = true
     },
 
@@ -137,7 +144,7 @@ export default {
       if (iframe && iframe.contentWindow) {
         const doc = iframe.contentDocument || iframe.contentWindow.document
         const oldTitle = doc.title
-        doc.title = `${this.previewStudentName}同学的通知册`
+        doc.title = `${this.previewStudentName || ''}同学的通知册`
         iframe.contentWindow.focus()
         iframe.contentWindow.print()
         setTimeout(() => {
@@ -164,7 +171,7 @@ export default {
 
         html2pdf()
           .set({
-            filename: `${this.previewStudentName}同学的通知册.pdf`,
+            filename: `${this.previewStudentName || ''}同学的通知册.pdf`,
             html2canvas: { scale: 2 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
           })
@@ -187,6 +194,11 @@ export default {
     // 预览学生通知册（供外部调用）
     async previewStudentNotice(studentInfo) {
       try {
+        if (!studentInfo || !studentInfo.studentId) {
+          this.$message.error('学生信息不完整')
+          return
+        }
+
         showLoading('预览生成中，请稍候...')
         const params = {
           studentId: studentInfo.studentId
@@ -198,7 +210,7 @@ export default {
           // 在<head>后插入样式
           html = html.replace(/<head>/i, '<head><style>.content-section{text-indent:2em;}</style>')
           this.$emit('update:content', html)
-          this.previewStudentName = studentInfo.studentName
+          this.previewStudentName = studentInfo.studentName || ''
           this.$emit('update:dialogVisible', true)
         } else {
           this.$message.error('预览数据获取失败')

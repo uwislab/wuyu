@@ -69,3 +69,16 @@ feature-03-yaoziru:yaozir
 feature-03-sgh:sgh186
 feature-03-caimeijia:caimeijia
 revert-218-feature-07-钟豪洋:hqldsb
+dev0622:pavilion-y
+develop-03:pavilion-y
+feature-03-weiyouzi:wyz5221
+feature-03-yuting:pavilion-y
+feature-03-yuting:pavilion-y
+feature-03-张志超:zhangzhichao-zzc
+develop-03-back:pavilion-y
+feature-03-yzr:yaozir
+feature-03-yzru:yaozir
+feature-03-yzr:pavilion-y
+develop-003:pavilion-y
+feature-003-yuting:pavilion-y
+feature-05-ljh:yege0226
