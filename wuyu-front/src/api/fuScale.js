@@ -99,6 +99,7 @@ export function gradeScore(grade) {
   })
 }
 
+
 export function getFuScaleId() {
   return request({
     url: '/fuScale/getFuScaleId',
