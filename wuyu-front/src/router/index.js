@@ -106,6 +106,12 @@ export const asyncRoutes = [
         name: "个人信息",
         meta: { title: "个人信息", role: [0, 1, 2, 3] },
       },
+      {
+        path: "/workbench/index",
+        component: () => import("@/views/workbench/index"),
+        name: "工作台",
+        meta: { title: "工作台", role: [0, 1, 2, 3] },
+      },
     ],
   },
   {
