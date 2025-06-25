@@ -1,6 +1,7 @@
 package com.fiveup.core.management.mapper;
 
 import com.fiveup.core.management.pojo.*;
+import jnr.ffi.annotations.In;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Result;
@@ -47,7 +48,7 @@ public interface TeachMapper {
      * @param classList 班级列表
      * @return List of TeacherVo
      */
-    List<TeacherVo> getTeacherByPage(long schoolId, PageDto dto, List<Long> classList);
+    List<TeacherVo> getTeacherByPage(long schoolId, PageDto dto, List<Integer> classList);
 
     /**
      * 获取教师总数
@@ -82,7 +83,7 @@ public interface TeachMapper {
      * @return List of Long (Class ID)
      */
     @Select("select id from basic_class where grade = #{grade} and deleted = 0")
-    List<Long> getClassByGrade(String grade);
+    List<Integer> getClassByGrade(String grade);
 
     /**
      * 获取班级信息

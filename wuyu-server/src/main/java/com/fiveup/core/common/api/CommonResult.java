@@ -19,6 +19,12 @@ public class CommonResult<T> {
         this.message = message;
         this.data = data;
     }
+    /**
+     * 成功无返回结果
+     */
+    public static <T> CommonResult<T> success() {
+        return new CommonResult<>(ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMessage(), null);
+    }
 
     /**
      * 成功返回结果
