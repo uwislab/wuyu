@@ -155,6 +155,24 @@ export function getLastScore(studentNum, date) {
   })
 }
 
+// 获取学生个人五育成绩
+export function getStudentFuScoreById(studentId) {
+  return request({
+    url: '/api/fuScore/getStudentFuScoreById',
+    method: 'get',
+    params: { studentId }
+  })
+}
+
+// 获取班级五育平均成绩
+export function getClassAverageScores(classId) {
+  return request({
+    url: '/api/fuScore/getClassAverageScores',
+    method: 'get',
+    params: { classId }
+  })
+}
+
 export function getDateList() {
   return request({
     url:'/fuScore/getDateList',
