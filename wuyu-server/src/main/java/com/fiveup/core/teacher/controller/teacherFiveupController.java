@@ -37,7 +37,7 @@ import java.util.List;
 @RequestMapping("/teacher")
 public class teacherFiveupController {
     private static final Logger logger = LoggerFactory.getLogger(teacherFiveupController.class);
-    
+
     @Autowired
     private teacherFiveupService teacherService;
     @Resource
@@ -54,14 +54,14 @@ public class teacherFiveupController {
             logger.error("查询参数不能为空");
             return CommonResponse.fail(BizErrorCodeEnum.PARAMS_VALIDATION_ERRNO,"查询参数不能为空");
         }
-        
+
         // 获取学校ID
         Long schoolId = pageDto.getSchoolId();
         if (schoolId == null || schoolId <= 0) {
             logger.error("学校ID不能为空或无效: {}", schoolId);
             return CommonResponse.fail(BizErrorCodeEnum.PARAMS_VALIDATION_ERRNO,"学校ID不能为空或无效");
         }
-        
+
         // 调用服务层获取数据
         TeacherList teacherList = teacherService.getTeacherByPage(pageDto, schoolId);
         return CommonResponse.ok(teacherList);
@@ -70,10 +70,46 @@ public class teacherFiveupController {
     public teacher searchTeacherById(@RequestParam("id") String id) {
         return teacherService.searchTeacherById(id);
     }
+
     @PostMapping
-    public  boolean save(@RequestBody teacher teacher){
-        //新增或者更新
-        return teacherService.saveUser(teacher);
+// 用户新增
+    public boolean save(@RequestBody teacher teacher) {
+        // 声明一个布尔类型的变量，用于存储操作结果
+        boolean isOperationSuccessful;
+
+        // 检查传入的teacher对象是否为null
+        if (teacher != null) {
+            // 如果teacher对象不为null，则继续执行保存操作
+            // 调用teacherService的saveUser方法，尝试保存用户信息
+            boolean saveResult = teacherService.saveUser(teacher);
+
+            // 对保存结果进行判断
+            if (saveResult) {
+                // 如果保存成功，将操作结果设置为true
+                isOperationSuccessful = true;
+            } else {
+                // 如果保存失败，将操作结果设置为false
+                isOperationSuccessful = false;
+            }
+        } else {
+            // 如果teacher对象为null，将操作结果直接设置为false
+            isOperationSuccessful = false;
+        }
+
+        // 声明一个变量，用于存储最终返回的结果
+        boolean finalResult;
+
+        // 再次检查操作结果
+        if (isOperationSuccessful) {
+            // 如果操作成功，将最终结果设置为true
+            finalResult = true;
+        } else {
+            // 如果操作失败，将最终结果设置为false
+            finalResult = false;
+        }
+
+        // 返回最终结果
+        return finalResult;
     }
 
     @GetMapping
@@ -174,7 +210,7 @@ public class teacherFiveupController {
 
 
    //修改教师信息
-    @PostMapping("updateTeacher")
+    @PostMapping("/updateTeacher")
     public Result updateTeacherInfo(@RequestBody teacher teacherInfoParam) {
         Result result = teacherService.updateTeacherInfo(teacherInfoParam);
         return result;
@@ -216,22 +252,22 @@ public class teacherFiveupController {
         // 一次性写出list内的对象到excel，使用默认格式，强制输出标题
         writer.write(list, true);
 
-        // 设置浏览器响应格式
+        //设置浏览器响应格式
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
         String fileName = URLEncoder.encode("教师信息", "UTF-8");
         response.setHeader("Content-Disposition", "attachment;filename=" + fileName + ".xlsx");
 
         ServletOutputStream outputStream = response.getOutputStream();
-        writer.flush(outputStream, true);
+        writer.flush(outputStream,true);
 
-        // 关闭流
+        //关闭流
         outputStream.close();
         writer.close();
     }
 
     //excel导入
     @PostMapping("/importExcel")
-    public Boolean importExcel(MultipartFile file) throws IOException {
+    public CommonResponse<Boolean> importExcel(MultipartFile file) throws IOException {
         InputStream inputStream = file.getInputStream();
         ExcelReader reader = ExcelUtil.getReader(inputStream);
 
@@ -248,12 +284,24 @@ public class teacherFiveupController {
 //            user.setTitle(row.get(2).toString());
 //            user.setContent(row.get(3).toString());
 //            user.setAuthor(row.get(4).toString());
+            teacher.setTeacherName(row.get(1).toString());
+            teacher.setGender(Integer.parseInt(row.get(2).toString()));
+            teacher.setPhoneNum(row.get(3).toString());
+            teacher.setPosition(row.get(4).toString());
+            teacher.setTitle(row.get(5).toString());
+            teacher.setRole(row.get(6).toString());
+            teacher.setUsername(row.get(7).toString());
+            teacher.setPassword(row.get(8).toString());
+            teacher.setPoliticalAppearance(row.get(9).toString());
+            teacher.setBirthPlace(row.get(10).toString());
+            teacher.setAge(Integer.parseInt(row.get(11).toString()));
+            teacher.setInfo(row.get(12).toString());
 
             users.add(teacher);
         }
         //将excel导入的数据保存到数据库
         teacherService.saveBatch(users);
-        return true;
+        return CommonResponse.ok(true);
     }
 
     /**

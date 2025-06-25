@@ -24,7 +24,6 @@ public class teacher implements Serializable {
     
     @TableLogic(value = "0", delval = "1")
     private int deleted;
-    
     private int schoolId;
     private String username;
     private String password;
@@ -32,4 +31,9 @@ public class teacher implements Serializable {
     private String birthPlace;
     private int age;
     private String info;
+
+
+    public String getPhoneNum(teacher teacher) {
+        return teacher.getPhoneNum();
+    }
 }

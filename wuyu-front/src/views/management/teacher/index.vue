@@ -1,11 +1,18 @@
 <template>
+  <!-- 教师信息页面 -->
   <div class="app-container">
 
     <!-- 搜索表单 -->
     <el-form :inline="true" class="demo-form-inline" :rules="searchRules" ref="searchForm">
       <el-form-item>
         <el-form-item prop="teacherName">
-          <el-input v-model="searchObj.teacherName" clearable placeholder="教师姓名" @focus="clearTeacherName" />
+          <el-autocomplete
+            v-model="searchObj.teacherName"
+            :fetch-suggestions="querySearchAsync"
+            placeholder="输入教师姓名拼音"
+            @select="handleSelect"
+            clearable
+          />
         </el-form-item>
         <el-form-item>
           <el-select v-model="searchObj.gender" clearable placeholder="性别">
@@ -156,15 +163,6 @@
     </el-dialog>
 
     <!-- 分页 -->
-    <!--    <el-pagination-->
-    <!--      background-->
-    <!--      :current-page="page"-->
-    <!--      layout="prev, pager, next"-->
-    <!--      style="padding: 30px 0; text-align: center;"-->
-    <!--      :total="total"-->
-    <!--      @current-change="getList">-->
-    <!--    </el-pagination>-->
-    <!-- 分页 -->
     <div class="block">
       <el-pagination background :current-page.sync="currentPage" layout="sizes,prev, pager, next,total,jumper"
         style="padding: 30px 0; text-align: center;" :total="total" :page-count="pageCount" :page-size="limit"
@@ -188,6 +186,9 @@ import {
 import axios from 'axios'
 import { baseUrl } from "@/api/baseapi";
 import JOSN from "qs";
+// 导入拼音库
+import pinyin from 'pinyin';
+
 export default {
   data() {
     return {
@@ -261,7 +262,22 @@ export default {
     this.getClassOptions()
   },
   methods: {
+    querySearchAsync(queryString, cb) {
+      // 使用 pinyin 库将教师姓名转换为拼音
+      const results = queryString
+        ? this.tableData.filter(teacher => {
+            const teacherPinyin = pinyin(teacher.teacherName, { style: pinyin.STYLE_NORMAL }).join('').toLowerCase();
+            return teacherPinyin.includes(queryString.toLowerCase());
+          })
+        : this.tableData;
 
+      // 将匹配的结果传递给回调函数
+      cb(results);
+    },
+    handleSelect(item) {
+      this.searchObj.teacherName = item.teacherName;
+      this.getList();
+    },
     handleSelectionChange(val) {
       console.log(val)
       this.multipleSelection = val
