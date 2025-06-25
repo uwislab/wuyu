@@ -359,7 +359,7 @@ public class teacherFiveupController {
             teacher.setBirthPlace(row.get(10).toString());
             teacher.setAge(Integer.parseInt(row.get(11).toString()));
             teacher.setInfo(row.get(12).toString());
-
+            teacher.setSchoolId(1);
             users.add(teacher);
         }
         //将excel导入的数据保存到数据库
