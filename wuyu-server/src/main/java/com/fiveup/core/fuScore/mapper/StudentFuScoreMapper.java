@@ -2,14 +2,21 @@ package com.fiveup.core.fuScore.mapper;
 
 import com.fiveup.core.fuScore.model.*;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 @Repository
 public interface StudentFuScoreMapper {
+
+    /**
+     * 查询班级五育平均成绩
+     */
+    Map<String, Object> getClassAverageScores(@Param("classId") Integer classId);
 
     @Select("select morality_score, intelligence_score, physical_score, aesthetic_score, labour_score, evaluate_date " +
             "from fu_student_score where student_num=#{studentNum}")

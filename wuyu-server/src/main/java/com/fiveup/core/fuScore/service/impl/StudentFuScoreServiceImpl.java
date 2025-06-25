@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author shilin
@@ -29,6 +30,14 @@ public class StudentFuScoreServiceImpl implements StudentFuScoreService {
         List<StudentFuScore> studentScore;
         studentScore = studentFuScoreMapper.getStudentsFuScore(studentId);
         return studentScore;
+    }
+
+    /**
+     * 获取班级五育平均成绩
+     */
+    @Override
+    public Map<String, Object> getClassAverageScores(Integer classId) {
+        return studentFuScoreMapper.getClassAverageScores(classId);
     }
 
     //通过学号或者姓名获取学生所有五育成绩以及期末评语
