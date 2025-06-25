@@ -34,10 +34,10 @@ module.exports = {
     proxy: {
       "/api": {
         // target: "http://58.87.88.61:9200", // 后台端口号
-         target: "http://localhost:9080",
+         // target: "http://localhost:9080",
         //target: "http://36.111.68.174:33380",
         //target: "http://36.111.68.174:33380",
-        // target: "http://us.uwis.cn:9080",
+        target: "http://us.uwis.cn:9080",
         // target: "http://localhost:33381",
         changeOrigin: true,
         //ws: true,
