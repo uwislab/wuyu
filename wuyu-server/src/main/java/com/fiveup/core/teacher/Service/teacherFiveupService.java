@@ -1,4 +1,7 @@
 package com.fiveup.core.teacher.Service;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import com.fiveup.core.fuScale.develop_09.common.R;
@@ -26,9 +29,176 @@ public class teacherFiveupService extends ServiceImpl<teacherFiveupMapper, teach
     @Autowired
     private teacherFiveupMapper teacherMapper;
 
-    public boolean saveUser(teacher teacher){
-        return saveOrUpdate(teacher);
+
+    /**
+     * 保存教师信息，若ID存在则更新，否则新增
+     *
+     * @param teacher 教师对象
+     * @return 操作是否成功
+     */
+    public boolean saveUser(teacher teacher) {
+        // 声明方法返回结果变量，初始化为失败状态
+        boolean operationResult = false;
+
+        // 声明用于存储数据库操作结果的变量
+        int databaseOperationResult = 0;
+
+        // 声明用于标识ID和手机号是否存在的标志变量
+        boolean isTeacherIdAlreadyExists = false;
+        boolean isPhoneNumberAlreadyExists = false;
+
+        // 声明用于存储数据库查询结果的临时变量
+        teacher existingTeacherRecordById = null;
+        teacher existingTeacherRecordByPhone = null;
+
+        // 声明查询条件包装器对象
+        LambdaQueryWrapper<teacher> phoneNumberQueryWrapper = null;
+
+        // 校验输入参数是否为空
+        if (teacher == null) {
+            // 输入参数为空，抛出异常
+            String errorMessage = "提供的教师对象不能为空";
+            throw new IllegalArgumentException(errorMessage);
+        }
+
+        // 创建手机号查询条件包装器
+        phoneNumberQueryWrapper = new LambdaQueryWrapper<>();
+
+        // 设置手机号查询条件
+        String targetPhoneNumber = teacher.getPhoneNum();
+        phoneNumberQueryWrapper.eq(teacher::getPhoneNum, targetPhoneNumber);
+
+        // 执行数据库查询，检查手机号是否存在
+        existingTeacherRecordByPhone = teacherMapper.selectOne(phoneNumberQueryWrapper);
+
+        // 判断查询结果，确定手机号是否已存在
+        if (existingTeacherRecordByPhone != null) {
+            isPhoneNumberAlreadyExists = true;
+        } else {
+            isPhoneNumberAlreadyExists = false;
+        }
+
+        // 如果手机号已存在，抛出异常
+        if (isPhoneNumberAlreadyExists) {
+            String errorMessage = "该手机号已存在，请更换其他手机号";
+            throw new IllegalArgumentException(errorMessage);
+        }
+
+        // 获取待保存教师的ID
+        Integer teacherId = teacher.getId();
+
+        // 执行数据库查询，检查教师ID是否存在
+        existingTeacherRecordById = teacherMapper.selectById(teacherId);
+
+        // 判断查询结果，确定教师ID是否已存在
+        if (existingTeacherRecordById != null) {
+            isTeacherIdAlreadyExists = true;
+        } else {
+            isTeacherIdAlreadyExists = false;
+        }
+
+        // 根据教师ID是否存在执行不同的数据库操作
+        if (isTeacherIdAlreadyExists) {
+            // 教师ID存在，执行更新操作
+
+            // 打印日志，记录即将执行的操作
+            System.out.println("开始执行教师信息更新操作，教师ID: " + teacherId);
+
+            // 执行更新操作
+            databaseOperationResult = teacherMapper.updateById(teacher);
+
+            // 判断更新操作结果
+            if (databaseOperationResult > 0) {
+                // 更新成功
+                operationResult = true;
+                System.out.println("教师信息更新成功，更新记录数: " + databaseOperationResult);
+            } else {
+                // 更新失败
+                operationResult = false;
+                System.out.println("教师信息更新失败，更新记录数: " + databaseOperationResult);
+            }
+        } else {
+            // 教师ID不存在，执行插入操作
+
+            // 打印日志，记录即将执行的操作
+            System.out.println("开始执行教师信息插入操作，教师姓名: " + teacher.getUsername());
+
+            // 执行插入操作
+            databaseOperationResult = teacherMapper.insert(teacher);
+
+            // 判断插入操作结果
+            if (databaseOperationResult > 0) {
+                // 插入成功
+                operationResult = true;
+                System.out.println("教师信息插入成功，插入记录数: " + databaseOperationResult);
+            } else {
+                // 插入失败
+                operationResult = false;
+                System.out.println("教师信息插入失败，插入记录数: " + databaseOperationResult);
+            }
+        }
+
+        // 返回操作结果
+        return operationResult;
     }
+
+    private boolean checkIfPhoneNumberExists(teacher teacher) {
+        // 声明查询条件包装器
+        LambdaQueryWrapper<teacher> queryWrapper = null;
+
+        // 声明查询结果变量
+        teacher queryResult = null;
+
+        // 声明结果标志变量
+        boolean resultFlag = false;
+
+        // 创建查询条件包装器
+        queryWrapper = new LambdaQueryWrapper<>();
+
+        // 获取待检查的手机号
+        String phoneNumberToCheck = teacher.getPhoneNum();
+
+        // 设置查询条件
+        queryWrapper.eq(teacher::getPhoneNum, phoneNumberToCheck);
+
+        // 执行数据库查询
+        queryResult = teacherMapper.selectOne(queryWrapper);
+
+        // 判断查询结果
+        if (queryResult != null) {
+            resultFlag = true;
+        } else {
+            resultFlag = false;
+        }
+
+        // 返回结果
+        return resultFlag;
+    }
+
+    private boolean checkIfTeacherIdExists(teacher teacher) {
+        // 声明查询结果变量
+        teacher queryResult = null;
+
+        // 声明结果标志变量
+        boolean resultFlag = false;
+
+        // 获取待检查的教师ID
+        Integer teacherIdToCheck = teacher.getId();
+
+        // 执行数据库查询
+        queryResult = teacherMapper.selectById(teacherIdToCheck);
+
+        // 判断查询结果
+        if (queryResult != null) {
+            resultFlag = true;
+        } else {
+            resultFlag = false;
+        }
+
+        // 返回结果
+        return resultFlag;
+    }
+
 
     public teacher searchTeacherById(String id) {
         return teacherMapper.selectById(id);
@@ -125,6 +295,41 @@ public class teacherFiveupService extends ServiceImpl<teacherFiveupMapper, teach
             return Result.fail(404, "教师不存在或已被删除");
         }
 
+        // 3. 如果传入了手机号，检查是否已被其他教师使用
+// 3. 如果传入了手机号，检查是否已被其他教师使用
+        if (StringUtils.isNotBlank(teacherInfoParam.getPhoneNum())) {
+            //log.debug("开始处理手机号更新，教师ID: {}", teacherInfoParam.getId());
+
+            String newPhone = teacherInfoParam.getPhoneNum().trim();
+            String currentPhone = existingTeacher.getPhoneNum();
+            //log.debug("新手机号: {}, 当前手机号: {}", newPhone, currentPhone);
+
+            if (!newPhone.equals(currentPhone)) {
+                log.debug("检测到手机号变更，开始验证新手机号");
+
+                // 3.1 格式验证
+                if (!isValidPhoneNumber(newPhone)) {
+                 //   log.warn("手机号格式验证失败，无效的手机号: {}", newPhone);
+                    return Result.fail(400, "手机号格式不正确");
+                }
+                //log.debug("手机号格式验证通过: {}", newPhone);
+
+                // 3.2 唯一性检查（只对比delete=0的记录）
+                long teacherId = teacherInfoParam.getId();
+                //log.debug("开始检查手机号唯一性，排除教师ID: {}，仅对比delete=0的记录", teacherId);
+
+                // 修改isPhoneNumberExists方法，增加delete字段过滤条件
+                if (isPhoneNumberExists(newPhone, teacherId)) {
+                   // log.warn("手机号唯一性检查失败，手机号已被使用: {}", newPhone);
+                    return Result.fail(501, "手机号已被其他教师使用");
+                }
+                //log.debug("手机号唯一性检查通过: {}", newPhone);
+            } else {
+                //log.debug("手机号未变更，跳过验证");
+            }
+        } else {
+            //log.debug("未提供新手机号，跳过手机号验证");
+        }
         // 3. 构建更新对象（只更新允许修改的字段）
         teacher updateTeacher = new teacher();
         updateTeacher.setId(teacherInfoParam.getId());
@@ -156,6 +361,8 @@ public class teacherFiveupService extends ServiceImpl<teacherFiveupMapper, teach
         if (teacherInfoParam.getInfo() != null) {
             updateTeacher.setInfo(teacherInfoParam.getInfo());
         }
+            updateTeacher.setSchoolId(teacherInfoParam.getSchoolId());
+
 
         // 4. 执行更新
         int result = teacherMapper.updateById(updateTeacher);
@@ -165,5 +372,17 @@ public class teacherFiveupService extends ServiceImpl<teacherFiveupMapper, teach
 
         // 5. 返回成功响应
         return Result.success("教师信息更新成功");
+    }
+    private boolean isValidPhoneNumber(String phoneNum) {
+        // 实现手机号格式验证逻辑
+        return phoneNum != null && phoneNum.matches("^1[3-9]\\d{9}$");
+    }
+
+    private boolean isPhoneNumberExists(String phoneNum, Long excludeId) {
+        return teacherMapper.exists(
+                Wrappers.<teacher>lambdaQuery()
+                        .eq(teacher::getPhoneNum, phoneNum)
+                        .ne(excludeId != null, teacher::getId, excludeId)
+        );
     }
 }

@@ -70,27 +70,123 @@ public class teacherFiveupController {
     public teacher searchTeacherById(@RequestParam("id") String id) {
         return teacherService.searchTeacherById(id);
     }
+
     @PostMapping
-    public  boolean save(@RequestBody teacher teacher){
-        //新增或者更新
-        return teacherService.saveUser(teacher);
+// 用户新增
+    public boolean save(@RequestBody teacher teacher) {
+        // 声明一个布尔类型的变量，用于存储操作结果
+        boolean isOperationSuccessful;
+
+        // 检查传入的teacher对象是否为null
+        if (teacher != null) {
+            // 如果teacher对象不为null，则继续执行保存操作
+            // 调用teacherService的saveUser方法，尝试保存用户信息
+            boolean saveResult = teacherService.saveUser(teacher);
+
+            // 对保存结果进行判断
+            if (saveResult) {
+                // 如果保存成功，将操作结果设置为true
+                isOperationSuccessful = true;
+            } else {
+                // 如果保存失败，将操作结果设置为false
+                isOperationSuccessful = false;
+            }
+        } else {
+            // 如果teacher对象为null，将操作结果直接设置为false
+            isOperationSuccessful = false;
+        }
+
+        // 声明一个变量，用于存储最终返回的结果
+        boolean finalResult;
+
+        // 再次检查操作结果
+        if (isOperationSuccessful) {
+            // 如果操作成功，将最终结果设置为true
+            finalResult = true;
+        } else {
+            // 如果操作失败，将最终结果设置为false
+            finalResult = false;
+        }
+
+        // 返回最终结果
+        return finalResult;
     }
 
     @GetMapping
     public List<teacher> findAll(){
         return teacherService.list();
     }
+
+    //删除教师
     @DeleteMapping("/{id}")
-    public boolean delete(@PathVariable Integer id){
-        return teacherService.removeById(id);
+    public CommonResponse<Boolean> delete(@PathVariable Integer id) {
+        try {
+            if (id == null || id <= 0) {
+                logger.error("删除教师失败：无效的教师ID: {}", id);
+                return CommonResponse.fail(BizErrorCodeEnum.PARAMS_VALIDATION_ERRNO, "无效的教师ID");
+            }
+            
+            // 检查教师是否存在
+            teacher teacher = teacherService.getById(id);
+            if (teacher == null) {
+                logger.error("删除教师失败：教师不存在，ID: {}", id);
+                return CommonResponse.fail(BizErrorCodeEnum.ALARM_RECORD_NOT_EXIST, "教师不存在");
+            }
+            
+            // 执行逻辑删除
+            boolean result = teacherService.removeById(id);
+            if (result) {
+                logger.info("教师删除成功，ID: {}", id);
+                return CommonResponse.ok(true);
+            } else {
+                logger.error("教师删除失败，ID: {}", id);
+                return CommonResponse.fail(BizErrorCodeEnum.ROLLBACK_PLAN_ERRNO, "删除失败");
+            }
+        } catch (Exception e) {
+            logger.error("删除教师时发生异常，ID: {}, 异常信息: {}", id, e.getMessage(), e);
+            return CommonResponse.fail(BizErrorCodeEnum.ROLLBACK_PLAN_ERRNO, "系统异常");
+        }
     }
 
 
+    //批量删除
 
     @PostMapping("/del/batch")
-    public boolean deleteBatch(@RequestBody List<Integer> ids){
-        return teacherService.removeByIds(ids);
+    public CommonResponse<Boolean> deleteBatch(@RequestBody List<Integer> ids) {
+        try {
+            if (CollUtil.isEmpty(ids)) {
+                logger.error("批量删除失败：教师ID列表为空");
+                return CommonResponse.fail(BizErrorCodeEnum.PARAMS_VALIDATION_ERRNO, "教师ID列表不能为空");
+            }
+
+            for (Integer id : ids) {
+                if (id == null || id <= 0) {
+                    logger.error("批量删除失败：无效的教师ID: {}", id);
+                    return CommonResponse.fail(BizErrorCodeEnum.PARAMS_VALIDATION_ERRNO, "无效的教师ID");
+                }
+
+                teacher teacher = teacherService.getById(id);
+                if (teacher == null) {
+                    logger.error("批量删除失败：教师不存在，ID: {}", id);
+                    return CommonResponse.fail(BizErrorCodeEnum.ALARM_RECORD_NOT_EXIST, "教师不存在");
+                }
+            }
+
+            // 执行批量删除操作
+            boolean result = teacherService.removeByIds(ids);
+            if (result) {
+                logger.info("教师批量删除成功，IDs: {}", ids);
+                return CommonResponse.ok(true);
+            } else {
+                logger.error("教师批量删除失败，IDs: {}", ids);
+                return CommonResponse.fail(BizErrorCodeEnum.ROLLBACK_PLAN_ERRNO, "批量删除失败");
+            }
+        } catch (Exception e) {
+            logger.error("批量删除教师时发生异常，异常信息: {}", e.getMessage(), e);
+            return CommonResponse.fail(BizErrorCodeEnum.ROLLBACK_PLAN_ERRNO, "系统异常");
+        }
     }
+
 
     @GetMapping("/page") //接口路径user/page
     public IPage<teacher> findPage(@RequestParam("pageNum") Integer pageNum,
@@ -114,7 +210,7 @@ public class teacherFiveupController {
 
 
    //修改教师信息
-    @PostMapping("updateTeacher")
+    @PostMapping("/updateTeacher")
     public Result updateTeacherInfo(@RequestBody teacher teacherInfoParam) {
         Result result = teacherService.updateTeacherInfo(teacherInfoParam);
         return result;
@@ -234,7 +330,7 @@ public class teacherFiveupController {
 
     //excel导入
     @PostMapping("/importExcel")
-    public Boolean importExcel(MultipartFile file) throws IOException {
+    public CommonResponse<Boolean> importExcel(MultipartFile file) throws IOException {
         InputStream inputStream = file.getInputStream();
         ExcelReader reader = ExcelUtil.getReader(inputStream);
 
@@ -251,12 +347,24 @@ public class teacherFiveupController {
 //            user.setTitle(row.get(2).toString());
 //            user.setContent(row.get(3).toString());
 //            user.setAuthor(row.get(4).toString());
+            teacher.setTeacherName(row.get(1).toString());
+            teacher.setGender(Integer.parseInt(row.get(2).toString()));
+            teacher.setPhoneNum(row.get(3).toString());
+            teacher.setPosition(row.get(4).toString());
+            teacher.setTitle(row.get(5).toString());
+            teacher.setRole(row.get(6).toString());
+            teacher.setUsername(row.get(7).toString());
+            teacher.setPassword(row.get(8).toString());
+            teacher.setPoliticalAppearance(row.get(9).toString());
+            teacher.setBirthPlace(row.get(10).toString());
+            teacher.setAge(Integer.parseInt(row.get(11).toString()));
+            teacher.setInfo(row.get(12).toString());
 
             users.add(teacher);
         }
         //将excel导入的数据保存到数据库
         teacherService.saveBatch(users);
-        return true;
+        return CommonResponse.ok(true);
     }
 
     /**

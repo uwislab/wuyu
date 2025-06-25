@@ -1,3 +1,13 @@
+/*
+ * @Author: hezeliangfj
+ * @Date: 2025-06-13 09:30:51
+ * @LastEditors: hezeliangfj
+ * @LastEditTime: 2025-06-14 12:26:43
+ * @version: 0.0.1
+ * @FilePath: \wuyu-front\src\utils\ruoyi.js
+ * @Descripttion: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
+
 
 
 /**
@@ -68,7 +78,7 @@ export function addDateRange(params, dateRange, propName) {
   return search;
 }
 
-// 回显数据字典 
+// 回显数据字典
 export function selectDictLabel(datas, value) {
   var actions = [];
   Object.keys(datas).some((key) => {

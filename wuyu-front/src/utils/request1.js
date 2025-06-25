@@ -5,11 +5,11 @@ import { getToken } from '@/utils/auth'
 
 // create an axios instance
 const service = axios.create({
-  baseURL: 'http:localhost:9085',
+  // baseURL: 'http:localhost:9200',
   // baseURL: process.env.VUE_APP_BASE_API,
   // baseURL: "http://49.51.69.99:33380",
   //baseURL: "http://36.111.68.174:33380",
-  // baseURL:"http://36.111.68.174:33380",
+  baseURL:"http://us.uwis.cn:9080",
   withCredentials: true, // send cookies when cross-domain requests
   timeout: 5000 // request timeout
 })
