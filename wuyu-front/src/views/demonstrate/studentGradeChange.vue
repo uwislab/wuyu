@@ -33,6 +33,7 @@ export default {
       selectedStudent: null,
       semesterOptions: [],
       selectedSemester: '',
+      debounceTimer: null,
       semesterData: [] // 用于保存所有学期成绩数据
     };
   },
@@ -55,18 +56,27 @@ export default {
     }
   },
   methods: {
+    debounce(fn, delay = 300) {
+      clearTimeout(this._debounceTimer);
+      this._debounceTimer = setTimeout(() => {
+        fn();
+      }, delay);
+    },
     async querySearchAsync(queryString, cb) {
       if (!queryString.trim()) {
         cb([]);
         return;
       }
-      try {
-        const res = await getSearchStudent(queryString);
-        cb(res);
-      } catch (error) {
-        console.error('搜索学生失败', error);
-        cb([]);
-      }
+
+      this.debounce(async () => {
+        try {
+          const res = await getSearchStudent(queryString);
+          cb(res);
+        } catch (error) {
+          console.error('搜索学生失败', error);
+          cb([]);
+        }
+      }, 300); // 延迟时间可配置
     },
     async handleStudentSelect(student) {
       this.selectedStudent = student;
