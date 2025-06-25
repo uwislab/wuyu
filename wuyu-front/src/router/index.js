@@ -822,6 +822,13 @@ export const asyncRoutes = [
         name: "平均五育成绩展示",
         meta: { title: "平均五育成绩展示", role: [0,4] },
       },
+      {
+        path: "newwyzk",
+        component: () => import("@/views/demonstrate/newwyzk"),
+        name: "新中控大屏",
+        meta: { title: "新中控大屏", role: [0,4] },
+      },
+
     ],
   },
   {
