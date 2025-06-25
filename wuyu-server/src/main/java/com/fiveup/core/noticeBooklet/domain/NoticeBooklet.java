@@ -3,6 +3,9 @@ package com.fiveup.core.noticeBooklet.domain;
 
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
 /**
  * 通知册实体类
  *
@@ -14,21 +17,25 @@ public class NoticeBooklet {
     /**
      * 学生学号
      */
+    @NotNull(message = "学号不能为空")
     private Integer studentId;
 
     /**
      * 学生姓名
      */
+    @NotBlank(message = "姓名不能为空")
     private String studentName;
 
     /**
      * 学生班级
      */
+    @NotNull(message = "班级不能为空")
     private Integer studentClassNumber;
 
     /**
      * 学生年级
      */
+    @NotNull(message = "年级不能为空")
     private Integer studentGrade;
 
     /**
@@ -55,6 +62,11 @@ public class NoticeBooklet {
      * 劳育分
      */
     private Integer sLaoyu;
+
+    /**
+     * 考试时间
+     */
+    private String sExdate;
 
     /**
      * 计划德育分

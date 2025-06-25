@@ -303,8 +303,8 @@ public class StuServiceImpl implements StuService {
         return stuDTO;
     }
     // 获取所有学生信息
-    public List<StuDTO> getAllStudent(Long schoolId) {
-        List<StuDTO> stuDTOList = stuMapper.getStudentListByConditions(null, null, null,null, null, schoolId);
+    public List<StuDTO> getAllStudent(Long schoolId, List<Integer> classIds) {
+        List<StuDTO> stuDTOList = stuMapper.getStudentListByConditionsClassIds(null, null, null,null, null, schoolId,classIds);
         return stuDTOList;
     }
 }

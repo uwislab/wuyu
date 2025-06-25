@@ -53,6 +53,22 @@ export function verifyOldPassword(userId, password) {
   });
 }
 
+export function updateUserStatus(userId, status) {
+  return request({
+    url: `/webUser/status/${userId}`,
+    method: "put",
+    params: { status }
+  });
+}
+
+export function batchUpdateUserStatus(ids, status) {
+  return request({
+    url: '/webUser/status/batch',
+    method: 'put',
+    data: ids,
+    params: { status }
+  });
+}
 
 export function searchUserPermissions(params) {
   return request({
@@ -80,6 +96,22 @@ export function deleteUserPermissions(ids) {
 export function updateUserPermission(data) {
   return request({
     url: "/UserPermission/edit",
+    method: "post",
+    data,
+  });
+}
+
+export function sendSmsCode(phoneNumber) {
+  return request({
+    url: "/api/mainLogin/sendSmsCode",
+    method: "post",
+    data: { phoneNumber }
+  });
+}
+
+export function loginBySms(data) {
+  return request({
+    url: "/api/mainLogin/loginBySms",
     method: "post",
     data,
   });

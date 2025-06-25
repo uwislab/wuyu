@@ -22,7 +22,7 @@ public  class AIUtil {
 
         // 构建用户消息（包含五育成绩）
         String prompt = String.format(
-                "请根据学生%s的五育成绩生成评语：\n" +
+                "请根据学生%s的五育成绩生成评语\n" +
                         "- 德育：%.1f分（品德修养、责任感）\n" +
                         "- 智育：%.1f分（学习能力、思维创新）\n" +
                         "- 体育：%.1f分（运动习惯、体育精神）\n" +
@@ -39,7 +39,7 @@ public  class AIUtil {
         // 配置请求参数（从环境变量获取API Key）
         GenerationParam param = GenerationParam.builder()
                 .apiKey("sk-55857d789fc247778029c76f2227a4d0")
-                .model("qwen-plus") // 使用您验证过的模型名称
+                .model("qwen-turbo") // 使用您验证过的模型名称
                 .messages(Arrays.asList(systemMsg, userMsg)) // 添加系统消息
                 .resultFormat(GenerationParam.ResultFormat.MESSAGE)
                 .build();
