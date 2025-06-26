@@ -29,6 +29,10 @@ public interface StudentManagerMapper extends BaseMapper<StudentManager> {
     @Select("select id from basic_class where grade_id=#{gradeId} and school_id=#{schoolId} and class_name=#{className}")
     int selectClassId(int gradeId, int schoolId, String className);
 
+    //对比增加的学号是否重复
+    @Select("SELECT COUNT(1) FROM basic_student WHERE student_num = #{studentNum}")
+    Integer countByStudentNum(String studentNum);
+
     //根据schoolId查询schoolName
     @Select("select school_name from basic_school where id = #{schoolId}")
     String getSchoolNameById(int schoolId);
@@ -47,4 +51,6 @@ public interface StudentManagerMapper extends BaseMapper<StudentManager> {
     //获取年纪列表
     @Select("select DISTINCT grade_id from basic_student order by grade_id")
     List<Integer> getGrade();
+
+
 }
