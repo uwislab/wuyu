@@ -306,7 +306,7 @@ export default {
 .chart-container {
   border-radius: 8px;
   overflow: hidden;
-  height: 700px;
+  height: 750px;
 }
 
 /* 错误提示样式调整 */

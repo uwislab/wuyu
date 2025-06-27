@@ -97,6 +97,137 @@ public class CourseScoreController extends BaseController {
     }
 
     /**
+
+     * 获取学生列表（studentName, studentNum）
+     * 修复被删除的提交
+     */
+    @GetMapping("/student/list")
+    public Result getStudentList() {
+        List<CourseScore> students = courseScoreService.getStudentList();
+        List<Map<String, Object>> data = new ArrayList<>();
+        for (CourseScore student : students) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("studentName", student.getStudentName());
+            item.put("studentNum", student.getStudentNum());
+            data.add(item);
+        }
+        return new Result(200, "成功", data);
+    }
+
+    /**
+     * 根据学生学号获取该学生的各科成绩
+     */
+    @PostMapping("/getByStudent")
+    public Result getByStudent(@RequestBody Map<String, String> request) {
+        String studentNum = request.get("studentNum");
+        if (studentNum == null || studentNum.trim().isEmpty()) {
+            return new Result(400, "缺少参数：studentNum");
+        }
+
+        List<CourseScore> scores = courseScoreService.getByStudent(studentNum);
+
+        List<Map<String, Object>> data = new ArrayList<>();
+        for (CourseScore score : scores) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("courseName", score.getCourseName());
+            item.put("score", score.getScore());
+            data.add(item);
+        }
+
+        return new Result(200, "成功", data);
+    }
+
+
+    /**
+     * 获取指定课程和学生的历次考试成绩（用于折线图）
+     */
+    @PostMapping("/personal-trend")
+    public Result getPersonalTrend(@RequestBody Map<String, Object> request) {
+        String courseName = (String) request.get("courseName");
+        String studentName = (String) request.get("studentName");
+
+        if (courseName == null || studentName == null) {
+            return new Result(400, "缺少必要参数：courseName 或 studentName");
+        }
+
+        List<CourseScore> scores = courseScoreService.getPersonalTrend(courseName, studentName);
+
+        // 按照 testNumber 升序排序
+        scores.sort((s1, s2) -> Integer.compare(s1.getTestNumber(), s2.getTestNumber()));
+
+        // 构造返回数据格式
+        List<Map<String, Object>> dataList = new ArrayList<>();
+        for (CourseScore score : scores) {
+            Map<String, Object> dataItem = new HashMap<>();
+            dataItem.put("testNumber", score.getTestNumber());
+            dataItem.put("score", score.getScore());
+            dataList.add(dataItem);
+        }
+
+        return new Result(200, "成功", dataList);
+    }
+
+
+    @PostMapping("/distribution")
+    public Result getDistribution(@RequestBody Map<String, Object> request) {
+        if ("getOptions".equals(request.get("action"))) {
+            return getOptions();
+        } else {
+            String courseName = (String) request.get("courseName");
+            Integer testNumber = (Integer) request.get("testNumber");
+            if (courseName == null || testNumber == null) {
+                return new Result(400, "缺少必要参数：courseName 或 testNumber");
+            }
+            return getScoreDistribution(courseName, testNumber);
+        }
+    }
+
+
+    private Result getOptions() {
+        List<String> courses = courseScoreService.getAllDistinctCourseNames();
+        List<Integer> testNumbers = courseScoreService.getAllDistinctTestNumbers();
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("courses", courses);
+        data.put("testNumbers", testNumbers);
+
+        return new Result(200, "成功", data);
+    }
+
+
+    private Result getScoreDistribution(String courseName, int testNumber) {
+        List<CourseScore> scores = courseScoreService.getByCourseNameAndTestNumber(courseName, testNumber);
+
+        // 分段统计
+        int[] distribution = new int[5]; // 0-59, 60-69, 70-79, 80-89, 90-100
+        for (CourseScore score : scores) {
+            int s = score.getScore();
+            if (s >= 0 && s <= 59) distribution[0]++;
+            else if (s <= 69) distribution[1]++;
+            else if (s <= 79) distribution[2]++;
+            else if (s <= 89) distribution[3]++;
+            else if (s <= 100) distribution[4]++;
+        }
+
+        List<Map<String, Object>> resultData = new ArrayList<>();
+        addRange(resultData, "0-59分", distribution[0]);
+        addRange(resultData, "60-69分", distribution[1]);
+        addRange(resultData, "70-79分", distribution[2]);
+        addRange(resultData, "80-89分", distribution[3]);
+        addRange(resultData, "90-100分", distribution[4]);
+
+        return new Result(200, "成功", resultData);
+    }
+
+    private void addRange(List<Map<String, Object>> list, String range, int count) {
+        Map<String, Object> item = new HashMap<>();
+        item.put("scoreRange", range);
+        item.put("studentCount", count);
+        list.add(item);
+    }
+
+
+    /**
      * 根据ids数组删除成绩
      * @param ids 成绩ID数组
      * @param request HTTP请求对象
