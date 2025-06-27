@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @TableName(value = "basic_student")
-public class StudentManager  {
+public class  StudentManager  {
     private Integer id;
     private String studentNum;
     private String studentName;
