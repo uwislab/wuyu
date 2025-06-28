@@ -583,4 +583,12 @@ public class studentscoreService {
         return stMapper.getGradeScoreBygrade(grade);
 
     }
+
+    public List<student_score> SelectScoreByClassAndGrade(Integer grade, Integer sclass) {
+        return stMapper.SelectScoreByClassAndGrade(grade,sclass);
+    }
+
+    public List<student_score> SelectScoreByGradeFu(Integer grade) {
+        return stMapper.SelectScoreByGradeFu(grade);
+    }
 }
