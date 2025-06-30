@@ -70,7 +70,11 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
     @Override
     public void addStudent(StudentInsertDTO studentInsertDTO) {
         int classId;
-
+        String studentNum = studentInsertDTO.getStudentNum(); // 获取学号
+        Integer count = studentManagerMapper.countByStudentNum(studentNum);
+        if (count != null && count > 0) {
+            throw new ApiException("学号" + studentNum + "已存在"); // 复用项目已有异常体系
+        }
         //获取classId
         try {
             classId = studentManagerMapper.selectClassId(
@@ -81,7 +85,6 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
             String schoolName = studentManagerMapper.getSchoolNameById(studentInsertDTO.getSchoolId());
             throw new ApiException("学校" + schoolName + "的年级" + studentInsertDTO.getGradeId() + "不存在班级" + studentInsertDTO.getClassName());
         }
-
         //创建StudentManager对象
         StudentManager studentManager = new StudentManager();
         studentManager.setStudentName(studentInsertDTO.getStudentName());
@@ -101,7 +104,13 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
     @Override
     public void updateStudent(StudentInsertDTO studentInsertDTO) {
         int classId;
-
+        String studentNum = studentInsertDTO.getStudentNum(); // 获取学号
+        Integer count = studentManagerMapper.countByStudentNum(studentNum);
+        if (studentInsertDTO.getStudentNum() != studentManagerMapper.getStudentNumById(studentInsertDTO.getId())) {
+            if (count != null && count > 0) {
+                throw new ApiException("学号" + studentNum + "已存在"); // 复用项目已有异常体系
+            }
+        }
         //获取classId
         try {
             classId = studentManagerMapper.selectClassId(

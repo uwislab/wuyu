@@ -13,23 +13,23 @@
           <el-input v-model="searchQuery.studentName" placeholder="学生姓名" size="medium" />
         </el-col>
         <el-col :span="4">
-          <el-select v-model="searchQuery.gender" placeholder="性别" size="medium" @change="fetchStudentManager">
+          <el-select v-model="searchQuery.gender" placeholder="性别" size="medium" @change="searchUsers">
             <el-option label="男" value="1" />
             <el-option label="女" value="0" />
           </el-select>
         </el-col>
         <el-col :span="4">
-          <el-select v-model="searchQuery.className" placeholder="班级" size="medium" @change="fetchStudentManager">
+          <el-select v-model="searchQuery.className" placeholder="班级" size="medium" @change="searchUsers">
             <el-option v-for="classItem in classInfo" :key="classItem" :label="classItem" :value="classItem" />
           </el-select>
         </el-col>
         <el-col :span="4">
-          <el-select v-model="searchQuery.gradeId" placeholder="年级" size="medium" @change="fetchStudentManager">
+          <el-select v-model="searchQuery.gradeId" placeholder="年级" size="medium" @change="searchUsers">
             <el-option v-for="grade in gradeInfo" :key="grade" :label="grade" :value="grade" />
           </el-select>
         </el-col>
         <el-col :span="4">
-          <el-select v-model="searchQuery.schoolId" placeholder="学校" size="medium" @change="fetchStudentManager">
+          <el-select v-model="searchQuery.schoolId" placeholder="学校" size="medium" @change="searchUsers">
             <el-option v-for="school in schoolInfo" :key="school.id" :label="school.schoolName" :value="school.id" />
           </el-select>
         </el-col>
@@ -42,8 +42,8 @@
         <el-col :span="1.5">
           <el-button type="success" @click="openAddUserDialog">添加学生</el-button>
         </el-col>
-        
       </el-row>
+      
       <!-- 导入excel -->
       <el-dialog
         title="导入excel"
@@ -70,7 +70,7 @@
         </span>
       </el-dialog>
 
-      <!-- 用户列表 - 直接渲染原始数字数据 -->
+      <!-- 用户列表 -->
       <el-table :data="users.data" border stripe>
         <el-table-column label="学号" prop="studentNum" />
         <el-table-column label="学生姓名" prop="studentName" />
@@ -102,28 +102,16 @@
     <!-- 统计卡片 -->
     <div class="statistic-cards">
       <el-card class="stat-card">
-        <template #header>
-          <div class="card-header">学生总数</div>
-        </template>
-        <div class="card-content">
-          <span class="count">{{ totalStudents }}</span>
-        </div>
+        <template #header><div class="card-header">学生总数</div></template>
+        <div class="card-content"><span class="count">{{ totalStudents }}</span></div>
       </el-card>
       <el-card class="stat-card">
-        <template #header>
-          <div class="card-header">男生人数</div>
-        </template>
-        <div class="card-content">
-          <span class="count">{{ statisticData.genderRatio?.maleCount || 0 }}</span>
-        </div>
+        <template #header><div class="card-header">男生人数</div></template>
+        <div class="card-content"><span class="count">{{ statisticData.genderRatio?.maleCount || 0 }}</span></div>
       </el-card>
       <el-card class="stat-card">
-        <template #header>
-          <div class="card-header">女生人数</div>
-        </template>
-        <div class="card-content">
-          <span class="count">{{ statisticData.genderRatio?.femaleCount || 0 }}</span>
-        </div>
+        <template #header><div class="card-header">女生人数</div></template>
+        <div class="card-content"><span class="count">{{ statisticData.genderRatio?.femaleCount || 0 }}</span></div>
       </el-card>
     </div>
 
@@ -205,23 +193,32 @@ import { showLoading, closeLoading } from '@/utils/loading'
 export default {
   data() {
     return {
-      //请求地址
-      baseUrl: "http://us.uwis.cn:9080",
+      // 请求地址
+      baseUrl: "http://localhost:9080",
+      
       // 统计数据
-      statisticData: {},
+      statisticData: {
+        genderRatio: { maleCount: 0, femaleCount: 0 }, // 性别比例
+        gradeRatio: {}, // 年级比例 {gradeId: count}
+        schoolRatio: {} // 学校比例 {schoolId: count}
+      },
+      
       // 图表实例
       genderChart: null,
       gradeChart: null,
       schoolChart: null,
-      dialogVisible:false,
+      
+      // 弹窗相关
+      dialogVisible: false,
       uploadFile: null,
+      
       // 学生信息
       newUser: {
         id: "",
         studentNum: "",
         studentName: "",
         className: "",
-        gradeId:"",
+        gradeId: "",
         parentPhoneNum: "",
         gender: 1,
         schoolId: "",
@@ -229,44 +226,51 @@ export default {
         isreview: 0,
         isenter: 0
       },
-      file: {},
+      
+      // 表单验证规则
       rules: {
         studentNum: [
-            { required: true, message: "学号不能为空", trigger: "blur" },
-            { pattern: /^\d{10}$/, message: "学号必须为10个字符", trigger: "blur" },
-          ],
-          studentName: [
-            { required: true, message: "姓名不能为空", trigger: "blur" },
-            { pattern: /^.{1,10}$/, message: "姓名不能超过10个字符", trigger: "blur" },
-          ],
-          gender: [
-            { required: true, message: "性别不能为空", trigger: "blur" },
-          ],
-          classId: [
-            { required: true, message: "班级不能为空", trigger: "blur" },
-          ],
-          gradeId: [
-            { required: true, message: "年级不能为空", trigger: "blur" },
-          ],
-          parentPhoneNum: [
-            { required: true, message: "手机号不能为空", trigger: "blur" },
-            { pattern: /^\d{11}$/, message: "手机号必须是11位数字", trigger: "blur" },
-          ],
+          { required: true, message: "学号不能为空", trigger: "blur" },
+          { pattern: /^\d{10}$/, message: "学号必须为10个字符", trigger: "blur" },
+        ],
+        studentName: [
+          { required: true, message: "姓名不能为空", trigger: "blur" },
+          { pattern: /^.{1,10}$/, message: "姓名不能超过10个字符", trigger: "blur" },
+        ],
+        gender: [
+          { required: true, message: "性别不能为空", trigger: "blur" },
+        ],
+        classId: [
+          { required: true, message: "班级不能为空", trigger: "blur" },
+        ],
+        gradeId: [
+          { required: true, message: "年级不能为空", trigger: "blur" },
+        ],
+        parentPhoneNum: [
+          { required: true, message: "手机号不能为空", trigger: "blur" },
+          { pattern: /^\d{11}$/, message: "手机号必须是11位数字", trigger: "blur" },
+        ],
       },
-      editingUser: false, // 是否为编辑模式
-      editingUserId: null, // 编辑的用户ID
+      
+      // 编辑状态
+      editingUser: false,
+      editingUserId: null,
+      
+      // 搜索查询条件
       searchQuery: {
         studentNum: "",
         studentName: "",
         parentPhoneNum: "",
-        gender: "",
-        gradeId: "",
-        classId: "",
+        gender: null,
+        gradeId: null,
+        classId: null,
         className: "",
-        schoolId: "",
+        schoolId: null,
         sizeOfPage: 15,
         page: 1
       },
+      
+      // 学生列表数据
       users: {
         data: [],
         sizeOfPage: 10,
@@ -274,12 +278,11 @@ export default {
         totalNum: 0,
         isLast: false
       },
-      totalStudents: 0, // 学生总数
-      showAddUserDialog: false, // 弹窗显示状态
-      schools: [], // 存储学校列表
-      grades: [], // 存储年级列表
-      classes: [], // 存储班级列表
-      // 性别选项
+      
+      // 总学生数
+      totalStudents: 0,
+      
+      // 下拉选项数据
       genderOptions: [
         { label: "男", value: 1 },
         { label: "女", value: 0 }
@@ -289,14 +292,14 @@ export default {
         { label: "教师", value: 2 },
         { label: "管理员", value: 3 },
       ],
-      schoolInfro: [],
+      schoolInfo: [],
       gradeInfo: [],
       classInfo: [],
+      
       // Excel导入相关
-      importDialogVisible: false,  // 导入进度弹窗
-      importProgress: 0,           // 导入进度
-      exportLoading: false,        // 导出加载状态
-      // Excel导入模板列定义
+      importDialogVisible: false,
+      importProgress: 0,
+      exportLoading: false,
       excelColumns: [
         { field: "studentNum", title: "学号" },
         { field: "studentName", title: "姓名" },
@@ -308,58 +311,61 @@ export default {
       ]
     };
   },
+  
   methods: {
+    // 处理文件上传
     handleFileChange(file) {
-      this.uploadFile = file.raw
+      this.uploadFile = file.raw;
     },
-    // 导出excel
+    
+    // 导出Excel
     exportExcel() {
-      // 创建表单
       const form = document.createElement('form');
       form.action = `${this.baseUrl}/studentExcel/export`;
       form.method = 'GET';
       form.style.display = 'none';
       
-      // 添加到文档并提交
       document.body.appendChild(form);
       form.submit();
-      
-      // 清理
       document.body.removeChild(form);
     },
-    // 导入excel
+    
+    // 导入Excel
     async handleUpload() {
-      console.log('handleUpload');
       if (!this.uploadFile) {
-        this.$message.warning('请先选择文件')
-        return
+        this.$message.warning('请先选择文件');
+        return;
       }
-      const formData = new FormData()
-      formData.append('file', this.uploadFile)
+      
+      const formData = new FormData();
+      formData.append('file', this.uploadFile);
+      
       try {
-        showLoading('正在上传，请稍候...')
-        const res = await axios.post(`${this.baseUrl}/studentExcel/import`, formData)
-        console.log(res);
-        if (res.data.code ===200) {
-          this.$message.success('上传成功')
-          this.dialogVisible = false
-          this.uploadFile = null
-          this.fetchStudentManager() // 刷新数据
+        showLoading('正在上传，请稍候...');
+        const res = await axios.post(`${this.baseUrl}/studentExcel/import`, formData);
+        
+        if (res.data.code === 200) {
+          this.$message.success('上传成功');
+          this.dialogVisible = false;
+          this.uploadFile = null;
+          this.fetchStudentManager(); // 刷新数据
         } else {
-          this.$message.error('上传失败' + res.data.message)
+          this.$message.error('上传失败' + res.data.message);
         }
       } catch (error) {
-        this.$message.error('上传失败：' + error.message)
+        this.$message.error('上传失败：' + error.message);
       } finally {
-        closeLoading()
+        closeLoading();
       }
     },
     
+    // 取消导入
     cancelExcel() {
-      this.uploadFile = null
-      this.dialogVisible = false
+      this.uploadFile = null;
+      this.dialogVisible = false;
     },
-
+    
+    // 关闭弹窗确认
     handleClose(done) {
       this.$confirm('确认关闭？')
         .then(_ => {
@@ -367,97 +373,92 @@ export default {
         })
         .catch(_ => {});
     },
-      
+    
     // 表单验证并保存
     validateAndSaveUser() {
-        this.$refs.form.validate((valid) => {
-          if (valid) {
-            if (this.editingUser) {
-              // 编辑用户逻辑
-              this.updateUser();
-            } else {
-              // 添加用户逻辑
-              this.addUser();
-            }
+      this.$refs.form.validate((valid) => {
+        if (valid) {
+          if (this.editingUser) {
+            this.updateUser();
           } else {
-            console.log('表单验证失败');
-            return false;
+            this.addUser();
           }
+        } else {
+          console.log('表单验证失败');
+          return false;
+        }
+      });
+    },
+    
+    // 添加学生
+    addUser() {
+      axios.post(`${this.baseUrl}/StudentManager/addStudent`, this.newUser)
+        .then(response => {
+          if (response.data.code === 200) {
+            this.$message.success('添加学生成功');
+            this.showAddUserDialog = false;
+            this.searchUsers();
+          } else {
+            this.$message.error('添加学生失败: ' + response.data.message);
+          }
+        })
+        .catch(error => {
+          console.error('添加学生时发生错误:', error);
+          this.$message.error('添加学生时发生错误');
         });
-      },
-      
-      addUser() {
-        console.log('请求地址:', this.baseUrl);
-        axios.post(`${this.baseUrl}/StudentManager/addStudent`, this.newUser)
-          .then(response => {
-            if (response.data.code === 200) {
-              this.$message.success('添加学生成功');
-              this.showAddUserDialog = false;
-              this.searchUsers();
-            } else {
-              this.$message.error('添加学生失败: ' + response.data.message);
-            }
-          })
-          .catch(error => {
-            console.error('添加学生时发生错误:', error);
-            this.$message.error('添加学生时发生错误');
-          });
-      },
-
-      updateUser() {
-        axios.post(`${this.baseUrl}/StudentManager/updateStudent`, this.newUser)
-          .then(response => {
-            if (response.data.code === 200) {
-              this.$message.success('编辑学生成功');
-              this.showAddUserDialog = false;
-              this.searchUsers();
-            } else {
-              this.$message.error('编辑学生失败: ' + response.data.message);
-            }
-          })
-          .catch(error => {
-            console.error('编辑学生时发生错误:', error);
-            this.$message.error('编辑学生时发生错误');
-          });
-      },
-    fetchSchools() {
-      axios
-        .get(`${this.baseUrl}/StudentManager/getSchool`)
-        .then((response) => {
-          this.schools = response.data;
+    },
+    
+    // 更新学生
+    updateUser() {
+      axios.post(`${this.baseUrl}/StudentManager/updateStudent`, this.newUser)
+        .then(response => {
+          if (response.data.code === 200) {
+            this.$message.success('编辑学生成功');
+            this.showAddUserDialog = false;
+            this.searchUsers();
+          } else {
+            this.$message.error('编辑学生失败: ' + response.data.message);
+          }
+        })
+        .catch(error => {
+          console.error('编辑学生时发生错误:', error);
+          this.$message.error('编辑学生时发生错误');
+        });
+    },
+    
+    // 获取学校列表
+    fetchSchoolInfo() {
+      axios.get(`${this.baseUrl}/StudentManager/getSchool`)
+        .then(response => {
+          this.schoolInfo = response.data.data;
         })
         .catch(error => {
           console.error("获取学校列表失败：", error);
         });
     },
-
-    // 获取年级列表
-    fetchGrades(schoolId) {
-      axios
-        .get(`${this.baseUrl}/webUser/grades?schoolId=${schoolId}`)
-        .then(response => {
-          this.grades = response.data;
-          // 重置年级选择后，清空班级选择
-          this.classes = [];
-          this.newUser.classId = "";
-        })
-        .catch(error => {
-          console.error("获取年级列表失败：", error);
-        });
-    },
-
+    
     // 获取班级列表
-    fetchClasses(gradeId) {
-      axios
-        .get(`${this.baseUrl}/studentManager/addStudent`)
-        .then((response) => {
-          this.allUsers = response.data; // 假设接口返回的数据为用户列表
+    fetchClassInfo() {
+      axios.get(`${this.baseUrl}/StudentManager/getClassName`)
+        .then(response => {
+          this.classInfo = response.data.data;
         })
         .catch(error => {
           console.error("获取班级列表失败：", error);
         });
     },
-
+    
+    // 获取年级列表
+    fetchGradeInfo() {
+      axios.get(`${this.baseUrl}/StudentManager/getGrade`)
+        .then(response => {
+          this.gradeInfo = response.data.data;
+        })
+        .catch(error => {
+          console.error("获取年级列表失败：", error);
+        });
+    },
+    
     // 学校变更事件
     onSchoolChange(schoolId) {
       if (schoolId) {
@@ -469,7 +470,7 @@ export default {
         this.newUser.classId = "";
       }
     },
-
+    
     // 年级变更事件
     onGradeChange(gradeId) {
       if (gradeId) {
@@ -479,293 +480,275 @@ export default {
         this.newUser.classId = "";
       }
     },
-
+    
     // 获取学生列表
     fetchStudentManager() {
-      axios
-        .post(`${this.baseUrl}/StudentManager/getStudent`, {
-          page: this.users.page,
-            sizeOfPage: this.users.sizeOfPage,
-            studentNum:this.searchQuery.studentNum,
-            studentName:this.searchQuery.studentName,
-            gender:this.searchQuery.gender,
-            className:this.searchQuery.className,
-            gradeId:this.searchQuery.gradeId,
-            schoolId:this.searchQuery.schoolId,
-        })
-        .then(response => {
-          this.users = response.data.data;
-          
-        })
-        .catch(error => {
-          console.error("获取用户列表出错：", error);
-        });
+      axios.post(`${this.baseUrl}/StudentManager/getStudent`, {
+        page: this.users.page,
+        sizeOfPage: this.users.sizeOfPage,
+        studentNum: this.searchQuery.studentNum,
+        studentName: this.searchQuery.studentName,
+        gender: this.searchQuery.gender,
+        className: this.searchQuery.className,
+        gradeId: this.searchQuery.gradeId,
+        schoolId: this.searchQuery.schoolId,
+      })
+      .then(response => {
+        this.users = response.data.data;
+      })
+      .catch(error => {
+        console.error("获取用户列表出错：", error);
+      });
     },
-
-    // 获取统计数据
-    fetchStatisticData() {
-      axios
-        .get(`${this.baseUrl}/api/statistics/student`)
-        .then(res => {
+    
+    // 1. 初始化加载全局统计数据
+    async fetchGlobalStatistics() {
+      try {
+        showLoading('加载统计数据中...');
+        const res = await axios.get(`${this.baseUrl}/api/statistics/student`);
+        if (res.data) {
           this.statisticData = res.data;
-          this.totalStudents = 
-            (this.statisticData.genderRatio?.maleCount || 0) + 
-            (this.statisticData.genderRatio?.femaleCount || 0);
-          this.renderCharts();
-        })
-        .catch(err => {
-          console.error("获取统计数据失败:", err);
-          this.$message.error("获取统计数据失败，请稍后重试");
-        });
+          this.calcTotalStudents(); // 计算总人数
+          this.renderCharts(); // 渲染图表
+        }
+      } catch (err) {
+        console.error("全局统计数据加载失败:", err);
+        this.$message.error("统计数据加载失败，请刷新重试");
+      } finally {
+        closeLoading();
+      }
     },
+    
+    // 2. 条件筛选时加载统计数据
+// 条件筛选时加载统计数据（修正版）
+async fetchFilteredStatistics() {
+  try {
+    // 1. 构造查询参数（与全局搜索条件一致）
+    const query = { ...this.searchQuery };
+    delete query.sizeOfPage; // 移除分页参数
+    delete query.page;
 
-    // 渲染所有图表
+    // 2. 修正接口路径（确保与后端一致）
+    // 注意：如果后端条件统计接口也用GET，这里改为get并通过params传参
+    const res = await axios.post(
+      `${this.baseUrl}/api/statistics/student/filtered`, // 与全局接口路径保持层级一致
+      query // POST请求参数放在请求体
+    );
+
+    // 3. 处理响应数据
+    if (res.data) {
+      this.statisticData = res.data;
+      this.calcTotalStudents(); // 重新计算总人数
+      this.renderCharts(); // 刷新图表
+    }
+  } catch (err) {
+    console.error("条件统计数据加载失败:", err);
+    this.$message.error("筛选统计数据加载失败，请检查接口是否存在");
+  } finally {
+    closeLoading();
+  }
+},
+    
+    // 计算总学生数（男+女）
+    calcTotalStudents() {
+      const { maleCount = 0, femaleCount = 0 } = this.statisticData.genderRatio || {};
+      this.totalStudents = maleCount + femaleCount;
+    },
+    
+    // 3. 搜索方法改造：同时加载列表和筛选统计
+    async searchUsers() {
+      this.users.page = 1;
+      // 先加载学生列表（原有逻辑）
+      await this.fetchStudentManager();
+      // 再加载筛选后的统计数据
+      await this.fetchFilteredStatistics();
+    },
+    
+    // 4. 重置搜索：恢复全局统计
+    resetSearch() {
+      this.searchQuery = {
+        studentNum: "",
+        studentName: "",
+        gender: null,
+        className: "",
+        gradeId: null,
+        schoolId: null,
+        sizeOfPage: 15,
+        page: 1
+      };
+      // 重置后加载列表和全局统计
+      this.fetchStudentManager();
+      this.fetchGlobalStatistics();
+    },
+    
+    // 5. 图表渲染方法改造（适配新数据结构）
     renderCharts() {
       this.renderGenderChart();
       this.renderGradeChart();
       this.renderSchoolChart();
     },
-
-    // 渲染性别图表
+    
+    // 渲染性别分布图表
     renderGenderChart() {
       const chartDom = document.getElementById("genderPie");
       if (!chartDom) return;
-      
       this.genderChart = echarts.init(chartDom);
       
-      const { genderRatio } = this.statisticData;
-      if (!genderRatio) return;
-      
-      const data = [
-        { value: genderRatio.maleCount, name: "男" },
-        { value: genderRatio.femaleCount, name: "女" }
-      ];
-      
+      const { maleCount = 0, femaleCount = 0 } = this.statisticData.genderRatio || {};
       const option = {
-        title: {
-          text: "学生性别分布",
-          left: "center"
-        },
-        tooltip: {
-          trigger: "item",
-          formatter: "{a} <br/>{b}: {c} ({d}%)"
-        },
-        series: [
-          {
-            name: "性别",
-            type: "pie",
-            radius: ["40%", "70%"],
-            avoidLabelOverlap: false,
-            label: {
-              show: true,
-              formatter: "{b}: {d}%"
-            },
-            emphasis: {
-              label: {
-                show: true,
-                fontSize: "15",
-                fontWeight: "bold"
-              }
-            },
-            labelLine: {
-              show: true
-            },
-            data: data
-          }
-        ]
+        title: { text: "性别分布", left: "center" },
+        tooltip: { trigger: "item" },
+        series: [{
+          name: "性别",
+          type: "pie",
+          radius: ["40%", "70%"],
+          data: [
+            { value: maleCount, name: "男" },
+            { value: femaleCount, name: "女" }
+          ]
+        }]
       };
-      
       this.genderChart.setOption(option);
-      window.addEventListener("resize", () => {
-        this.genderChart.resize();
-      });
+      window.addEventListener("resize", () => this.genderChart.resize());
     },
-
-    // 渲染年级图表
-    renderGradeChart() {
-      const chartDom = document.getElementById("gradePie");
-      if (!chartDom) return;
-      
-      this.gradeChart = echarts.init(chartDom);
-      
-      const { gradeRatio } = this.statisticData;
-      if (!gradeRatio) return;
-      
-      const data = Object.entries(gradeRatio).map(([gradeId, count]) => ({
-        value: count,
-        name: `年级${gradeId}`
-      }));
-      
-      const option = {
-        title: {
-          text: "学生年级分布",
-          left: "center"
-        },
-        tooltip: {
-          trigger: "item",
-          formatter: "{a} <br/>{b}: {c} ({d}%)"
-        },
-        series: [
-          {
-            name: "年级",
-            type: "pie",
-            radius: ["40%", "70%"],
-            avoidLabelOverlap: false,
-            label: {
-              show: true,
-              formatter: "{b}: {d}%"
-            },
-            emphasis: {
-              label: {
-                show: true,
-                fontSize: "15",
-                fontWeight: "bold"
-              }
-            },
-            labelLine: {
-              show: true
-            },
-            data: data
-          }
-        ]
-      };
-      
-      this.gradeChart.setOption(option);
-      window.addEventListener("resize", () => {
-        this.gradeChart.resize();
-      });
+    
+  // 渲染年级分布图表
+renderGradeChart() {
+  const chartDom = document.getElementById("gradePie");
+  if (!chartDom) return;
+  this.gradeChart = echarts.init(chartDom);
+  
+  const gradeRatio = this.statisticData.gradeRatio || [];
+  
+  // 将数组转换为ECharts需要的格式
+  const gradeData = gradeRatio.map(item => ({
+    name: `年级${item.gradeId}`, // 直接使用年级ID
+    value: Number(item.count) || 0 // 将字符串转换为数字
+  }));
+  
+  const option = {
+    title: { text: "年级分布", left: "center" },
+    tooltip: { 
+      trigger: "item",
+      formatter: "{b}: {c}人 ({d}%)" // 自定义提示格式
     },
+    series: [{
+      name: "年级",
+      type: "pie",
+      radius: ["40%", "70%"],
+      data: gradeData.length > 0 ? gradeData : [
+        { value: 1, name: "暂无数据", itemStyle: { color: '#eee' } }
+      ],
+      label: {
+        formatter: "{b}: {d}%" // 显示百分比
+      }
+    }]
+  };
+  
+  this.gradeChart.setOption(option);
+  window.addEventListener("resize", () => this.gradeChart.resize());
+},
 
-    // 渲染学校图表
-    renderSchoolChart() {
-      const chartDom = document.getElementById("schoolPie");
-      if (!chartDom) return;
-      
-      this.schoolChart = echarts.init(chartDom);
-      
-      const { schoolRatio } = this.statisticData;
-      if (!schoolRatio) return;
-      
-      const data = Object.entries(schoolRatio).map(([schoolId, count]) => ({
-        value: count,
-        name: `学校${schoolId}`
-      }));
-      
-      const option = {
-        title: {
-          text: "学生学校分布",
-          left: "center"
-        },
-        tooltip: {
-          trigger: "item",
-          formatter: "{a} <br/>{b}: {c} ({d}%)"
-        },
-        series: [
-          {
-            name: "学校",
-            type: "pie",
-            radius: ["40%", "70%"],
-            avoidLabelOverlap: false,
-            label: {
-              show: true,
-              formatter: "{b}: {d}%"
-            },
-            emphasis: {
-              label: {
-                show: true,
-                fontSize: "15",
-                fontWeight: "bold"
-              }
-            },
-            labelLine: {
-              show: true
-            },
-            data: data
-          }
-        ]
-      };
-      
-      this.schoolChart.setOption(option);
-      window.addEventListener("resize", () => {
-        this.schoolChart.resize();
-      });
+// 渲染学校分布图表
+renderSchoolChart() {
+  const chartDom = document.getElementById("schoolPie");
+  if (!chartDom) return;
+  this.schoolChart = echarts.init(chartDom);
+  
+  const schoolRatio = this.statisticData.schoolRatio || [];
+  
+  // 将schoolId映射为学校名称
+  const schoolMap = {};
+  this.schoolInfo.forEach(school => {
+    schoolMap[school.id] = school.schoolName;
+  });
+  
+  // 将数组转换为ECharts需要的格式
+  const schoolData = schoolRatio.map(item => ({
+    name: schoolMap[item.schoolId] || `学校${item.schoolId}`, // 优先使用学校名称
+    value: Number(item.count) || 0 // 将字符串转换为数字
+  }));
+  
+  const option = {
+    title: { text: "学校分布", left: "center" },
+    tooltip: { 
+      trigger: "item",
+      formatter: "{b}: {c}人 ({d}%)" 
     },
-
+    series: [{
+      name: "学校",
+      type: "pie",
+      radius: ["40%", "70%"],
+      data: schoolData.length > 0 ? schoolData : [
+        { value: 1, name: "暂无数据", itemStyle: { color: '#eee' } }
+      ],
+      label: {
+        formatter: "{b}: {d}%"
+      }
+    }]
+  };
+  
+  this.schoolChart.setOption(option);
+  window.addEventListener("resize", () => this.schoolChart.resize());
+},
     
     // 删除学生
     async confirmDeleteUser(id) {
-    try {
-      // 修改提示信息，与逻辑删除保持一致
-      await this.$confirm(
-        "此操作将删除该学生信息, 是否继续?",
-        "提示",
-        {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning",
-
+      try {
+        await this.$confirm(
+          "此操作将删除该学生信息, 是否继续?",
+          "提示",
+          {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning"
+          }
+        );
+        
+        await this.removeStudent(id);
+        this.$message.success("学生删除成功");
+        this.fetchStudentManager();
+      } catch (error) {
+        if (error !== "cancel") {
+          this.$message.error("删除学生失败，请稍后重试");
+          console.error("删除学生失败:", error);
         }
-      );
-    
-      // 修改API调用，与后端保持一致
-      await this.removeStudent(id);
-      
-      // 删除成功，显示成功消息
-      this.$message.success("学生删除成功");
-      
-      // 刷新学生列表
-      this.fetchStudentManager();
-    } catch (error) {
-      // 用户取消删除或删除操作失败
-      if (error !== "cancel") {
-        // 非用户取消的情况，显示错误消息
-        this.$message.error("删除学生失败，请稍后重试");
-        console.error("删除学生失败:", error);
       }
-    }
-  },
-
-  // 新增或修改API调用方法，确保与后端接口匹配
+    },
+    
+    // 删除学生API调用
     removeStudent(studentId) {
-      console.log(studentId)
-    // 修正API路径，确保与后端接口匹配
       return axios.get(`${this.baseUrl}/StudentManager/removeStudent`, {
         params: {
-          id: studentId // 确保参数名与后端@RequestParam("id")一致
+          id: studentId
         }
       });
     },
-
+    
+    // 格式化性别显示
     formatGender(row, column) {
       return row.gender === 1 ? "男" : "女";
     },
-
+    
     // 分页处理
     handleSizeChange(size) {
       this.users.sizeOfPage = size;
-      this.users.page = 1; // 改变每页条数时重置到第一页
+      this.users.page = 1;
       this.fetchStudentManager();
     },
-
+    
     handlePageChange(page) {
       this.users.page = page;
       this.fetchStudentManager();
     },
-
+    
     // 编辑学生
     editUser(student) {
       this.editingUser = true;
-      this.editingUserId = student.id; // 设置当前编辑学生的 ID
-
-      this.newUser.id = this.editingUserId
-      this.newUser.isenter = student.isenter
-      this.newUser.isreview = student.isreview
-      this.newUser.deleted = student.deleted
-      this.newUser.schoolId = student.schoolId
-
-      this.newUser = { ...student }; // 将学生信息复制到 newUser 中
+      this.editingUserId = student.id;
       
-      // 加载关联数据
+      this.newUser = { ...student };
+      
       if (this.newUser.schoolId) {
         this.fetchGrades(this.newUser.schoolId);
       }
@@ -776,18 +759,12 @@ export default {
       
       this.showAddUserDialog = true;
     },
-
-    // 搜索学生
-    searchUsers() {
-      this.users.page = 1;
-      this.fetchStudentManager();
-    },
-
+    
     // 关闭弹窗
     closeAddUserDialog() {
       this.showAddUserDialog = false;
       this.editingUser = false;
-      this.editingUserId = null; // 清空编辑用户 ID
+      this.editingUserId = null;
       this.newUser = {
         id: null,
         studentNum: "",
@@ -800,87 +777,38 @@ export default {
         isreview: 0,
         isenter: 0
       };
-      // 重置关联数据
       this.grades = [];
       this.classes = [];
     },
-
+    
     // 打开添加学生弹窗
     openAddUserDialog() {
-        this.editingUser = false;
-        this.newUser = {
-          studentNum: "",
-          studentName: "",
-          gender: 1,
-          className: "",
-          gradeId: "",
-          parentPhoneNum: "",
-          schoolId: "",
-        };
-
-        this.newUser.className = this.classInfo[0]; // 默认选择第一个班级
-        this.newUser.gradeId = this.gradeInfo[0]; // 默认选择第一个年级
-        this.newUser.schoolId = this.schoolInfo[0].id; // 默认选择第一个学校
-
-        this.showAddUserDialog = true;
-      },
-      // closeAddUserDialog() {
-      //   this.showAddUserDialog = false;
-      // },
-    genderFormatter(row) {
-      return this.genderOptions.find(option => option.value === row.gender)?.label || "";
-    },
-
-    // 重置搜索条件
-    resetSearch() {
-      this.searchQuery = {
+      this.editingUser = false;
+      this.newUser = {
         studentNum: "",
         studentName: "",
-        parentPhoneNum: "",
-        gender: "",
+        gender: 1,
+        className: "",
         gradeId: "",
-        classId: "",
+        parentPhoneNum: "",
         schoolId: "",
-        sizeOfPage: 15,
-        page: 1
       };
-      this.fetchStudentManager();
+      
+      if (this.classInfo.length) {
+        this.newUser.className = this.classInfo[0];
+      }
+      
+      if (this.gradeInfo.length) {
+        this.newUser.gradeId = this.gradeInfo[0];
+      }
+      
+      if (this.schoolInfo.length) {
+        this.newUser.schoolId = this.schoolInfo[0].id;
+      }
+      
+      this.showAddUserDialog = true;
     },
-
-    //获取学校信息列表
-  fetchSchoolInfo() {
-      axios
-        .get(`${this.baseUrl}/StudentManager/getSchool`)
-        .then((response) => {
-          this.schoolInfo = response.data.data;
-        })
-        .catch(error => {
-          console.error("获取学校列表失败：", error);
-        });
-  },
-  //获取班级列表
-  fetchClassInfo() {
-      axios
-        .get(`${this.baseUrl}/StudentManager/getClassName`)
-        .then((response) => {
-          this.classInfo = response.data.data;
-        })
-        .catch(error => {
-          console.error("获取班级列表失败：", error);
-        });
-  },
-  //获取年级列表
-  fetchGradeInfo() {
-      axios
-        .get(`${this.baseUrl}/StudentManager/getGrade`)
-        .then((response) => {
-          this.gradeInfo = response.data.data;
-        })
-        .catch(error => {
-          console.error("获取年级列表失败：", error);
-        });
-  },
-
+    
     // 窗口大小变化时重绘图表
     resizeCharts() {
       this.genderChart?.resize();
@@ -888,18 +816,20 @@ export default {
       this.schoolChart?.resize();
     }
   },
+  
   mounted() {
+    // 页面初始化：加载学生列表 + 全局统计数据
     this.fetchStudentManager();
+    this.fetchGlobalStatistics();
+    // 加载学校/年级/班级列表
     this.fetchSchoolInfo();
     this.fetchClassInfo();
     this.fetchGradeInfo();
-    this.fetchStatisticData();
     
     // 监听窗口大小变化
     window.addEventListener("resize", this.resizeCharts);
-
-    this.totalStudents = this.users.totalNum; // 初始化总学生数
   },
+  
   beforeDestroy() {
     // 移除事件监听
     window.removeEventListener("resize", this.resizeCharts);
