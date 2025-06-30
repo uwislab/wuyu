@@ -656,8 +656,6 @@ renderSchoolChart() {
   this.schoolChart = echarts.init(chartDom);
   
   const schoolRatio = this.statisticData.schoolRatio || [];
-
-  
   
   // 将schoolId映射为学校名称
   const schoolMap = {};

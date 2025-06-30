@@ -20,8 +20,6 @@ public class StatisticsController {
     @GetMapping("/student")
     public Map<String, Object> getStudentStatistics() {
         return statisticsService.getGlobalStatistics();
-
-
     }
 
     /**
