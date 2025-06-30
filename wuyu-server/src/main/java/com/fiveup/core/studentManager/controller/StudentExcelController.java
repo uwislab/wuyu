@@ -14,9 +14,8 @@ public class StudentExcelController {
     @Autowired
     private StudentManagerService studentManagerService;
     @GetMapping("/export")
-    public Result export(HttpServletResponse response) {
+    public void export(HttpServletResponse response) {
         studentManagerService.export(response);
-        return Result.ok();
     }
     @PostMapping("/import")
     public Result inport(@RequestBody MultipartFile file){

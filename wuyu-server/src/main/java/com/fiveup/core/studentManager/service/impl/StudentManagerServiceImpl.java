@@ -1,26 +1,22 @@
 package com.fiveup.core.studentManager.service.impl;
-import com.alibaba.excel.EasyExcel;
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fiveup.core.common.exception.ApiException;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fiveup.core.management.model.School;
 import com.fiveup.core.studentManager.entity.StudentManager;
 import com.fiveup.core.studentManager.mapper.StudentManagerMapper;
 import com.fiveup.core.studentManager.pojo.PageBean;
+import com.fiveup.core.studentManager.pojo.StudentInsertDTO;
 import com.fiveup.core.studentManager.pojo.StudentManagerQuery;
-
+import com.fiveup.core.studentManager.pojo.StudentVO;
 import com.fiveup.core.studentManager.service.StudentManagerService;
-import org.apache.poi.ss.usermodel.CellType;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.python.antlr.ast.Str;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -28,22 +24,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.regex.Pattern;
-
-import com.fiveup.core.studentManager.pojo.StudentVO;
-import com.fiveup.core.studentManager.service.StudentManagerService;
-import com.github.pagehelper.Page;
-import com.github.pagehelper.PageHelper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper, StudentManager> implements StudentManagerService {
@@ -52,19 +38,6 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
 
     private StudentManagerService studentManagerService;
 
-    @Override
-    public void addStudent(StudentManager studentManager) {
-        studentManager.setDeleted(0);
-        studentManager.setIsreview(0);
-        studentManager.setIsenter(0);
-        studentManagerMapper.insert(studentManager);
-    }
-
-    /**
-     * 学生分页查询
-     * @param studentManagerQuery
-     * @return
-     */
     @Override
     public PageBean<StudentVO> getStudentPage(StudentManagerQuery studentManagerQuery) {
         System.out.println("前端传来页码"+studentManagerQuery.getPage());
@@ -95,7 +68,66 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
     }
 
     @Override
-    public void updateStudent(StudentManager studentManager) {
+    public void addStudent(StudentInsertDTO studentInsertDTO) {
+        int classId;
+
+        //获取classId
+        try {
+            classId = studentManagerMapper.selectClassId(
+                    studentInsertDTO.getGradeId(),
+                    studentInsertDTO.getSchoolId(),
+                    studentInsertDTO.getClassName());
+        } catch (Exception e) {
+            String schoolName = studentManagerMapper.getSchoolNameById(studentInsertDTO.getSchoolId());
+            throw new ApiException("学校" + schoolName + "的年级" + studentInsertDTO.getGradeId() + "不存在班级" + studentInsertDTO.getClassName());
+        }
+
+        //创建StudentManager对象
+        StudentManager studentManager = new StudentManager();
+        studentManager.setStudentName(studentInsertDTO.getStudentName());
+        studentManager.setStudentNum(studentInsertDTO.getStudentNum());
+        studentManager.setGender(studentInsertDTO.getGender());
+        studentManager.setClassId(classId);
+        studentManager.setGradeId(studentInsertDTO.getGradeId());
+        studentManager.setParentPhoneNum(studentInsertDTO.getParentPhoneNum());
+        studentManager.setSchoolId(studentInsertDTO.getSchoolId());
+        studentManager.setIsreview(0);
+        studentManager.setDeleted(0);
+        studentManager.setIsenter(0);
+
+        studentManagerMapper.insertStudent(studentManager);
+    }
+
+    @Override
+    public void updateStudent(StudentInsertDTO studentInsertDTO) {
+        int classId;
+
+        //获取classId
+        try {
+            classId = studentManagerMapper.selectClassId(
+                    studentInsertDTO.getGradeId(),
+                    studentInsertDTO.getSchoolId(),
+                    studentInsertDTO.getClassName());
+        } catch (Exception e) {
+            String schoolName = studentManagerMapper.getSchoolNameById(studentInsertDTO.getSchoolId());
+            throw new ApiException("学校" + schoolName + "的年级" + studentInsertDTO.getGradeId() + "不存在班级" + studentInsertDTO.getClassName());
+        }
+
+        //创建StudentManager对象
+        StudentManager studentManager = new StudentManager();
+
+        studentManager.setId(studentInsertDTO.getId());
+        studentManager.setStudentName(studentInsertDTO.getStudentName());
+        studentManager.setStudentNum(studentInsertDTO.getStudentNum());
+        studentManager.setGender(studentInsertDTO.getGender());
+        studentManager.setClassId(classId);
+        studentManager.setGradeId(studentInsertDTO.getGradeId());
+        studentManager.setParentPhoneNum(studentInsertDTO.getParentPhoneNum());
+        studentManager.setSchoolId(studentInsertDTO.getSchoolId());
+        studentManager.setIsreview(studentInsertDTO.getIsreview());
+        studentManager.setDeleted(studentInsertDTO.getDeleted());
+        studentManager.setIsenter(studentInsertDTO.getIsenter());
+
         studentManagerMapper.updateById(studentManager);
     }
 
@@ -122,15 +154,17 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
     public List<Integer> getGrade() {
         return studentManagerMapper.getGrade();
     }
-  
+
     public void export(HttpServletResponse response) {
-        List<StudentManager> list = studentManagerMapper.selectList(null);
+        QueryWrapper<StudentManager> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("deleted",0);
+        List<StudentManager> list = studentManagerMapper.selectList(queryWrapper);
         try {
             ClassPathResource resource = new ClassPathResource("templates/studentInput.xlsx");
             InputStream in = resource.getInputStream();
             XSSFWorkbook excel = new XSSFWorkbook(in);
             XSSFSheet sheet1 = excel.getSheetAt(0);
-            if (list != null && list.size() > 0) {
+            if (list != null && !list.isEmpty()) {
                 for (int i = 0; i < list.size(); ++i) {
                     XSSFRow row = sheet1.getRow(i + 1);
                     if (row == null) {
@@ -198,7 +232,7 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
     }
 
         @Override
-    public void importstudent(MultipartFile file) {
+        public void importstudent(MultipartFile file) {
             InputStream inputStream = null;
             XSSFWorkbook workbook = null;
             Set<String> numset = studentManagerMapper.selectnum();//学号集合
@@ -209,8 +243,8 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
                 XSSFSheet sheet = workbook.getSheetAt(0);
                 List<StudentManager> list = new ArrayList<>();
                 Set<String> set=new HashSet<>();//学号
-                StudentManager studentManager = new StudentManager();
                 for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                    StudentManager studentManager = new StudentManager();
                     XSSFRow row = sheet.getRow(i);
                     String f=new String();
                     if (row != null) {
@@ -256,10 +290,12 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
                                     else throw new ApiException("第" + i + "行联系方式只能为11为手机号码");
                             }
                         }
+                        studentManager.setIsreview(1);
+                        studentManager.setIsenter(1);
                         list.add(studentManager);
                     }
                 }
-                studentManagerService.saveBatch(list);
+                this.saveBatch(list);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             } finally {

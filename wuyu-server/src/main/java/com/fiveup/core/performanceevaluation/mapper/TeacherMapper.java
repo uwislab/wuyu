@@ -1,5 +1,6 @@
 package com.fiveup.core.performanceevaluation.mapper;
 
+import com.fiveup.core.cultivation.entity.BasicTeacher;
 import com.fiveup.core.performanceevaluation.bean.Teacher;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -35,4 +36,10 @@ public interface TeacherMapper {
     Teacher selectByName(String name);
 
     List<Integer> selectOtherTeacher(String name);
+
+    @Select("SELECT * FROM basic_teacher WHERE teacher_name = #{name} and id = #{id}")
+    Teacher getTeach(Long id, String name);
+    @Select("SELECT * FROM basic_teacher WHERE teacher_name = #{realName} ")
+
+    List<BasicTeacher> getTeacherByName(String realName);
 }
