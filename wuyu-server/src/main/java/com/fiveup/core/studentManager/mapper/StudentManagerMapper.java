@@ -52,5 +52,7 @@ public interface StudentManagerMapper extends BaseMapper<StudentManager> {
     @Select("select DISTINCT grade_id from basic_student order by grade_id")
     List<Integer> getGrade();
 
-
+//    根据Id获取学号
+    @Select("select student_num from basic_student where id = #{studentId}")
+    String getStudentNumById(int studentId);
 }

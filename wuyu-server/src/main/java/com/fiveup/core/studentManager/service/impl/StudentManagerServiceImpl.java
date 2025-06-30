@@ -104,6 +104,13 @@ public class StudentManagerServiceImpl extends ServiceImpl<StudentManagerMapper,
     @Override
     public void updateStudent(StudentInsertDTO studentInsertDTO) {
         int classId;
+        String studentNum = studentInsertDTO.getStudentNum(); // 获取学号
+        Integer count = studentManagerMapper.countByStudentNum(studentNum);
+        if (studentInsertDTO.getStudentNum() != studentManagerMapper.getStudentNumById(studentInsertDTO.getId())) {
+            if (count != null && count > 0) {
+                throw new ApiException("学号" + studentNum + "已存在"); // 复用项目已有异常体系
+            }
+        }
         //获取classId
         try {
             classId = studentManagerMapper.selectClassId(
