@@ -137,6 +137,34 @@ public class CourseScoreController extends BaseController {
         return new Result(200, "成功", data);
     }
 
+    // 修复原本的逻辑错误
+    @PostMapping("/getByStudent2")
+    public Result getByStudent2(@RequestBody Map<String, Object> request) {
+        String studentNum = request.get("studentNum").toString();
+        Integer testNumber = (Integer) request.get("testNumber");
+
+        if (studentNum == null || studentNum.trim().isEmpty()) {
+            return new Result(400, "缺少参数：studentNum");
+        }
+
+        if (testNumber == null) {
+            return new Result(400, "缺少参数：testNumber");
+        }
+
+        List<CourseScore> scores = courseScoreService.getByStudentAndTestNumber(studentNum, testNumber);
+
+        List<Map<String, Object>> data = new ArrayList<>();
+        for (CourseScore score : scores) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("courseName", score.getCourseName());
+            item.put("score", score.getScore());
+            data.add(item);
+        }
+
+        return new Result(200, "成功", data);
+    }
+
+
 
     /**
      * 获取指定课程和学生的历次考试成绩（用于折线图）
