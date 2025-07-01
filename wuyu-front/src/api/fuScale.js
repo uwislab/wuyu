@@ -76,27 +76,37 @@ export function getGradeScore(shuju) {
     })
  }
 
+//  //获取年级平均数据
+// export function gradeScore(grade) {
+//   return request({
+//     url: `/diagnose/grade/average/scores`,
+//     method: 'get',
+//     params: {
+//       grade: grade
+//     }
+//   })
+// }
+
  //获取年级平均数据
-export function gradeScore(grade) {
+ export function gradeScore(semester) {
   return request({
-    url: `/diagnose/grade/average/scores`,
+    url: `/fuScore/grade/avgScore`,
     method: 'get',
     params: {
-      grade: grade
+      semester: semester
     }
   })
 }
-
  //获取班级平均数据
- export function gradeclassScore(grade, sclass) {
+ export function gradeclassScore(semester, clazz) {
   return request({
-    url: '/diagnose/class/average/scores',
+    url: '/fuScore/class/avgScore',
     method: 'get',
     params: {
-      grade,
-      sclass
+      semester,
+      clazz 
     }
-  })
+  });
 }
 
 
