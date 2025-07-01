@@ -1097,6 +1097,20 @@ export const asyncRoutes = [
 
     ],
   },
+     {
+    path: "/class-grade-radar",
+    component: Layout,
+    redirect: "/class-grade-radar/index",
+    meta: { title: "班级与年级五育雷达图", icon: "dashboard", role: [0, 1] },
+    children: [
+      {
+        path: "index",
+        name: "ClassGradeRadar",
+        component: () => import("@/views/teacher_workspace/diagnose/ClassGradeRadar.vue"),
+        meta: { title: "班级与年级五育雷达图", role: [0, 1] }
+      }
+    ]
+  },
 
 ];
 
