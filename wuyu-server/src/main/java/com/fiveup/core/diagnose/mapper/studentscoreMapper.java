@@ -160,4 +160,18 @@ public interface studentscoreMapper {
             "ORDER BY\n" +
             "    FIELD(name, '德育', '智育', '体育', '美育', '劳育');")
     List<GradeScoreBean> getGradeScoreBygrade(Integer grade);
+
+    @Select("SELECT fs.morality_score as s_deyu, fs.intelligence_score as s_zhiyu, fs.physical_score as s_tiyu, fs.aesthetic_score as s_meiyu, fs.labour_score as s_laoyu " +
+            "FROM fu_student_score fs " +
+            "JOIN basic_student bs ON fs.student_num = bs.student_num " +
+            "WHERE bs.grade_id = #{grade} AND bs.class_id = #{sclass} " +
+            "ORDER BY fs.evaluate_date DESC")
+    List<student_score> SelectScoreByClassAndGrade(Integer grade, Integer sclass);
+
+    @Select("SELECT fs.morality_score as s_deyu, fs.intelligence_score as s_zhiyu, fs.physical_score as s_tiyu, fs.aesthetic_score as s_meiyu, fs.labour_score as s_laoyu " +
+            "FROM fu_student_score fs " +
+            "JOIN basic_student bs ON fs.student_num = bs.student_num " +
+            "WHERE bs.grade_id = #{grade} " +
+            "ORDER BY fs.evaluate_date DESC")
+    List<student_score> SelectScoreByGradeFu(int grade);
 }
