@@ -59,6 +59,12 @@
           :value="student.value"></el-option>
       </el-select>
 
+      <!-- 新增考试序号选择下拉框 -->
+      <el-select v-model="selectedRadarTestNumber" placeholder="请选择考试序号" @change="fetchRadarData">
+        <el-option v-for="testNumber in testNumbers" :key="testNumber" :label="testNumber"
+          :value="testNumber"></el-option>
+      </el-select>
+
       <!-- 绘制图表的容器 -->
       <div id="radarChart" style="width: 100%; height: 400px;"></div>
     </div>
@@ -76,6 +82,8 @@ import {
 export default {
   data() {
     return {
+
+      selectedRadarTestNumber: null, // 新增当前选中的雷达图考试序号
       // 成绩分布相关数据
       selectedCourse: '',
       selectedTestNumber: null,
@@ -208,10 +216,16 @@ export default {
 
     // 获取学生综合成绩雷达图数据
     async fetchRadarData(studentNum = this.selectedStudentNum) {
-      if (!studentNum) return;
+      // 增加考试序号的非空判断
+      if (!studentNum || this.selectedRadarTestNumber === null) {
+        return;
+      }
 
       try {
-        const res = await getStudentMultiSubjectScores({ studentNum }); // 使用封装好的接口
+        const res = await getStudentMultiSubjectScores({
+          studentNum: this.selectedStudentNum,
+          testNumber: this.selectedRadarTestNumber // 新增考试序号参数
+        });
         if (res.code === 200) {
           this.radarChartData = res.data.map(item => ({
             courseName: item.courseName,
@@ -241,8 +255,9 @@ export default {
       }];
 
       const option = {
+        // 在标题中显示考试序号
         title: {
-          text: `${this.selectedStudentNum} - 多科综合成绩雷达图`,
+          text: `${this.selectedStudentNum} - 第${this.selectedRadarTestNumber}次考试多科综合成绩雷达图`,
           left: 'center'
         },
         tooltip: {},

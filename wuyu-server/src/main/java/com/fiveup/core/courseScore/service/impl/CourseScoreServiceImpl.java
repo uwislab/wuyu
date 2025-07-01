@@ -127,4 +127,10 @@ public class CourseScoreServiceImpl implements CourseScoreService {
         return courseScoreMapper.getByStudent(studentNum);
     }
 
+    @Override
+    public List<CourseScore> getByStudentAndTestNumber(String studentNum, Integer testNumber) {
+        return courseScoreMapper.getByStudentAndTestNumber(studentNum, testNumber);
+    }
+
+
 }
