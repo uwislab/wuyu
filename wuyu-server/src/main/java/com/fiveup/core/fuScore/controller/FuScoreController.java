@@ -2,8 +2,12 @@ package com.fiveup.core.fuScore.controller;
 
 import com.fiveup.core.classManage.model.GradeInfo;
 import com.fiveup.core.classManage.service.ClassManageService;
+
+import com.fiveup.core.common.result.Result;
+
 import com.fiveup.core.fuScore.entity.vo.FuClassAvgScoreVO;
 import com.fiveup.core.fuScore.entity.vo.FuGradeAvgScoreVO;
+
 import com.fiveup.core.fuScore.model.*;
 import com.fiveup.core.fuScore.service.*;
 import com.fiveup.core.fuScore.service.ClassFuScoreService;
@@ -19,7 +23,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+
 import javax.validation.constraints.NotNull;
+
 import java.util.*;
 
 import org.apache.ibatis.annotations.Param;
@@ -54,6 +60,15 @@ public class FuScoreController {
     
     @Autowired
     private FuGradeScoreService fuGradeScoreService;
+
+    /**
+     * 获取班级五育平均成绩
+     */
+    @GetMapping("/getClassAverageScores")
+    public Result<Map<String, Object>> getClassAverageScores(@RequestParam("classId") Integer classId) {
+        Map<String, Object> averageScores = studentFuScoreService.getClassAverageScores(classId);
+        return Result.success(averageScores);
+    }
 
     // ItemID -- 项目名对应数组
     private String[] fuItem = new String[]{"morality_score", "intelligence_score", "physical_score", "aesthetic_score", "labour_score"};

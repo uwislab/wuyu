@@ -8,13 +8,11 @@ import com.fiveup.core.diagnose.service.studentscoreService;
 import com.fiveup.core.management.common.CommonResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
+@CrossOrigin
 @Controller
 @RequestMapping("/diagnose")
 public class studentscoreController {
@@ -271,5 +269,24 @@ public class studentscoreController {
     @ResponseBody
     public int[] getClasses(@RequestParam("grade") int grade) {
         return stService.getClasses(grade);
+    }
+
+    @GetMapping("/classAndGradeAvgScore")
+    @ResponseBody
+    public CommonResponse<Map<String, float[]>> getClassAndGradeAvgScore(@RequestParam("grade") Integer grade, @RequestParam("sclass") Integer sclass) {
+        System.out.println(1);
+        List<student_score> classScores = stService.SelectScoreByClassAndGrade(grade, sclass);
+        List<student_score> gradeScores = stService.SelectScoreByGradeFu(grade);
+        System.out.println(grade);
+        System.out.println(sclass);
+
+        float[] classAvgScores = studentscoreService.avaragescore(classScores);
+        float[] gradeAvgScores = studentscoreService.avaragescore(gradeScores);
+
+        Map<String, float[]> result = new HashMap<>();
+        result.put("classAvg", classAvgScores);
+        result.put("gradeAvg", gradeAvgScores);
+
+        return CommonResponse.ok(result);
     }
 }
