@@ -100,4 +100,7 @@ public interface CourseScoreService {
      */
     List<CourseScore> getByStudent(String studentNum);
 
+
+    List<CourseScore> getByStudentAndTestNumber(String studentNum, Integer testNumber);
+
 }

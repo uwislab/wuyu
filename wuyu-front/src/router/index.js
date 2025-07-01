@@ -171,7 +171,7 @@ export const asyncRoutes = [
       },
     ],
   },
-   //学生管理
+  //学生管理
   {
     path: "/student",
     component: Layout,
@@ -414,7 +414,7 @@ export const asyncRoutes = [
         path: "dimensionHistory",
         name: "量表更新历史",
         component: () => import("@/views/cultivation/goal/dimensionHistory"),
-        meta: { title: "量表更新历史", role: [0,4] },
+        meta: { title: "量表更新历史", role: [0, 4] },
       },
       {
         path: "implementation",
@@ -433,42 +433,42 @@ export const asyncRoutes = [
         path: "goalDetails12",
         name: "查看执行",
         component: () => import("@/views/cultivation/goal/goalDetails12"),
-        meta: { title: "查看执行", role: [0,4] },
+        meta: { title: "查看执行", role: [0, 4] },
         hidden: true,
       },
       {
         path: "goalDetails",
         name: "目标详情",
         component: () => import("@/views/cultivation/goal/goalDetails"),
-        meta: { title: "目标详情", role: [0,4] },
+        meta: { title: "目标详情", role: [0, 4] },
         hidden: true,
       },
       {
         path: "examineDetails",
         name: "考核内容",
         component: () => import("@/views/cultivation/goal/examineDetails"),
-        meta: { title: "考核内容", role: [0,4] },
+        meta: { title: "考核内容", role: [0, 4] },
         hidden: true,
       },
       {
         path: "goalMindMap",
         name: "目标脑图",
         component: () => import("@/views/cultivation/goal/goalMindMap"),
-        meta: { title: "目标脑图", role: [0,4] },
+        meta: { title: "目标脑图", role: [0, 4] },
         hidden: true,
       },
       {
         path: "aspectManager",
         component: () => import("@/views/cultivation/goal/aspectManager"),
         name: "增加评价维度",
-        meta: { title: "增加评价维度", role: [0,4] },
+        meta: { title: "增加评价维度", role: [0, 4] },
         hidden: true,
       },
       {
         path: "activityManager",
         name: "增加评价内容",
         component: () => import("@/views/cultivation/goal/activityManager"),
-        meta: { title: "增加评价内容", role: [0,4] },
+        meta: { title: "增加评价内容", role: [0, 4] },
         hidden: true,
       },
     ],
@@ -538,7 +538,7 @@ export const asyncRoutes = [
     path: "/management",
     component: Layout,
     redirect: "/management/baseData",
-    meta: { title: "基础数据管理", icon: "dashboard", role: [0, 1,2] },
+    meta: { title: "基础数据管理", icon: "dashboard", role: [0, 1, 2] },
 
     children: [
       {
@@ -654,6 +654,12 @@ export const asyncRoutes = [
         meta: { title: "数据展示", role: [0, 1, 2, 3] },
       },
       {
+        path: "charts",
+        component: () => import("@/views/course_score/charts"),
+        name: "成绩图表",
+        meta: { title: "成绩图表", role: [0, 1, 2, 4] },
+      },
+      {
         path: "view",
         component: () => import("@/views/course_score/view"),
         name: "成绩录入",
@@ -717,57 +723,57 @@ export const asyncRoutes = [
     path: "/diagnose",
     component: Layout,
     redirect: "/diagnose/Di-results",
-    meta: { title: "学生五育诊断", icon: "dashboard", role: [0, 1,2] },
+    meta: { title: "学生五育诊断", icon: "dashboard", role: [0, 1, 2] },
     children: [
       {
         path: "FiveupChart",
         component: () => import("@/views/diagnose/FiveupChart"),
         name: "总体预览",
-        meta: { title: "总体预览", role: [0, 1,2] },
+        meta: { title: "总体预览", role: [0, 1, 2] },
       },
       {
         path: "GradeFuReport",
         component: () => import("@/views/diagnose/GradeFuReport"),
         name: "年级成绩构成",
-        meta: { title: "年级成绩构成", role: [0, 1,2] },
+        meta: { title: "年级成绩构成", role: [0, 1, 2] },
         hidden: true,
       },
       {
         path: "ClassFuReport",
         component: () => import("@/views/diagnose/ClassFuReport"),
         name: "班级成绩详情",
-        meta: { title: "班级成绩详情", role: [0, 1,2] },
+        meta: { title: "班级成绩详情", role: [0, 1, 2] },
         hidden: true,
       },
       {
         path: "Di-results",
         component: () => import("@/views/diagnose/Di-results"),
         name: "总体诊断",
-        meta: { title: "总体诊断", role: [0, 1,2] },
+        meta: { title: "总体诊断", role: [0, 1, 2] },
       },
       {
         path: "FiveupManagement",
         component: () => import("@/views/diagnose/FiveupManagement"),
         name: "五育成绩管理",
-        meta: { title: "五育成绩管理", role: [0, 1,2] },
+        meta: { title: "五育成绩管理", role: [0, 1, 2] },
       },
       {
         path: "Kanalysis",
         component: () => import("@/views/diagnose/Kanalysis"),
         name: "智育诊断",
-        meta: { title: "智育诊断", role: [0, 1,2] },
+        meta: { title: "智育诊断", role: [0, 1, 2] },
       },
       {
         path: "SportsD",
         component: () => import("@/views/diagnose/SportsD"),
         name: "体育诊断",
-        meta: { title: "体育诊断", role: [0, 1,2] },
+        meta: { title: "体育诊断", role: [0, 1, 2] },
       },
       {
         path: "Stugoal",
         component: () => import("@/views/diagnose/Stugoal"),
         name: "学生计划评价",
-        meta: { title: "学生计划评价", role: [0, 1,2] },
+        meta: { title: "学生计划评价", role: [0, 1, 2] },
       },
     ],
   },
@@ -775,7 +781,7 @@ export const asyncRoutes = [
     path: "/remark",
     component: Layout,
     redirect: "/remark/Home",
-    meta: { title: "智能评语", icon: "dashboard", role: [0, 1,2] },
+    meta: { title: "智能评语", icon: "dashboard", role: [0, 1, 2] },
     children: [
       {
         path: "Home",
@@ -828,7 +834,7 @@ export const asyncRoutes = [
     path: "/performanceevaluation",
     component: Layout,
     redirect: "/performanceevaluation/show",
-    meta: { title: "成绩评定", icon: "el-icon-data-analysis", role: [0, 1,2] },
+    meta: { title: "成绩评定", icon: "el-icon-data-analysis", role: [0, 1, 2] },
     children: [
       {
         path: "show",
@@ -840,7 +846,7 @@ export const asyncRoutes = [
         path: "scoreweight",
         component: () => import("@/views/performanceevaluation/weight"),
         name: "课程权重管理",
-        meta: { title: "课程权重管理", role: [0, 1,2] },
+        meta: { title: "课程权重管理", role: [0, 1, 2] },
       },
       {
         path: "personal",
@@ -866,7 +872,7 @@ export const asyncRoutes = [
     path: "/commentgeneration",
     component: Layout,
     redirect: "/commentgeneration/class",
-    meta: { title: "评语生成", icon: "el-icon-s-comment", role: [0, 1,2] },
+    meta: { title: "评语生成", icon: "el-icon-s-comment", role: [0, 1, 2] },
     children: [
       {
         path: "class",
@@ -888,8 +894,8 @@ export const asyncRoutes = [
       },
     ],
   },
-   // 通知册
-   {
+  // 通知册
+  {
     path: '/notice',
     component: Layout,
     children: [
@@ -905,7 +911,7 @@ export const asyncRoutes = [
     path: "/demonstrate",
     component: Layout,
     redirect: "/demonstrate/xxzl",
-    meta: { title: "数据展示", icon: "dashboard",role: [0, 1]},
+    meta: { title: "数据展示", icon: "dashboard", role: [0, 1] },
     children: [
       {
         path: "xxzl",
@@ -973,7 +979,7 @@ export const asyncRoutes = [
         path: "newwyzk",
         component: () => import("@/views/demonstrate/newwyzk"),
         name: "新中控大屏",
-        meta: { title: "新中控大屏", role: [0,4] },
+        meta: { title: "新中控大屏", role: [0, 4] },
       },
 
     ],
@@ -995,27 +1001,27 @@ export const asyncRoutes = [
         path: "wuyu_item_info",
         component: () => import("@/views/wuyu-overview/grade_wuyu_info"),
         name: "单一年级五育成绩总览",
-        meta: { title: "单一年级五育成绩总览", role: [0, 1,2] },
+        meta: { title: "单一年级五育成绩总览", role: [0, 1, 2] },
         hidden: true,
       },
       {
         path: "grade_class_info",
         component: () => import("@/views/wuyu-overview/grade_class_info"),
         name: "成绩对比详情页",
-        meta: { title: "成绩对比详情页", role: [0, 1,2] },
+        meta: { title: "成绩对比详情页", role: [0, 1, 2] },
         hidden: true,
       },
       {
         path: "class_fu_score",
         component: () => import("@/views/wuyu-overview/class_fu_score"),
         name: "班级成员成绩页",
-        meta: { title: "班级成员成绩页", role: [0, 1,2] },
+        meta: { title: "班级成员成绩页", role: [0, 1, 2] },
       },
       {
         path: "student_wuyu_info",
         component: () => import("@/views/wuyu-overview/student_wuyu_info"),
         name: "学生个人详情页",
-        meta: { title: "学生个人详情页", role: [0, 1,2] },
+        meta: { title: "学生个人详情页", role: [0, 1, 2] },
       },
       // {
       //   path: "year",
@@ -1059,34 +1065,34 @@ export const asyncRoutes = [
     path: "/school-overview",
     component: Layout,
     redirect: "/school-overview/index",
-    meta: {title: "学校总体概述", icon: "dashboard", role: [0]},
+    meta: { title: "学校总体概述", icon: "dashboard", role: [0] },
     children: [
       {
         path: "index",
         component: () => import("@/views/school-overview/index"),
         name: "学校公告",
-        meta: {title: "学校公告", role: [0]},
+        meta: { title: "学校公告", role: [0] },
       },
       {
-          path: "statistical",
-          component: () => import("@/views/school-overview/statistical"),
-          name: "统计",
-          meta: {title: "统计", role: [0]},
-        },
+        path: "statistical",
+        component: () => import("@/views/school-overview/statistical"),
+        name: "统计",
+        meta: { title: "统计", role: [0] },
+      },
     ],
   },
   // 排课管理模块
-   {
+  {
     path: "/SchedulingManagement",
     component: Layout,
     redirect: "schedulingManagement/index",
-    meta: {title: "排课管理", icon: "edit", role: [0, 1]},
+    meta: { title: "排课管理", icon: "edit", role: [0, 1] },
     children: [
       {
         path: "index",
         component: () => import("@/views/scheduling-management/index"),
         name: "排课管理",
-        meta: {title: "排课管理", role: [0, 1]},
+        meta: { title: "排课管理", role: [0, 1] },
       },
 
     ],

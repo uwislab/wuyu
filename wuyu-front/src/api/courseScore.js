@@ -91,7 +91,7 @@ export function getStudentList() {
 // 获取学生多科成绩（POST）
 export function getStudentMultiSubjectScores(params) {
   return request({
-    url: '/coursescore/getByStudent',
+    url: '/coursescore/getByStudent2',
     method: 'post',
     data: params,
     headers: {

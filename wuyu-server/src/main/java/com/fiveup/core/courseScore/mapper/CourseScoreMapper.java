@@ -126,5 +126,23 @@ public interface CourseScoreMapper {
             "= #{studentNum}")
     List<CourseScore> getByStudent(@Param("studentNum") String studentNum);
 
+    /**
+     * 根据学生学号和考试号查询所有课程成绩
+     */
+    @Select("SELECT" +
+            " * " +
+            "FROM " +
+            "course_score " +
+            "WHERE student_num" +
+            " = " +
+            "#{studentNum} " +
+            "AND " +
+            "test_number" +
+            " =" +
+            " #{testNumber}")
+    List<CourseScore> getByStudentAndTestNumber(
+            @Param("studentNum") String studentNum,
+            @Param("testNumber") Integer testNumber
+    );
 
 }
