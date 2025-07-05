@@ -101,147 +101,158 @@
 
     <div class="main-content">
       <!-- 左侧课程树 -->
-      <el-card class="course-tree" shadow="never">
-        <template #header>
-          <div class="card-header">
-            <span>课程排课列表</span>
-            <div class="card-actions">
-              <el-switch
-                v-model="autoCopyEnabled"
-                active-text="自动复制"
-                active-color="#409EFF"
-                @change="handleAutoCopyClass"
-              />
-              <el-popconfirm
-                title="确认复制上学期的排课？"
-                confirm-button-text="覆盖"
-                cancel-button-text="不覆盖"
-                @confirm="() => handleAutoCopy(true)"
-                @cancel="() => handleAutoCopy(false)"
-              >
-                <template #reference>
-                  <el-button type="text" icon="el-icon-copy-document" circle>上学期排课</el-button>
-                </template>
-              </el-popconfirm>
-            </div>
-          </div>
-        </template>
-
-        <el-tree
-          :data="courseTree"
-          :props="treeProps"
-          node-key="id"
-          class="custom-tree"
-          accordion
-        >
-          <template #default="{ node, data }">
-            <div class="tree-node">
-              <div class="node-info">
-                <span class="node-label">{{ node.label }}</span>
-              </div>
-              <div v-if="data.type === 'course'" class="node-actions">
-                <el-button
-                  type="text"
-                  size="small"
-                  icon="el-icon-user"
-                  @click.stop="openTeacherDialog(data)"
+      <div class="left-panel" :style="{ width: leftPanelWidth + 'px' }">
+        <el-card class="course-tree" shadow="never">
+          <template #header>
+            <div class="card-header">
+              <span>课程排课列表</span>
+              <div class="card-actions">
+                <el-switch
+                  v-model="autoCopyEnabled"
+                  active-text="自动复制"
+                  active-color="#409EFF"
+                  @change="handleAutoCopyClass"
+                />
+                <el-popconfirm
+                  title="确认复制上学期的排课？"
+                  confirm-button-text="覆盖"
+                  cancel-button-text="不覆盖"
+                  @confirm="() => handleAutoCopy(true)"
+                  @cancel="() => handleAutoCopy(false)"
                 >
-                  {{ data.teacher || '分配教师' }}
-                </el-button>
-                <el-dropdown trigger="click" @command="handleTreeCommand(node.data,$event)">
-                  <el-button type="text" icon="el-icon-more" circle size="small"></el-button>
-                  <template #dropdown>
-                    <el-dropdown-menu>
-                      <el-dropdown-item command="edit">编辑课程</el-dropdown-item>
-                      <el-dropdown-item command="delete">删除课程</el-dropdown-item>
-                    </el-dropdown-menu>
+                  <template #reference>
+                    <el-button type="text" icon="el-icon-copy-document" circle>上学期排课</el-button>
                   </template>
-                </el-dropdown>
+                </el-popconfirm>
               </div>
             </div>
           </template>
-        </el-tree>
-      </el-card>
 
-      <!-- 右侧表格 -->
-      <el-card class="summary-table" shadow="never">
-        <template #header>
-          <div class="card-header">
-            <span>课程安排总览</span>
-              <div>
-                <el-button type="primary" icon="el-icon-upload" size="small" @click="handleUpload">导入课表</el-button>
-              </div>
-              <Import :import-dialog-visible="importDialogVisible"
-              @update:importDialogVisible="importDialogVisible = $event"
-              :fetchData="fetchData"
-              :fetchAllCourses="fetchAllCourses"></Import>
-
-          </div>
-        </template>
-
-        <el-table
-          :data="tableData"
-          v-loading="tableLoading"
-          stripe
-          highlight-current-row
-          style="width: 100%"
-          @selection-change="handleSelectionChange"
-        >
-          <el-table-column type="selection" width="30"></el-table-column>
-          <el-table-column prop="academicYear" label="学年" width="120" align="center" />
-          <el-table-column prop="semesterlabel" label="学期" width="120" align="center" />
-          <el-table-column prop="className" label="班级" width="120" align="center" />
-          <el-table-column prop="course" label="课程名称" min-width="120"  align="center"/>
-          <el-table-column label="任课教师" width="150" align="left">
-            <template #default="{ row }">
-              <div class="teacher-cell">
-                <div class="teacher-info">
-                  <span class="teacher-name">{{ row.teacherName || '未分配' }}</span>
+          <el-tree
+            :data="courseTree"
+            :props="treeProps"
+            node-key="id"
+            class="custom-tree"
+            accordion
+          >
+            <template #default="{ node, data }">
+              <div class="tree-node">
+                <div class="node-info">
+                  <span class="node-label">{{ node.label }}</span>
+                </div>
+                <div v-if="data.type === 'course'" class="node-actions">
                   <el-button
                     type="text"
-                    size="mini"
-                    icon="el-icon-edit"
-                    @click="openTeacherDialog(row)"
-                  ></el-button>
+                    size="small"
+                    icon="el-icon-user"
+                    @click.stop="openTeacherDialog(data)"
+                  >
+                    {{ data.teacher || '分配教师' }}
+                  </el-button>
+                  <el-dropdown trigger="click" @command="handleTreeCommand(node.data,$event)">
+                    <el-button type="text" icon="el-icon-more" circle size="small"></el-button>
+                    <template #dropdown>
+                      <el-dropdown-menu>
+                        <el-dropdown-item command="edit">编辑课程</el-dropdown-item>
+                        <el-dropdown-item command="delete">删除课程</el-dropdown-item>
+                      </el-dropdown-menu>
+                    </template>
+                  </el-dropdown>
                 </div>
               </div>
             </template>
-          </el-table-column>
-          <el-table-column prop="id" label="操作" width="300" align="center">
-            <template #default="{ row }">
-              <el-button
-                type="primary"
-                size="small"
-                @click="handleUpdateLesson(row)"
-                round
-              >
-                编辑课程
-              </el-button>
-              <el-button
-                type="danger"
-                size="small"
-                @click="handleDeleteLesson(row.id)"
-                round
-              >
-                删除课程
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+          </el-tree>
+        </el-card>
+      </div>
 
-         <div class="pagination-wrapper">
-          <el-pagination
-            v-model:current-page="pagination.page"
-            v-model:page-size="pagination.size"
-            :total="pagination.total"
-            :page-sizes="[10, 20, 30, 50]"
-            layout="total, sizes, prev, pager, next, jumper"
-            background
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-          />
-        </div>
-      </el-card>
+      <!-- 拖动条 -->
+      <div
+        class="resize-handle"
+        @mousedown="startResize"
+        @dblclick="resetWidth"
+      ></div>
+
+      <!-- 右侧表格 -->
+      <div class="right-panel">
+        <el-card class="summary-table" shadow="never">
+          <template #header>
+            <div class="card-header">
+              <span>课程安排总览</span>
+                <div>
+                  <el-button type="primary" icon="el-icon-upload" size="small" @click="handleUpload">导入课表</el-button>
+                </div>
+                <Import :import-dialog-visible="importDialogVisible"
+                @update:importDialogVisible="importDialogVisible = $event"
+                :fetchData="fetchData"
+                :fetchAllCourses="fetchAllCourses"></Import>
+
+            </div>
+          </template>
+
+          <el-table
+            :data="tableData"
+            v-loading="tableLoading"
+            stripe
+            highlight-current-row
+            style="width: 100%"
+            @selection-change="handleSelectionChange"
+          >
+            <el-table-column type="selection" width="30"></el-table-column>
+            <el-table-column prop="academicYear" label="学年" width="120" align="center" />
+            <el-table-column prop="semesterlabel" label="学期" width="120" align="center" />
+            <el-table-column prop="className" label="班级" width="120" align="center" />
+            <el-table-column prop="course" label="课程名称" min-width="120"  align="center"/>
+            <el-table-column label="任课教师" width="150" align="left">
+              <template #default="{ row }">
+                <div class="teacher-cell">
+                  <div class="teacher-info">
+                    <span class="teacher-name">{{ row.teacherName || '未分配' }}</span>
+                    <el-button
+                      type="text"
+                      size="mini"
+                      icon="el-icon-edit"
+                      @click="openTeacherDialog(row)"
+                    ></el-button>
+                  </div>
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column prop="id" label="操作" width="300" align="center">
+              <template #default="{ row }">
+                <el-button
+                  type="primary"
+                  size="small"
+                  @click="handleUpdateLesson(row)"
+                  round
+                >
+                  编辑课程
+                </el-button>
+                <el-button
+                  type="danger"
+                  size="small"
+                  @click="handleDeleteLesson(row.id)"
+                  round
+                >
+                  删除课程
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+
+           <div class="pagination-wrapper">
+            <el-pagination
+              v-model:current-page="pagination.page"
+              v-model:page-size="pagination.size"
+              :total="pagination.total"
+              :page-sizes="[10, 20, 30, 50]"
+              layout="total, sizes, prev, pager, next, jumper"
+              background
+              @size-change="handleSizeChange"
+              @current-change="handleCurrentChange"
+            />
+          </div>
+        </el-card>
+      </div>
     </div>
 
     <!-- 教师检索弹窗 -->
@@ -289,6 +300,64 @@ import {getLessonPageAPI,
 import lessonInfoDialog from './components/lessonInfoDialog.vue'
 import TeacherSel from './components/TeacherSel.vue'
 import Import from './components/Import.vue'
+
+// 分栏宽度控制
+const leftPanelWidth = ref(380)
+const isResizing = ref(false)
+const startX = ref(0)
+const startWidth = ref(0)
+
+// 开始拖动调整宽度
+const startResize = (e) => {
+  e.preventDefault()
+  isResizing.value = true
+  startX.value = e.clientX
+  startWidth.value = leftPanelWidth.value
+
+  document.addEventListener('mousemove', handleMouseMove)
+  document.addEventListener('mouseup', stopResize)
+  document.body.style.cursor = 'col-resize'
+  document.body.style.userSelect = 'none'
+
+  // 添加容器样式
+  const container = document.querySelector('.course-scheduling-container')
+  if (container) {
+    container.classList.add('resizing')
+  }
+}
+
+// 鼠标移动处理
+const handleMouseMove = (e) => {
+  if (!isResizing.value) return
+
+  const deltaX = e.clientX - startX.value
+  const newWidth = startWidth.value + deltaX
+
+  // 限制最小和最大宽度
+  if (newWidth >= 280 && newWidth <= 600) {
+    leftPanelWidth.value = newWidth
+  }
+}
+
+// 停止拖动
+const stopResize = () => {
+  isResizing.value = false
+  document.removeEventListener('mousemove', handleMouseMove)
+  document.removeEventListener('mouseup', stopResize)
+  document.body.style.cursor = ''
+  document.body.style.userSelect = ''
+
+  // 移除容器样式
+  const container = document.querySelector('.course-scheduling-container')
+  if (container) {
+    container.classList.remove('resizing')
+  }
+}
+
+// 双击重置宽度
+const resetWidth = () => {
+  leftPanelWidth.value = 380
+}
 
 const handleTreeCommand = ( data , e ) => {
   if(e==='edit'){
@@ -893,6 +962,12 @@ onMounted(() => {
   fetchAllCourses()
   getAutoCopyStatus()
 })
+
+// 组件卸载时清理事件监听器
+onBeforeMount(() => {
+  document.removeEventListener('mousemove', handleMouseMove)
+  document.removeEventListener('mouseup', stopResize)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -900,6 +975,12 @@ onMounted(() => {
   padding: 24px;
   background: #f5f7fa;
   min-height: 100vh;
+
+  // 防止拖动时选择文本
+  &.resizing {
+    user-select: none;
+    cursor: col-resize;
+  }
 }
 
 .toolbar-section {
@@ -928,12 +1009,58 @@ onMounted(() => {
 }
 
 .main-content {
-  display: grid;
-  grid-template-columns: 380px 1fr;
-  gap: 20px;
+  display: flex;
+  gap: 0;
+  position: relative;
+}
+
+.left-panel {
+  flex-shrink: 0;
+  min-width: 280px;
+  max-width: 600px;
+}
+
+.resize-handle {
+  width: 6px;
+  background: #e4e7ed;
+  cursor: col-resize;
+  position: relative;
+  flex-shrink: 0;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: #409eff;
+  }
+
+  &:active {
+    background: #337ecc;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2px;
+    height: 20px;
+    background: #c0c4cc;
+    border-radius: 1px;
+  }
+
+  &:hover::after {
+    background: #fff;
+  }
+}
+
+.right-panel {
+  flex: 1;
+  min-width: 0;
 }
 
 .course-tree {
+  height: 100%;
+
   :deep(.el-card__header) {
     padding: 12px 20px;
     background: #f8fafc;
