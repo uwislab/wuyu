@@ -16,20 +16,14 @@
         <!-- 学年 -->
         <el-col :span="12">
           <el-form-item label="学年" prop="academicYear">
-            <el-select
+            <el-input
               v-model="form.academicYear"
-              placeholder="请选择学年"
+              placeholder="请输入学年，格式：xxxx-xxxx"
               clearable
               class="w-full"
-              @change="updateClassName"
-            >
-              <el-option
-                v-for="year in academicYears"
-                :key="year.value"
-                :label="year.label"
-                :value="year.value"
-              />
-            </el-select>
+              @input="handleAcademicYearInput"
+              @blur="validateAcademicYear"
+            />
           </el-form-item>
         </el-col>
         <!-- 学期 -->
@@ -143,7 +137,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, nextTick } from 'vue'
 import { Message } from 'element-ui'
 import { addLessonAPI, updateLessonAPI } from '@/api/schedulModule/index'
 import TeacherSel from './TeacherSel.vue'
@@ -195,7 +189,17 @@ const form = ref({
 
 const rules = reactive({
   academicYear: [
-    { required: true, message: '请选择学年', trigger: 'change' }
+    { required: true, message: '请输入学年', trigger: 'blur' },
+    {
+      validator: (rule, value, callback) => {
+        if (value && !/^\d{4}-\d{4}$/.test(value)) {
+          callback(new Error('学年格式应为xxxx-xxxx'))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur'
+    }
   ],
   semester: [
     { required: true, message: '请选择学期', trigger: 'change' }
@@ -270,6 +274,37 @@ const handleClose = () => {
 const updateClassName = () => {
   if (form.value.grade && form.value.classNum && !props.formData.id) {
     form.value.className = `${form.value.grade}年级${form.value.classNum}班`
+  }
+}
+
+// 处理学年输入
+const handleAcademicYearInput = (value) => {
+  // 只允许输入数字和连字符
+  const filteredValue = value.replace(/[^\d-]/g, '')
+
+  // 限制连字符的数量
+  const dashCount = (filteredValue.match(/-/g) || []).length
+  if (dashCount > 1) {
+    form.value.academicYear = filteredValue.replace(/-/g, (match, index) => {
+      return index === filteredValue.indexOf('-') ? '-' : ''
+    })
+  } else {
+    form.value.academicYear = filteredValue
+  }
+
+  // 自动格式化：当输入4位数字后自动添加连字符
+  if (filteredValue.length === 4 && !filteredValue.includes('-')) {
+    form.value.academicYear = filteredValue + '-'
+  }
+
+  updateClassName()
+}
+
+// 验证学年格式
+const validateAcademicYear = () => {
+  const value = form.value.academicYear
+  if (value && !/^\d{4}-\d{4}$/.test(value)) {
+    Message.warning('学年格式应为xxxx-xxxx')
   }
 }
 
